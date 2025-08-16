@@ -3,7 +3,16 @@
 class DashboardManager {
     constructor() {
         this.currentStudent = null;
-        this.init();
+        // Show appropriate emoji based on creature type
+        const creatureType = this.currentStudent.avatar?.creatureType;
+        const emoji = this.getCreatureEmoji(creatureType);
+        
+        if (emoji) {
+            return emoji;
+        }
+        
+        // For old format or unknown types, show first letter
+        return this.currentStudent.name.charAt(0).toUpperCase();;
     }
 
     init() {
@@ -105,12 +114,46 @@ class DashboardManager {
         return this.currentStudent.avatar?.bodyColor || '#667eea';
     }
 
-    getAvatarDisplay() {
-        // If the avatar is a robot, show robot emoji, otherwise show first letter
-        if (this.currentStudent.avatar?.creatureType === 'robot') {
-            return '🤖';
+    getCreatureEmoji(creatureType) {
+        switch(creatureType) {
+            case 'robot':
+                return '🤖';
+            case 'mouse':
+                return '🐭';
+            case 'fire-cat':
+                return '🔥🐱';
+            case 'rock-pup':
+                return '🪨🐶';
+            case 'poison-snake':
+                return '☠️🐍';
+            case 'dolphin':
+                return '🐬';
+            default:
+                return null;
         }
-        return this.currentStudent.name.charAt(0).toUpperCase();
+    }
+
+    getAvatarDisplay() {
+        // Show appropriate emoji based on creature type
+        const creatureType = this.currentStudent.avatar?.creatureType;
+        
+        switch(creatureType) {
+            case 'robot':
+                return '🤖';
+            case 'mouse':
+                return '🐭';
+            case 'fire-cat':
+                return '🔥🐱';
+            case 'rock-pup':
+                return '�🐶';
+            case 'poison-snake':
+                return '☠️🐍';
+            case 'dolphin':
+                return '🐬';
+            default:
+                // For old format or unknown types, show first letter
+                return this.currentStudent.name.charAt(0).toUpperCase();
+        }
     }
 
     renderStatsCard() {
@@ -235,7 +278,7 @@ class DashboardManager {
                                     <div class="rank">${index + 1}</div>
                                     <div class="student-info">
                                         <div class="student-avatar" style="background: ${student.avatar?.bodyColor || '#667eea'};">
-                                            ${student.avatar?.creatureType === 'robot' ? '🤖' : student.name.charAt(0).toUpperCase()}
+                                            ${this.getCreatureEmoji(student.avatar?.creatureType) || student.name.charAt(0).toUpperCase()}
                                         </div>
                                         <div class="student-details">
                                             <div class="student-name">${student.name}</div>
