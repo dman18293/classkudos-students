@@ -59,7 +59,7 @@ class DashboardManager {
         container.innerHTML = `
             <div class="dashboard-header">
                 <div class="dashboard-avatar" style="background: ${this.getAvatarColor()};">
-                    ${this.getAvatarDisplay()}
+                    ${this.getCustomizedAvatarDisplay()}
                 </div>
                 <div class="dashboard-info">
                     <h1 class="dashboard-name">${this.currentStudent.name}</h1>
@@ -103,6 +103,39 @@ class DashboardManager {
 
     getAvatarColor() {
         return this.currentStudent.avatar?.bodyColor || '#667eea';
+    }
+
+    getCustomizedAvatarDisplay() {
+        // Create a visual representation that reflects actual customizations
+        return this.getCustomizedAvatarForStudent(this.currentStudent);
+    }
+
+    getCustomizedAvatarForStudent(student) {
+        const avatar = student.avatar;
+        
+        if (!avatar) {
+            return student.name.charAt(0).toUpperCase();
+        }
+
+        // For new creature format, show creature type with customization indicators
+        if (avatar.creatureType && avatar.creatureType !== 'robot') {
+            const creatureEmoji = this.getCreatureEmoji(avatar.creatureType);
+            const size = avatar.bodySize || 0.5;
+            const sizeIndicator = size > 0.7 ? ' 🔺' : size < 0.3 ? ' 🔻' : '';
+            
+            // Add accessories indicator if present
+            const accessoryIndicator = avatar.accessories && avatar.accessories !== 'none' ? ' ✨' : '';
+            
+            return creatureEmoji + sizeIndicator + accessoryIndicator;
+        }
+        
+        // For robot or old format, show emoji
+        if (avatar.creatureType === 'robot' || avatar.body === 'robot') {
+            return '🤖';
+        }
+        
+        // Fallback to initials
+        return student.name.charAt(0).toUpperCase();
     }
 
     getCreatureEmoji(creatureType) {
@@ -269,7 +302,7 @@ class DashboardManager {
                                     <div class="rank">${index + 1}</div>
                                     <div class="student-info">
                                         <div class="student-avatar" style="background: ${student.avatar?.bodyColor || '#667eea'};">
-                                            ${this.getCreatureEmoji(student.avatar?.creatureType) || student.name.charAt(0).toUpperCase()}
+                                            ${this.getCustomizedAvatarForStudent(student)}
                                         </div>
                                         <div class="student-details">
                                             <div class="student-name">${student.name}</div>
