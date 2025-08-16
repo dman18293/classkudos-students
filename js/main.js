@@ -44,19 +44,27 @@ class StudentPortalApp {
     }
 
     checkExistingLogin() {
-        const storedStudent = Utils.storage.get('currentStudent');
-        if (storedStudent && navigationManager) {
-            navigationManager.setCurrentStudent(storedStudent);
-            
-            // Ask user if they want to continue as this student
-            if (confirm(`Welcome back, ${storedStudent.name}! Would you like to continue?`)) {
-                navigationManager.showPage('dashboard');
-                if (window.dashboardManager) {
-                    window.dashboardManager.loadDashboard();
+        try {
+            const storedStudent = Utils && Utils.storage ? Utils.storage.get('currentStudent') : null;
+            if (storedStudent && navigationManager) {
+                navigationManager.setCurrentStudent(storedStudent);
+                
+                // Ask user if they want to continue as this student
+                if (confirm(`Welcome back, ${storedStudent.name}! Would you like to continue?`)) {
+                    navigationManager.showPage('dashboard');
+                    if (window.dashboardManager) {
+                        window.dashboardManager.loadDashboard();
+                    }
+                } else {
+                    // Clear stored data and show login
+                    Utils.storage.remove('currentStudent');
+                    navigationManager.showPage('login');
                 }
-            } else {
-                // Clear stored data and show login
-                Utils.storage.remove('currentStudent');
+            }
+        } catch (error) {
+            console.error('Error checking existing login:', error);
+            // If there's an error, just show login page
+            if (navigationManager) {
                 navigationManager.showPage('login');
             }
         }

@@ -16,34 +16,41 @@ class LoginManager {
 
     async loadTeachers() {
         try {
-            // Load teachers from the real database
-            const response = await fetch('https://classkudos.org/.netlify/functions/getClasses');
-            if (response.ok) {
-                const data = await response.json();
-                // Transform the classes data into teacher format
-                this.teachers = data.classes.map(cls => ({
-                    id: cls.teacher_email,
-                    name: cls.teacher_name || 'Teacher',
-                    email: cls.teacher_email,
-                    className: cls.class_name
-                }));
-                
-                // Remove duplicates by email
-                const uniqueTeachers = this.teachers.reduce((acc, teacher) => {
-                    if (!acc.find(t => t.email === teacher.email)) {
-                        acc.push(teacher);
+            // Static teacher list - replace with your actual details
+            this.teachers = [
+                {
+                    id: 'user@domain.com', // Replace with your actual email
+                    name: 'Your Name',     // Replace with your actual name
+                    email: 'user@domain.com',
+                    className: 'Your Class'
+                }
+            ];
+            
+            // Try to load from localStorage if available
+            try {
+                const storedTeachers = localStorage.getItem('classkudos_teachers');
+                if (storedTeachers) {
+                    const parsed = JSON.parse(storedTeachers);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        this.teachers = parsed;
                     }
-                    return acc;
-                }, []);
-                this.teachers = uniqueTeachers;
-            } else {
-                // Fallback to static teacher list
-                this.teachers = window.mockTeachers || [];
+                }
+            } catch (e) {
+                console.warn('Failed to parse stored teachers');
             }
+            
+            console.log('Loaded teachers:', this.teachers);
         } catch (error) {
             console.error('Error loading teachers:', error);
-            // Fallback to static teacher list
-            this.teachers = window.mockTeachers || [];
+            // Fallback to demo teacher
+            this.teachers = [
+                {
+                    id: 'demo@teacher.com',
+                    name: 'Demo Teacher',
+                    email: 'demo@teacher.com',
+                    className: 'Demo Class'
+                }
+            ];
             this.showError('Using demo teachers. Please check your connection.');
         }
     }
