@@ -45,12 +45,16 @@ class NavigationManager {
     }
 
     setCurrentStudent(student) {
+        console.log('🔄 NavigationManager setCurrentStudent called with:', student);
+        console.log('🔄 Setting avatar data:', student?.avatar);
+        
         this.currentStudent = student;
         this.updateNavigation();
         
         // Store in localStorage for persistence
         if (student) {
             localStorage.setItem('currentStudent', JSON.stringify(student));
+            console.log('💾 Stored student in localStorage');
         } else {
             localStorage.removeItem('currentStudent');
         }
@@ -62,8 +66,11 @@ class NavigationManager {
             const stored = localStorage.getItem('currentStudent');
             if (stored) {
                 this.currentStudent = JSON.parse(stored);
+                console.log('📥 Loaded student from localStorage:', this.currentStudent);
             }
         }
+        console.log('📤 getCurrentStudent returning:', this.currentStudent);
+        console.log('📤 Avatar data:', this.currentStudent?.avatar);
         return this.currentStudent;
     }
 

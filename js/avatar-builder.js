@@ -2204,13 +2204,18 @@ class AvatarBuilderManager {
                 );
                 
                 console.log('Updated student from server:', updatedStudent);
+                console.log('Updated student avatar field:', updatedStudent?.avatar);
                 
                 if (updatedStudent) {
                     // Update navigation manager's current student
-                    navigationManager.setCurrentStudent({
+                    const newStudentData = {
                         ...this.currentStudent,
                         avatar: updatedStudent.avatar
-                    });
+                    };
+                    console.log('Setting navigation manager with:', newStudentData);
+                    console.log('New student avatar data:', newStudentData.avatar);
+                    
+                    navigationManager.setCurrentStudent(newStudentData);
                     
                     console.log('Updated navigation manager with new student data');
                     this.showFeedback('Avatar saved successfully!', 'success');
