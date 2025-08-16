@@ -304,3 +304,50 @@
         font-size: 1.5rem;
     }
 }
+
+/* Custom Creature Avatar Styles */
+.custom-creature-avatar {
+    transition: transform 0.2s ease;
+}
+
+.custom-creature-avatar:hover {
+    transform: scale(1.1);
+}
+
+.dashboard-avatar .custom-creature-avatar {
+    /* Ensure custom creatures fit nicely in avatar containers */
+    margin: 0;
+}
+
+.student-avatar .custom-creature-avatar {
+    /* Adjust size for leaderboard avatars */
+    transform: scale(0.8);
+}
+
+/* Animation for creature features */
+.fire-effect {
+    animation: flicker 1s infinite alternate;
+}
+
+@keyframes flicker {
+    0% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
+.water-effect {
+    animation: wave 2s infinite ease-in-out;
+}
+
+@keyframes wave {
+    0%, 100% { transform: translateX(-50%) translateY(0px); }
+    50% { transform: translateX(-50%) translateY(-2px); }
+}
+
+.poison-effect {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
