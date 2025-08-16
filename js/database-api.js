@@ -8,6 +8,12 @@ const DatabaseAPI = {
     // Authenticate student with login code
     async authenticateStudent(loginCode, className) {
         try {
+            console.log('DatabaseAPI: Sending authentication request:', {
+                loginCode: loginCode,
+                className: className,
+                url: `${this.baseURL}/studentAuth`
+            });
+
             const response = await fetch(`${this.baseURL}/studentAuth`, {
                 method: 'POST',
                 headers: {
@@ -16,12 +22,23 @@ const DatabaseAPI = {
                 body: JSON.stringify({ loginCode, className })
             });
 
+            console.log('DatabaseAPI: Response status:', response.status, response.statusText);
+
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Authentication failed');
+                const errorText = await response.text();
+                console.error('DatabaseAPI: Error response:', errorText);
+                
+                let errorObj;
+                try {
+                    errorObj = JSON.parse(errorText);
+                } catch (e) {
+                    errorObj = { error: errorText || 'Authentication failed' };
+                }
+                throw new Error(errorObj.error || 'Authentication failed');
             }
 
             const result = await response.json();
+            console.log('DatabaseAPI: Success response:', result);
             return result.student;
         } catch (error) {
             console.error('Authentication error:', error);

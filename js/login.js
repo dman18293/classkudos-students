@@ -226,6 +226,13 @@ class LoginManager {
                     return;
                 }
 
+                console.log('Attempting login with:', {
+                    loginCode: loginCode.toUpperCase(),
+                    className: this.selectedTeacher.className,
+                    teacherEmail: this.selectedTeacher.email,
+                    selectedTeacher: this.selectedTeacher
+                });
+
                 this.showLoading(true);
                 try {
                     const authenticatedStudent = await DatabaseAPI.authenticateStudent(
@@ -234,6 +241,7 @@ class LoginManager {
                     );
                     
                     if (authenticatedStudent) {
+                        console.log('Login successful:', authenticatedStudent);
                         navigationManager.setCurrentStudent(authenticatedStudent);
                         this.showSuccess(`Welcome back, ${authenticatedStudent.name}!`);
                         
@@ -246,10 +254,18 @@ class LoginManager {
                     }
                 } catch (error) {
                     console.error('Login error:', error);
+                    console.error('Error details:', {
+                        message: error.message,
+                        loginCode: loginCode.toUpperCase(),
+                        className: this.selectedTeacher.className
+                    });
+                    
                     if (error.message.includes('Invalid login code')) {
                         this.showError('Incorrect login code. Please check with your teacher.');
+                    } else if (error.message.includes('class')) {
+                        this.showError(`No student found in class "${this.selectedTeacher.className}". Please check the class name with your teacher.`);
                     } else {
-                        this.showError('Login failed. Please try again.');
+                        this.showError('Login failed. Please try again or contact your teacher.');
                     }
                 } finally {
                     this.showLoading(false);
