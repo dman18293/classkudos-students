@@ -104,6 +104,32 @@ const DatabaseAPI = {
         }
     },
 
+    // Test function to read avatar data directly
+    async testReadAvatar(studentId) {
+        try {
+            console.log('🧪 Testing direct avatar read for student:', studentId);
+            
+            const response = await fetch(`${this.baseURL}/testAvatarRead?studentId=${studentId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to test read avatar');
+            }
+
+            const result = await response.json();
+            console.log('🧪 Test read response:', result);
+            return result;
+        } catch (error) {
+            console.error('🧪 Test read error:', error);
+            throw error;
+        }
+    },
+
     // Update student XP and level
     async updateStudentProgress(studentId, newXP, newLevel) {
         try {

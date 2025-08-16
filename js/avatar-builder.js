@@ -2210,6 +2210,10 @@ class AvatarBuilderManager {
                 console.log('🔍 Verifying save by re-querying student data...');
                 setTimeout(async () => {
                     try {
+                        // Test direct database read
+                        const testResult = await DatabaseAPI.testReadAvatar(this.currentStudent.id);
+                        console.log('🧪 Direct database test result:', JSON.stringify(testResult, null, 2));
+                        
                         const storedLoginCode = localStorage.getItem('loginCode');
                         const storedClassName = localStorage.getItem('className');
                         
