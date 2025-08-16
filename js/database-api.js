@@ -77,6 +77,8 @@ const DatabaseAPI = {
     // Update student avatar
     async updateStudentAvatar(studentId, avatarData) {
         try {
+            console.log('updateStudentAvatar called with:', { studentId, avatarData });
+            
             const response = await fetch(`${this.baseURL}/updateStudentPortal`, {
                 method: 'POST',
                 headers: {
@@ -94,6 +96,7 @@ const DatabaseAPI = {
             }
 
             const result = await response.json();
+            console.log('updateStudentAvatar response:', result);
             return result.student;
         } catch (error) {
             console.error('Update avatar error:', error);
