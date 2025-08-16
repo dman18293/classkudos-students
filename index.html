@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Kudos Student Portal</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/avatar-builder.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="student-nav">
+        <div class="nav-container">
+            <div class="logo">
+                <h1>🎓 Class Kudos</h1>
+                <span>Student Portal</span>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="#" onclick="showLoginPage()">Login</a>
+                <a href="#" onclick="showDashboard()" id="dashboard-link" style="display: none;">Dashboard</a>
+                <a href="#" onclick="showAvatarBuilder()" id="avatar-link" style="display: none;">Avatar</a>
+                <a href="#" onclick="logout()" id="logout-link" style="display: none;">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main id="app-container">
+        <!-- Login Page -->
+        <div id="login-page" class="page active">
+            <div class="login-container">
+                <div class="login-header">
+                    <h2>Welcome to Class Kudos!</h2>
+                    <p>Select your teacher and find your name to get started</p>
+                </div>
+                
+                <div class="login-steps">
+                    <!-- Step 1: Select Teacher -->
+                    <div class="login-step" id="teacher-selection">
+                        <h3>Step 1: Find Your Teacher</h3>
+                        <div class="search-container">
+                            <input type="text" id="teacher-search" placeholder="Search for your teacher or class..." />
+                        </div>
+                        <div class="teacher-grid" id="teacher-grid">
+                            <!-- Teachers will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Select Student -->
+                    <div class="login-step hidden" id="student-selection">
+                        <h3>Step 2: Find Your Name</h3>
+                        <button class="back-btn" onclick="backToTeacherSelection()">← Back to Teachers</button>
+                        <div class="search-container">
+                            <input type="text" id="student-search" placeholder="Search for your name..." />
+                        </div>
+                        <div class="student-grid" id="student-grid">
+                            <!-- Students will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Dashboard -->
+        <div id="dashboard-page" class="page">
+            <div class="dashboard-container">
+                <!-- Dashboard content will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Avatar Builder -->
+        <div id="avatar-builder-page" class="page">
+            <div class="avatar-builder-container">
+                <!-- Avatar builder will be populated by JavaScript -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/database-api.js"></script>
+    <script src="js/mock-data.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/login.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/avatar-builder.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
