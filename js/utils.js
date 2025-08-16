@@ -230,5 +230,13 @@ toastStyles.textContent = `
 `;
 document.head.appendChild(toastStyles);
 
+// Add level functions from database-api.js if available
+if (window.LevelUtils) {
+    Utils.getXPForNextLevel = window.LevelUtils.getXPForNextLevel;
+    Utils.getXPProgressPercent = window.LevelUtils.getXPProgressPercent;
+    Utils.getLevelFromXP = window.LevelUtils.getLevelFromXP;
+    Utils.getXPForLevel = window.LevelUtils.getXPForLevel;
+}
+
 // Export utils globally
 window.Utils = Utils;

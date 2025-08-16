@@ -212,11 +212,7 @@ const MockDataAPI = DatabaseAPI;
 // Export for use in other files
 window.DatabaseAPI = DatabaseAPI;
 window.MockDataAPI = MockDataAPI; // For backward compatibility
-// Add level functions to Utils
-Utils.getXPForNextLevel = LevelUtils.getXPForNextLevel;
-Utils.getXPProgressPercent = LevelUtils.getXPProgressPercent;
-Utils.getLevelFromXP = LevelUtils.getLevelFromXP;
-Utils.getXPForLevel = LevelUtils.getXPForLevel;
+window.LevelUtils = LevelUtils; // Export LevelUtils for use in utils.js
 
 // Export globally
 window.Utils = Utils;
