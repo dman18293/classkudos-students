@@ -2206,6 +2206,23 @@ class AvatarBuilderManager {
                 console.log('Updated student from server:', JSON.stringify(updatedStudent, null, 2));
                 console.log('Updated student avatar field:', JSON.stringify(updatedStudent?.avatar, null, 2));
                 
+                // DEBUGGING: Let's verify the save worked by re-querying the student
+                console.log('🔍 Verifying save by re-querying student data...');
+                setTimeout(async () => {
+                    try {
+                        const storedLoginCode = localStorage.getItem('loginCode');
+                        const storedClassName = localStorage.getItem('className');
+                        
+                        if (storedLoginCode && storedClassName) {
+                            const verifyStudent = await DatabaseAPI.authenticateStudent(storedLoginCode, storedClassName);
+                            console.log('🔍 Verification query result:', JSON.stringify(verifyStudent, null, 2));
+                            console.log('🔍 Verification avatar data:', JSON.stringify(verifyStudent?.avatar, null, 2));
+                        }
+                    } catch (error) {
+                        console.error('🔍 Verification query failed:', error);
+                    }
+                }, 1000);
+                
                 if (updatedStudent) {
                     // Update navigation manager's current student
                     const newStudentData = {
