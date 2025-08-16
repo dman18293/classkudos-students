@@ -76,12 +76,12 @@ class DashboardManager {
     }
 
     getAvatarColor() {
-        return this.currentStudent.avatar?.color || '#667eea';
+        return this.currentStudent.avatar?.bodyColor || '#667eea';
     }
 
     getAvatarDisplay() {
         // If the avatar is a robot, show robot emoji, otherwise show first letter
-        if (this.currentStudent.avatar?.body === 'robot') {
+        if (this.currentStudent.avatar?.creatureType === 'robot') {
             return '🤖';
         }
         return this.currentStudent.name.charAt(0).toUpperCase();
@@ -208,8 +208,8 @@ class DashboardManager {
                                 <div class="leaderboard-item ${student.id === this.currentStudent.id ? 'current-student' : ''}">
                                     <div class="rank">${index + 1}</div>
                                     <div class="student-info">
-                                        <div class="student-avatar" style="background: ${student.avatar?.color || '#667eea'};">
-                                            ${student.avatar?.body === 'robot' ? '🤖' : student.name.charAt(0).toUpperCase()}
+                                        <div class="student-avatar" style="background: ${student.avatar?.bodyColor || '#667eea'};">
+                                            ${student.avatar?.creatureType === 'robot' ? '🤖' : student.name.charAt(0).toUpperCase()}
                                         </div>
                                         <div class="student-details">
                                             <div class="student-name">${student.name}</div>
