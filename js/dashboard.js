@@ -17,6 +17,25 @@ class DashboardManager {
             return;
         }
 
+        // Refresh student data from server to get latest avatar changes
+        try {
+            const storedLoginCode = localStorage.getItem('loginCode');
+            const storedClassName = localStorage.getItem('className');
+            
+            if (storedLoginCode && storedClassName) {
+                console.log('Refreshing student data from server...');
+                const refreshedStudent = await DatabaseAPI.authenticateStudent(storedLoginCode, storedClassName);
+                if (refreshedStudent) {
+                    this.currentStudent = refreshedStudent;
+                    navigationManager.setCurrentStudent(refreshedStudent);
+                    console.log('Student data refreshed:', refreshedStudent);
+                }
+            }
+        } catch (error) {
+            console.warn('Failed to refresh student data:', error);
+            // Continue with cached data if refresh fails
+        }
+
         await this.renderDashboard();
     }
 

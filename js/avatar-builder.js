@@ -2192,6 +2192,8 @@ class AvatarBuilderManager {
     async saveCreature() {
         try {
             if (this.currentStudent) {
+                console.log('Saving avatar data:', this.currentAvatar);
+                
                 // Update local student data
                 this.currentStudent.avatar = { ...this.currentAvatar };
                 
@@ -2201,6 +2203,8 @@ class AvatarBuilderManager {
                     this.currentAvatar
                 );
                 
+                console.log('Updated student from server:', updatedStudent);
+                
                 if (updatedStudent) {
                     // Update navigation manager's current student
                     navigationManager.setCurrentStudent({
@@ -2208,6 +2212,7 @@ class AvatarBuilderManager {
                         avatar: updatedStudent.avatar
                     });
                     
+                    console.log('Updated navigation manager with new student data');
                     this.showFeedback('Avatar saved successfully!', 'success');
                 } else {
                     this.showFeedback('Failed to save avatar', 'error');
