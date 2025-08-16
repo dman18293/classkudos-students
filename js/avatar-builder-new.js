@@ -356,10 +356,19 @@ class AvatarBuilderManager {
             saveBtn.innerHTML = '⏳ Saving...';
             saveBtn.disabled = true;
             
+            // Capture avatar image
+            const avatarImage = await this.captureAvatarImage();
+            
+            // Add the image to avatar data
+            const avatarDataWithImage = {
+                ...this.currentAvatar,
+                imageData: avatarImage // Store the captured image
+            };
+            
             // Update student avatar data
             const updatedStudent = await MockDataAPI.updateStudentAvatar(
                 this.currentStudent.id, 
-                this.currentAvatar
+                avatarDataWithImage
             );
 
             if (updatedStudent) {
@@ -391,6 +400,80 @@ class AvatarBuilderManager {
                 saveBtn.disabled = false;
             }
         }
+    }
+
+    async captureAvatarImage() {
+        return new Promise((resolve) => {
+            const avatarDisplay = document.getElementById('avatar-display');
+            if (!avatarDisplay) {
+                resolve(null);
+                return;
+            }
+
+            // Create a temporary canvas to capture the avatar
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size to match the display
+            const size = 200; // Standard avatar size
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Get the computed styles
+            const computedStyle = window.getComputedStyle(avatarDisplay);
+            const background = computedStyle.background || this.currentAvatar.color || '#667eea';
+            
+            // Draw the background gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            const baseColor = this.currentAvatar.color || '#667eea';
+            gradient.addColorStop(0, baseColor);
+            gradient.addColorStop(1, this.adjustColor(baseColor, -20));
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Add a circular mask for better appearance
+            ctx.globalCompositeOperation = 'destination-in';
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2 - 5, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Reset composite operation
+            ctx.globalCompositeOperation = 'source-over';
+            
+            // Draw the creature emoji
+            const creatureEmoji = this.getCreatureEmoji(this.currentAvatar.creature);
+            ctx.font = `${size * 0.5}px Arial`; // Scale emoji to fit
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Add text shadow effect
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(creatureEmoji, size/2, size/2);
+            
+            // Reset shadow
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            // Add a subtle border
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2 - 2, 0, 2 * Math.PI);
+            ctx.stroke();
+            
+            // Convert canvas to data URL
+            const imageData = canvas.toDataURL('image/png', 0.9);
+            resolve(imageData);
+        });
     }
 }
 

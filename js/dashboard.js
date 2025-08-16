@@ -102,6 +102,17 @@ class DashboardManager {
     }
 
     getAvatarColor() {
+        // If we have a captured image, don't use background color as it's part of the image
+        if (this.currentStudent.avatar?.imageData) {
+            return 'transparent';
+        }
+        
+        // Use the element color from the new Pokemon-style system
+        if (this.currentStudent.avatar?.color) {
+            return this.currentStudent.avatar.color;
+        }
+        
+        // Fallback to old system
         return this.currentStudent.avatar?.bodyColor || '#667eea';
     }
 
@@ -117,7 +128,18 @@ class DashboardManager {
             return student.name.charAt(0).toUpperCase();
         }
 
-        // For new creature format, render actual visual creature
+        // If we have a captured image, use it for pixel-perfect representation
+        if (avatar.imageData) {
+            return `<img src="${avatar.imageData}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" alt="${student.name}'s creature" />`;
+        }
+
+        // If it's a creature-style avatar (new Pokemon system), try to display the emoji
+        if (avatar.creature) {
+            const creatureEmoji = this.getCreatureEmoji(avatar.creature);
+            return `<span style="font-size: 3rem; line-height: 1;">${creatureEmoji}</span>`;
+        }
+
+        // For old creature format, render actual visual creature
         if (avatar.creatureType && avatar.creatureType !== 'robot') {
             return this.renderCreatureAvatar(avatar);
         }
@@ -129,6 +151,31 @@ class DashboardManager {
         
         // Fallback to initials
         return student.name.charAt(0).toUpperCase();
+    }
+
+    getCreatureEmoji(creatureType) {
+        const creatures = {
+            'dragon': '🐉',
+            'phoenix': '🔥',
+            'unicorn': '🦄',
+            'robot': '🤖',
+            'cat': '😺',
+            'wolf': '🐺',
+            'bear': '🐻',
+            'tiger': '🐅',
+            'lion': '🦁',
+            'panda': '🐼',
+            'fox': '🦊',
+            'raccoon': '🦝',
+            'owl': '🦉',
+            'eagle': '🦅',
+            'shark': '🦈',
+            'octopus': '🐙',
+            'butterfly': '🦋',
+            'bee': '🐝'
+        };
+        
+        return creatures[creatureType] || creatures['dragon'];
     }
 
     renderCreatureAvatar(avatar) {
@@ -302,269 +349,6 @@ class DashboardManager {
                  style="display: block; margin: 0 auto; max-width: 100%; height: auto;">
                 ${svgContent}
             </svg>
-        `;
-    }
-        const bodyColor = avatar.bodyColor || '#FFD700';
-        const bodySize = avatar.bodySize || 0.5;
-        const creatureType = avatar.creatureType || 'mouse';
-        const limbLength = avatar.limbLength || 0.5;
-        const limbThickness = avatar.limbThickness || 0.5;
-        const eyeColor = avatar.eyeColor || '#8B4513';
-        const eyeSize = avatar.eyeSize || 0.5;
-        const earType = avatar.earType || 'pointed';
-        const earSize = avatar.earSize || 0.7;
-        const tailLength = avatar.tailLength || 0.7;
-        const accessories = avatar.accessories || 'none';
-        
-        // Calculate sizes based on customization
-        const size = 24 + (bodySize * 16); // 24-40px
-        const eyeSizePx = 3 + (eyeSize * 4); // 3-7px
-        const earSizePx = 4 + (earSize * 6); // 4-10px
-        const limbThicknessPx = 2 + (limbThickness * 4); // 2-6px
-        const tailLengthPx = 8 + (tailLength * 12); // 8-20px
-        
-        // Generate creature-specific features
-        let creatureFeatures = '';
-        
-        switch(creatureType) {
-            case 'mouse':
-                creatureFeatures = `
-                    <!-- Mouse ears -->
-                    <div class="creature-ear left" style="
-                        width: ${earSizePx}px; 
-                        height: ${earSizePx}px; 
-                        background: ${bodyColor};
-                        border-radius: 50%;
-                        position: absolute;
-                        top: -${earSizePx/2}px;
-                        left: ${size * 0.2}px;
-                    "></div>
-                    <div class="creature-ear right" style="
-                        width: ${earSizePx}px; 
-                        height: ${earSizePx}px; 
-                        background: ${bodyColor};
-                        border-radius: 50%;
-                        position: absolute;
-                        top: -${earSizePx/2}px;
-                        right: ${size * 0.2}px;
-                    "></div>
-                    <!-- Mouse tail -->
-                    <div class="creature-tail" style="
-                        width: ${tailLengthPx}px;
-                        height: 2px;
-                        background: ${bodyColor};
-                        position: absolute;
-                        top: 50%;
-                        right: -${tailLengthPx}px;
-                        border-radius: 1px;
-                    "></div>
-                `;
-                break;
-                
-            case 'fire-cat':
-                creatureFeatures = `
-                    <!-- Cat ears -->
-                    <div class="creature-ear left" style="
-                        width: 0; height: 0;
-                        border-left: ${earSizePx/2}px solid transparent;
-                        border-right: ${earSizePx/2}px solid transparent;
-                        border-bottom: ${earSizePx}px solid ${bodyColor};
-                        position: absolute;
-                        top: -${earSizePx}px;
-                        left: ${size * 0.25}px;
-                    "></div>
-                    <div class="creature-ear right" style="
-                        width: 0; height: 0;
-                        border-left: ${earSizePx/2}px solid transparent;
-                        border-right: ${earSizePx/2}px solid transparent;
-                        border-bottom: ${earSizePx}px solid ${bodyColor};
-                        position: absolute;
-                        top: -${earSizePx}px;
-                        right: ${size * 0.25}px;
-                    "></div>
-                    <!-- Fire effect -->
-                    <div class="fire-effect" style="
-                        position: absolute;
-                        top: -8px;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        color: #FF4500;
-                        font-size: 8px;
-                    ">🔥</div>
-                `;
-                break;
-                
-            case 'rock-pup':
-                creatureFeatures = `
-                    <!-- Dog ears -->
-                    <div class="creature-ear left" style="
-                        width: ${earSizePx}px; 
-                        height: ${earSizePx * 1.5}px; 
-                        background: ${bodyColor};
-                        border-radius: 50% 50% 0 0;
-                        position: absolute;
-                        top: -${earSizePx/2}px;
-                        left: ${size * 0.15}px;
-                        transform: rotate(-20deg);
-                    "></div>
-                    <div class="creature-ear right" style="
-                        width: ${earSizePx}px; 
-                        height: ${earSizePx * 1.5}px; 
-                        background: ${bodyColor};
-                        border-radius: 50% 50% 0 0;
-                        position: absolute;
-                        top: -${earSizePx/2}px;
-                        right: ${size * 0.15}px;
-                        transform: rotate(20deg);
-                    "></div>
-                    <!-- Rock texture -->
-                    <div class="rock-texture" style="
-                        position: absolute;
-                        top: 2px;
-                        left: 2px;
-                        color: #8B4513;
-                        font-size: 6px;
-                    ">◆</div>
-                `;
-                break;
-                
-            case 'poison-snake':
-                creatureFeatures = `
-                    <!-- Snake pattern -->
-                    <div class="snake-pattern" style="
-                        position: absolute;
-                        top: 30%;
-                        left: 20%;
-                        right: 20%;
-                        height: 2px;
-                        background: repeating-linear-gradient(90deg, 
-                            transparent 0px, 
-                            transparent 2px, 
-                            rgba(0,0,0,0.3) 2px, 
-                            rgba(0,0,0,0.3) 4px
-                        );
-                    "></div>
-                    <!-- Poison effect -->
-                    <div class="poison-effect" style="
-                        position: absolute;
-                        top: -6px;
-                        right: -6px;
-                        color: #9ACD32;
-                        font-size: 6px;
-                    ">☠️</div>
-                `;
-                break;
-                
-            case 'dolphin':
-                creatureFeatures = `
-                    <!-- Dolphin fin -->
-                    <div class="creature-fin" style="
-                        width: 0; height: 0;
-                        border-left: 4px solid transparent;
-                        border-right: 4px solid transparent;
-                        border-bottom: 8px solid ${bodyColor};
-                        position: absolute;
-                        top: -6px;
-                        left: 50%;
-                        transform: translateX(-50%);
-                    "></div>
-                    <!-- Water effect -->
-                    <div class="water-effect" style="
-                        position: absolute;
-                        bottom: -8px;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        color: #87CEEB;
-                        font-size: 8px;
-                    ">💧</div>
-                `;
-                break;
-        }
-        
-        // Add accessories
-        let accessoryElement = '';
-        if (accessories !== 'none') {
-            const accessoryColor = avatar.accessoryColor || '#FF4500';
-            switch(accessories) {
-                case 'collar':
-                    accessoryElement = `
-                        <div class="accessory-collar" style="
-                            position: absolute;
-                            bottom: ${size * 0.3}px;
-                            left: 10%;
-                            right: 10%;
-                            height: 3px;
-                            background: ${accessoryColor};
-                            border-radius: 2px;
-                        "></div>
-                    `;
-                    break;
-                case 'hat':
-                    accessoryElement = `
-                        <div class="accessory-hat" style="
-                            position: absolute;
-                            top: -8px;
-                            left: 50%;
-                            transform: translateX(-50%);
-                            width: ${size * 0.8}px;
-                            height: 6px;
-                            background: ${accessoryColor};
-                            border-radius: 3px 3px 0 0;
-                        "></div>
-                    `;
-                    break;
-                case 'bow':
-                    accessoryElement = `
-                        <div class="accessory-bow" style="
-                            position: absolute;
-                            top: -4px;
-                            right: ${size * 0.2}px;
-                            color: ${accessoryColor};
-                            font-size: 8px;
-                        ">🎀</div>
-                    `;
-                    break;
-            }
-        }
-        
-        return `
-            <div class="custom-creature-avatar" style="
-                position: relative;
-                width: ${size}px;
-                height: ${size}px;
-                background: ${bodyColor};
-                border-radius: 50%;
-                display: inline-block;
-                margin: 2px;
-                border: 2px solid ${this.getDarkerColor(bodyColor)};
-                overflow: visible;
-            ">
-                <!-- Eyes -->
-                <div class="creature-eye left" style="
-                    width: ${eyeSizePx}px;
-                    height: ${eyeSizePx}px;
-                    background: ${eyeColor};
-                    border-radius: 50%;
-                    position: absolute;
-                    top: ${size * 0.35}px;
-                    left: ${size * 0.25}px;
-                "></div>
-                <div class="creature-eye right" style="
-                    width: ${eyeSizePx}px;
-                    height: ${eyeSizePx}px;
-                    background: ${eyeColor};
-                    border-radius: 50%;
-                    position: absolute;
-                    top: ${size * 0.35}px;
-                    right: ${size * 0.25}px;
-                "></div>
-                
-                <!-- Creature-specific features -->
-                ${creatureFeatures}
-                
-                <!-- Accessories -->
-                ${accessoryElement}
-            </div>
         `;
     }
 
