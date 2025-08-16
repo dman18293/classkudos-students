@@ -23,7 +23,8 @@ class LoginManager {
                     name: 'Your Name',     // Replace with your actual name
                     email: 'user@domain.com',
                     className: 'Your Class',
-                    subject: 'General' // Add subject field
+                    subject: 'General',
+                    avatar: '👨‍🏫' // Add avatar emoji
                 }
             ];
             
@@ -39,7 +40,8 @@ class LoginManager {
                             name: teacher.name || 'Teacher',
                             email: teacher.email || teacher.id || '',
                             className: teacher.className || 'Class',
-                            subject: teacher.subject || 'General'
+                            subject: teacher.subject || 'General',
+                            avatar: teacher.avatar || '👨‍🏫'
                         }));
                     }
                 }
@@ -48,6 +50,9 @@ class LoginManager {
             }
             
             console.log('Loaded teachers:', this.teachers);
+            
+            // Make sure to render teachers after loading
+            this.renderTeachers();
         } catch (error) {
             console.error('Error loading teachers:', error);
             // Fallback to demo teacher with complete data
@@ -57,10 +62,12 @@ class LoginManager {
                     name: 'Demo Teacher',
                     email: 'demo@teacher.com',
                     className: 'Demo Class',
-                    subject: 'General'
+                    subject: 'General',
+                    avatar: '👨‍🏫'
                 }
             ];
             this.showError('Using demo teachers. Please check your connection.');
+            this.renderTeachers();
         }
     }
 
@@ -84,7 +91,17 @@ class LoginManager {
 
     renderTeachers(filter = '') {
         const teacherGrid = document.getElementById('teacher-grid');
-        if (!teacherGrid) return;
+        console.log('Rendering teachers:', {
+            teacherGrid: teacherGrid,
+            teachersCount: this.teachers.length,
+            teachers: this.teachers,
+            filter: filter
+        });
+        
+        if (!teacherGrid) {
+            console.error('Teacher grid element not found!');
+            return;
+        }
 
         const filteredTeachers = this.teachers.filter(teacher => {
             // Safely check each property with fallbacks
@@ -590,5 +607,27 @@ function backToTeacherSelection() {
 let loginManager;
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing login manager...');
     loginManager = new LoginManager();
+    
+    // Make sure login page is visible
+    if (window.navigationManager) {
+        window.navigationManager.showPage('login');
+    }
+    
+    // Debug: Add a simple teacher immediately to test
+    setTimeout(() => {
+        const teacherGrid = document.getElementById('teacher-grid');
+        if (teacherGrid && teacherGrid.children.length === 0) {
+            console.log('No teachers rendered, adding debug teacher...');
+            teacherGrid.innerHTML = `
+                <div class="teacher-card" style="padding: 20px; border: 1px solid #ccc; margin: 10px; cursor: pointer;">
+                    <span class="teacher-avatar">👨‍🏫</span>
+                    <div class="teacher-name">Debug Teacher</div>
+                    <div class="teacher-class">Debug Class</div>
+                    <div class="teacher-subject">General</div>
+                </div>
+            `;
+        }
+    }, 1000);
 });
