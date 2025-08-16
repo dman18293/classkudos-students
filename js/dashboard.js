@@ -132,7 +132,178 @@ class DashboardManager {
     }
 
     renderCreatureAvatar(avatar) {
-        // Create an actual visual representation of the creature
+        // Use new SVG-based rendering for better visuals
+        return this.renderCreatureAvatarSVG(avatar);
+    }
+
+    renderCreatureAvatarSVG(avatar) {
+        // Create a detailed SVG-based visual representation of the creature
+        const bodyColor = avatar.bodyColor || '#FFD700';
+        const bodySize = avatar.bodySize || 0.5;
+        const creatureType = avatar.creatureType || 'mouse';
+        const limbColor = avatar.limbColor || bodyColor;
+        const eyeColor = avatar.eyeColor || '#8B4513';
+        const eyeSize = avatar.eyeSize || 0.5;
+        const earSize = avatar.earSize || 0.7;
+        const accessories = avatar.accessories || 'none';
+        
+        // Calculate sizes (make larger for better visibility)
+        const size = 50 + (bodySize * 30); // 50-80px
+        const eyeSizeVal = 0.15 + (eyeSize * 0.1); // 0.15-0.25 ratio of body
+        const earSizeVal = 0.3 + (earSize * 0.2); // 0.3-0.5 ratio of body
+        
+        let svgContent = '';
+        
+        // Generate creature-specific SVG based on type
+        switch(creatureType) {
+            case 'rock-pup':
+                svgContent = `
+                    <!-- Dog Body (larger for bodySize=1) -->
+                    <ellipse cx="50" cy="65" rx="${size/2}" ry="${size/2.8}" fill="${bodyColor}" stroke="${this.getDarkerColor(bodyColor)}" stroke-width="3"/>
+                    
+                    <!-- Dog Head -->
+                    <ellipse cx="50" cy="45" rx="${size/3}" ry="${size/4}" fill="${bodyColor}" stroke="${this.getDarkerColor(bodyColor)}" stroke-width="2"/>
+                    
+                    <!-- Rock Texture Pattern -->
+                    <g opacity="0.4">
+                        <circle cx="45" cy="60" r="4" fill="#8B4513"/>
+                        <circle cx="55" cy="70" r="3" fill="#A0522D"/>
+                        <circle cx="50" cy="75" r="3.5" fill="#8B4513"/>
+                        <circle cx="60" cy="55" r="3" fill="#A0522D"/>
+                        <circle cx="40" cy="70" r="2.5" fill="#654321"/>
+                    </g>
+                    
+                    <!-- Dog Ears (floppy, using earColor) -->
+                    <ellipse cx="35" cy="35" rx="${size * earSizeVal}" ry="${size * earSizeVal * 1.8}" 
+                             fill="${avatar.earColor || bodyColor}" stroke="${this.getDarkerColor(avatar.earColor || bodyColor)}" stroke-width="2" 
+                             transform="rotate(-25 35 35)"/>
+                    <ellipse cx="65" cy="35" rx="${size * earSizeVal}" ry="${size * earSizeVal * 1.8}" 
+                             fill="${avatar.earColor || bodyColor}" stroke="${this.getDarkerColor(avatar.earColor || bodyColor)}" stroke-width="2" 
+                             transform="rotate(25 65 35)"/>
+                    
+                    <!-- Dog Limbs (thick for limbThickness=1) -->
+                    <ellipse cx="35" cy="85" rx="8" ry="15" fill="${limbColor}"/>
+                    <ellipse cx="65" cy="85" rx="8" ry="15" fill="${limbColor}"/>
+                    <ellipse cx="42" cy="90" rx="7" ry="12" fill="${limbColor}"/>
+                    <ellipse cx="58" cy="90" rx="7" ry="12" fill="${limbColor}"/>
+                    
+                    <!-- Dog Tail (long for tailLength=0.7) -->
+                    <path d="M 75 60 Q 95 45 85 70" stroke="${avatar.tailColor || bodyColor}" stroke-width="10" fill="none" stroke-linecap="round"/>
+                    
+                    <!-- Eyes (brown, medium size) -->
+                    <circle cx="42" cy="40" r="${size * eyeSizeVal}" fill="${eyeColor}"/>
+                    <circle cx="58" cy="40" r="${size * eyeSizeVal}" fill="${eyeColor}"/>
+                    <circle cx="42" cy="40" r="${size * eyeSizeVal * 0.6}" fill="white"/>
+                    <circle cx="58" cy="40" r="${size * eyeSizeVal * 0.6}" fill="white"/>
+                    <circle cx="42" cy="40" r="${size * eyeSizeVal * 0.3}" fill="black"/>
+                    <circle cx="58" cy="40" r="${size * eyeSizeVal * 0.3}" fill="black"/>
+                    
+                    <!-- Dog Nose -->
+                    <ellipse cx="50" cy="50" rx="5" ry="4" fill="black"/>
+                    
+                    <!-- Dog Mouth -->
+                    <path d="M 50 54 Q 45 58 40 56 M 50 54 Q 55 58 60 56" stroke="black" stroke-width="2" fill="none"/>
+                `;
+                break;
+                
+            case 'mouse':
+                svgContent = `
+                    <!-- Mouse Body -->
+                    <ellipse cx="50" cy="60" rx="${size/2}" ry="${size/2.2}" fill="${bodyColor}" stroke="${this.getDarkerColor(bodyColor)}" stroke-width="2"/>
+                    
+                    <!-- Mouse Ears -->
+                    <circle cx="35" cy="35" r="${size * earSizeVal}" fill="${avatar.earColor || bodyColor}" stroke="${this.getDarkerColor(avatar.earColor || bodyColor)}" stroke-width="1"/>
+                    <circle cx="65" cy="35" r="${size * earSizeVal}" fill="${avatar.earColor || bodyColor}" stroke="${this.getDarkerColor(avatar.earColor || bodyColor)}" stroke-width="1"/>
+                    <circle cx="35" cy="35" r="${size * earSizeVal * 0.6}" fill="#FFB6C1"/>
+                    <circle cx="65" cy="35" r="${size * earSizeVal * 0.6}" fill="#FFB6C1"/>
+                    
+                    <!-- Mouse Tail -->
+                    <path d="M 75 60 Q 95 45 100 65" stroke="${avatar.tailColor || bodyColor}" stroke-width="4" fill="none" stroke-linecap="round"/>
+                    
+                    <!-- Eyes -->
+                    <circle cx="42" cy="50" r="${size * eyeSizeVal}" fill="${eyeColor}"/>
+                    <circle cx="58" cy="50" r="${size * eyeSizeVal}" fill="${eyeColor}"/>
+                    <circle cx="42" cy="50" r="${size * eyeSizeVal * 0.4}" fill="white"/>
+                    <circle cx="58" cy="50" r="${size * eyeSizeVal * 0.4}" fill="white"/>
+                    
+                    <!-- Mouse Nose -->
+                    <ellipse cx="50" cy="60" rx="2" ry="3" fill="#FF69B4"/>
+                `;
+                break;
+                
+            case 'fire-cat':
+                svgContent = `
+                    <!-- Cat Body -->
+                    <ellipse cx="50" cy="65" rx="${size/2}" ry="${size/2.5}" fill="${bodyColor}" stroke="${this.getDarkerColor(bodyColor)}" stroke-width="2"/>
+                    <circle cx="50" cy="45" r="${size/3}" fill="${bodyColor}" stroke="${this.getDarkerColor(bodyColor)}" stroke-width="2"/>
+                    
+                    <!-- Cat Ears (pointed) -->
+                    <polygon points="35,25 42,45 28,45" fill="${avatar.earColor || bodyColor}" stroke="${this.getDarkerColor(avatar.earColor || bodyColor)}" stroke-width="1"/>
+                    <polygon points="65,25 72,45 58,45" fill="${avatar.earColor || bodyColor}" stroke="${this.getDarkerColor(avatar.earColor || bodyColor)}" stroke-width="1"/>
+                    
+                    <!-- Fire Effect -->
+                    <g opacity="0.8">
+                        <ellipse cx="50" cy="15" rx="12" ry="18" fill="#FF4500" opacity="0.7"/>
+                        <ellipse cx="45" cy="20" rx="8" ry="12" fill="#FF6500" opacity="0.6"/>
+                        <ellipse cx="55" cy="20" rx="8" ry="12" fill="#FF6500" opacity="0.6"/>
+                    </g>
+                    
+                    <!-- Cat Tail (curved upward) -->
+                    <path d="M 75 65 Q 90 35 75 20" stroke="${avatar.tailColor || bodyColor}" stroke-width="8" fill="none" stroke-linecap="round"/>
+                    
+                    <!-- Cat Eyes -->
+                    <ellipse cx="42" cy="42" rx="${size * eyeSizeVal}" ry="${size * eyeSizeVal * 1.5}" fill="${eyeColor}"/>
+                    <ellipse cx="58" cy="42" rx="${size * eyeSizeVal}" ry="${size * eyeSizeVal * 1.5}" fill="${eyeColor}"/>
+                    <ellipse cx="42" cy="42" rx="${size * eyeSizeVal * 0.3}" ry="${size * eyeSizeVal * 0.8}" fill="#FFD700"/>
+                    <ellipse cx="58" cy="42" rx="${size * eyeSizeVal * 0.3}" ry="${size * eyeSizeVal * 0.8}" fill="#FFD700"/>
+                    
+                    <!-- Cat Nose -->
+                    <polygon points="50,50 47,53 53,53" fill="#FF69B4"/>
+                `;
+                break;
+                
+            default:
+                // Default creature
+                svgContent = `
+                    <circle cx="50" cy="60" r="${size/2}" fill="${bodyColor}" stroke="${this.getDarkerColor(bodyColor)}" stroke-width="2"/>
+                    <circle cx="42" cy="50" r="${size * eyeSizeVal}" fill="${eyeColor}"/>
+                    <circle cx="58" cy="50" r="${size * eyeSizeVal}" fill="${eyeColor}"/>
+                `;
+                break;
+        }
+        
+        // Add accessories
+        if (accessories !== 'none') {
+            const accessoryColor = avatar.accessoryColor || '#FF4500';
+            switch(accessories) {
+                case 'collar':
+                    svgContent += `
+                        <ellipse cx="50" cy="75" rx="${size/2.2}" ry="6" fill="${accessoryColor}" stroke="${this.getDarkerColor(accessoryColor)}" stroke-width="1"/>
+                        <circle cx="50" cy="75" r="3" fill="gold"/>
+                    `;
+                    break;
+                case 'hat':
+                    svgContent += `
+                        <ellipse cx="50" cy="25" rx="${size/2.5}" ry="12" fill="${accessoryColor}" stroke="${this.getDarkerColor(accessoryColor)}" stroke-width="1"/>
+                        <ellipse cx="50" cy="30" rx="${size/3}" ry="4" fill="${accessoryColor}" stroke="${this.getDarkerColor(accessoryColor)}" stroke-width="1"/>
+                    `;
+                    break;
+                case 'bow':
+                    svgContent += `
+                        <polygon points="70,35 85,30 80,40 85,50 70,45 75,40" fill="${accessoryColor}" stroke="${this.getDarkerColor(accessoryColor)}" stroke-width="1"/>
+                        <circle cx="77" cy="40" r="3" fill="${this.getDarkerColor(accessoryColor)}"/>
+                    `;
+                    break;
+            }
+        }
+        
+        return `
+            <svg width="100" height="120" viewBox="0 0 100 120" 
+                 style="display: block; margin: 0 auto; max-width: 100%; height: auto;">
+                ${svgContent}
+            </svg>
+        `;
+    }
         const bodyColor = avatar.bodyColor || '#FFD700';
         const bodySize = avatar.bodySize || 0.5;
         const creatureType = avatar.creatureType || 'mouse';
