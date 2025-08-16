@@ -217,9 +217,6 @@ window.DatabaseAPI = DatabaseAPI;
 window.MockDataAPI = MockDataAPI; // For backward compatibility
 window.LevelUtils = LevelUtils; // Export LevelUtils for use in utils.js
 
-// Export globally
-window.Utils = Utils;
-
 // Mock data for teachers (can be static since it's just for the demo)
 const mockTeachers = [
     {

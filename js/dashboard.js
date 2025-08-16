@@ -41,8 +41,8 @@ class DashboardManager {
         //     // Continue with cached data if refresh fails
         // }
 
-        console.log('Final student data for dashboard:', this.currentStudent);
-        console.log('Final avatar data:', this.currentStudent.avatar);
+        console.log('Final student data for dashboard:', JSON.stringify(this.currentStudent, null, 2));
+        console.log('Final avatar data:', JSON.stringify(this.currentStudent.avatar, null, 2));
         await this.renderDashboard();
     }
 
