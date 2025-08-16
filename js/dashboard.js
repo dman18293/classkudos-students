@@ -3,16 +3,7 @@
 class DashboardManager {
     constructor() {
         this.currentStudent = null;
-        // Show appropriate emoji based on creature type
-        const creatureType = this.currentStudent.avatar?.creatureType;
-        const emoji = this.getCreatureEmoji(creatureType);
-        
-        if (emoji) {
-            return emoji;
-        }
-        
-        // For old format or unknown types, show first letter
-        return this.currentStudent.name.charAt(0).toUpperCase();;
+        this.init();
     }
 
     init() {
