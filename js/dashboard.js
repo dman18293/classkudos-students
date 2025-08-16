@@ -397,6 +397,15 @@ class DashboardManager {
         `;
     }
 
+    getDarkerColor(hexColor) {
+        // Convert hex to RGB and darken for border
+        const hex = hexColor.replace('#', '');
+        const r = Math.max(0, parseInt(hex.substr(0, 2), 16) - 40);
+        const g = Math.max(0, parseInt(hex.substr(2, 2), 16) - 40);
+        const b = Math.max(0, parseInt(hex.substr(4, 2), 16) - 40);
+        return `rgb(${r}, ${g}, ${b})`;
+    }
+
     getCreatureEmoji(creatureType) {
         switch(creatureType) {
             case 'robot':
