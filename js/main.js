@@ -24,6 +24,13 @@ class StudentPortalApp {
     initializeApp() {
         console.log('🎓 Initializing Class Kudos Student Portal...');
 
+        // Wait for Utils to be available
+        if (typeof Utils === 'undefined') {
+            console.log('Waiting for Utils to load...');
+            setTimeout(() => this.initializeApp(), 100);
+            return;
+        }
+
         // Check for existing login
         this.checkExistingLogin();
 
@@ -164,7 +171,12 @@ class StudentPortalApp {
         console.error('Application error:', error);
 
         // Show user-friendly message
-        Utils.showToast(userMessage || 'Something went wrong. Please try again.', 'error');
+        if (typeof Utils !== 'undefined' && Utils.showToast) {
+            Utils.showToast(userMessage || 'Something went wrong. Please try again.', 'error');
+        } else {
+            // Fallback to console if Utils not available
+            console.error('User message:', userMessage || 'Something went wrong. Please try again.');
+        }
 
         // In production, you might want to send error reports to a logging service
         // this.sendErrorReport(error);
@@ -215,12 +227,20 @@ class StudentPortalApp {
 
     showWelcomeMessage() {
         // Only show welcome for first-time visitors
-        const hasVisited = Utils.storage.get('hasVisitedBefore');
-        if (!hasVisited) {
-            setTimeout(() => {
-                Utils.showToast('Welcome to Class Kudos Student Portal! 🎓', 'success');
-                Utils.storage.set('hasVisitedBefore', true);
-            }, 1000);
+        try {
+            if (typeof Utils !== 'undefined' && Utils.storage) {
+                const hasVisited = Utils.storage.get('hasVisitedBefore');
+                if (!hasVisited) {
+                    setTimeout(() => {
+                        if (Utils.showToast) {
+                            Utils.showToast('Welcome to Class Kudos Student Portal! 🎓', 'success');
+                        }
+                        Utils.storage.set('hasVisitedBefore', true);
+                    }, 1000);
+                }
+            }
+        } catch (error) {
+            console.warn('Could not show welcome message:', error);
         }
     }
 

@@ -16,13 +16,14 @@ class LoginManager {
 
     async loadTeachers() {
         try {
-            // Static teacher list - replace with your actual details
+            // Static teacher list with complete data structure
             this.teachers = [
                 {
                     id: 'user@domain.com', // Replace with your actual email
                     name: 'Your Name',     // Replace with your actual name
                     email: 'user@domain.com',
-                    className: 'Your Class'
+                    className: 'Your Class',
+                    subject: 'General' // Add subject field
                 }
             ];
             
@@ -32,7 +33,14 @@ class LoginManager {
                 if (storedTeachers) {
                     const parsed = JSON.parse(storedTeachers);
                     if (Array.isArray(parsed) && parsed.length > 0) {
-                        this.teachers = parsed;
+                        // Ensure all teacher objects have required properties
+                        this.teachers = parsed.map(teacher => ({
+                            id: teacher.id || teacher.email || 'unknown',
+                            name: teacher.name || 'Teacher',
+                            email: teacher.email || teacher.id || '',
+                            className: teacher.className || 'Class',
+                            subject: teacher.subject || 'General'
+                        }));
                     }
                 }
             } catch (e) {
@@ -42,13 +50,14 @@ class LoginManager {
             console.log('Loaded teachers:', this.teachers);
         } catch (error) {
             console.error('Error loading teachers:', error);
-            // Fallback to demo teacher
+            // Fallback to demo teacher with complete data
             this.teachers = [
                 {
                     id: 'demo@teacher.com',
                     name: 'Demo Teacher',
                     email: 'demo@teacher.com',
-                    className: 'Demo Class'
+                    className: 'Demo Class',
+                    subject: 'General'
                 }
             ];
             this.showError('Using demo teachers. Please check your connection.');
@@ -77,11 +86,18 @@ class LoginManager {
         const teacherGrid = document.getElementById('teacher-grid');
         if (!teacherGrid) return;
 
-        const filteredTeachers = this.teachers.filter(teacher => 
-            teacher.name.toLowerCase().includes(filter.toLowerCase()) ||
-            teacher.className.toLowerCase().includes(filter.toLowerCase()) ||
-            teacher.subject.toLowerCase().includes(filter.toLowerCase())
-        );
+        const filteredTeachers = this.teachers.filter(teacher => {
+            // Safely check each property with fallbacks
+            const name = teacher.name || '';
+            const className = teacher.className || '';
+            const subject = teacher.subject || '';
+            const email = teacher.email || '';
+            
+            return name.toLowerCase().includes(filter.toLowerCase()) ||
+                   className.toLowerCase().includes(filter.toLowerCase()) ||
+                   subject.toLowerCase().includes(filter.toLowerCase()) ||
+                   email.toLowerCase().includes(filter.toLowerCase());
+        });
 
         teacherGrid.innerHTML = '';
 
