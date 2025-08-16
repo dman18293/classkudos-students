@@ -166,7 +166,7 @@ const DatabaseAPI = {
 };
 
 // Utility functions for level calculations (matching main app)
-const Utils = {
+const LevelUtils = {
     calculateLevel(xp) {
         if (xp < 100) return 1;
         if (xp < 250) return 2;
