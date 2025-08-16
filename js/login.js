@@ -16,7 +16,25 @@ class LoginManager {
 
     async loadTeachers() {
         try {
-            // Static teacher list with complete data structure
+            console.log('Loading teachers from database...');
+            
+            // Try to load real teachers from the public API
+            try {
+                const response = await fetch('https://classkudos.org/.netlify/functions/getPublicTeachers');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.teachers && data.teachers.length > 0) {
+                        this.teachers = data.teachers;
+                        console.log('Loaded real teachers from database:', this.teachers);
+                        this.renderTeachers();
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.warn('Failed to load real teachers:', error);
+            }
+            
+            // Fallback to static teacher list with complete data structure
             this.teachers = [
                 {
                     id: 'user@domain.com', // Replace with your actual email
@@ -49,7 +67,7 @@ class LoginManager {
                 console.warn('Failed to parse stored teachers');
             }
             
-            console.log('Loaded teachers:', this.teachers);
+            console.log('Using fallback teachers:', this.teachers);
             
             // Make sure to render teachers after loading
             this.renderTeachers();
