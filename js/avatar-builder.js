@@ -128,7 +128,7 @@ class AvatarBuilderManager {
                             <button onclick="location.reload()" style="padding: 1rem 2rem; background: #667eea; color: white; border: none; border-radius: 10px; cursor: pointer; margin-right: 1rem;">
                                 🔄 Refresh Page
                             </button>
-                            <button onclick="navigationManager.showPage('dashboard')" style="padding: 1rem 2rem; background: #28a745; color: white; border: none; border-radius: 10px; cursor: pointer;">
+                            <button onclick="showDashboard()" style="padding: 1rem 2rem; background: #28a745; color: white; border: none; border-radius: 10px; cursor: pointer;">
                                 🏠 Back to Dashboard
                             </button>
                         </div>

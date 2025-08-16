@@ -11,7 +11,10 @@ class DashboardManager {
     }
 
     async loadDashboard() {
+        console.log('🎯 Loading dashboard...');
         this.currentStudent = navigationManager.getCurrentStudent();
+        console.log('Current student from navigation:', this.currentStudent);
+        
         if (!this.currentStudent) {
             navigationManager.showPage('login');
             return;
@@ -26,9 +29,10 @@ class DashboardManager {
                 console.log('Refreshing student data from server...');
                 const refreshedStudent = await DatabaseAPI.authenticateStudent(storedLoginCode, storedClassName);
                 if (refreshedStudent) {
+                    console.log('Student data refreshed:', refreshedStudent);
+                    console.log('Refreshed avatar data:', refreshedStudent.avatar);
                     this.currentStudent = refreshedStudent;
                     navigationManager.setCurrentStudent(refreshedStudent);
-                    console.log('Student data refreshed:', refreshedStudent);
                 }
             }
         } catch (error) {
@@ -36,6 +40,8 @@ class DashboardManager {
             // Continue with cached data if refresh fails
         }
 
+        console.log('Final student data for dashboard:', this.currentStudent);
+        console.log('Final avatar data:', this.currentStudent.avatar);
         await this.renderDashboard();
     }
 
