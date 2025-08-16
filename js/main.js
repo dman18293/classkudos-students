@@ -264,7 +264,8 @@ Keyboard Shortcuts:
 - Escape = Go back/close
 `);
 
-// Quick login function for development/testing
+// Quick login function for development/testing (DISABLED - using real data now)
+/*
 window.quickLogin = async function() {
     try {
         // Get the first student from mock data
@@ -283,3 +284,4 @@ window.quickLogin = async function() {
         Utils.showToast('Quick login failed', 'error');
     }
 };
+*/

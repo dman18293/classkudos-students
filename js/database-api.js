@@ -2,8 +2,8 @@
 // Replaces mock data with actual Netlify function calls
 
 const DatabaseAPI = {
-    // Base URL for Netlify functions
-    baseURL: window.location.origin + '/.netlify/functions',
+    // Base URL for Netlify functions - points to main Class Kudos site
+    baseURL: 'https://classkudos.org/.netlify/functions',
 
     // Authenticate student with login code
     async authenticateStudent(loginCode, className) {

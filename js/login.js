@@ -16,11 +16,35 @@ class LoginManager {
 
     async loadTeachers() {
         try {
-            // Use the static teacher list from database-api.js
-            this.teachers = window.mockTeachers || [];
+            // Load teachers from the real database
+            const response = await fetch('https://classkudos.org/.netlify/functions/getClasses');
+            if (response.ok) {
+                const data = await response.json();
+                // Transform the classes data into teacher format
+                this.teachers = data.classes.map(cls => ({
+                    id: cls.teacher_email,
+                    name: cls.teacher_name || 'Teacher',
+                    email: cls.teacher_email,
+                    className: cls.class_name
+                }));
+                
+                // Remove duplicates by email
+                const uniqueTeachers = this.teachers.reduce((acc, teacher) => {
+                    if (!acc.find(t => t.email === teacher.email)) {
+                        acc.push(teacher);
+                    }
+                    return acc;
+                }, []);
+                this.teachers = uniqueTeachers;
+            } else {
+                // Fallback to static teacher list
+                this.teachers = window.mockTeachers || [];
+            }
         } catch (error) {
             console.error('Error loading teachers:', error);
-            this.showError('Failed to load teachers. Please try again.');
+            // Fallback to static teacher list
+            this.teachers = window.mockTeachers || [];
+            this.showError('Using demo teachers. Please check your connection.');
         }
     }
 
