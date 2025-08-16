@@ -20,25 +20,26 @@ class DashboardManager {
             return;
         }
 
-        // Refresh student data from server to get latest avatar changes
-        try {
-            const storedLoginCode = localStorage.getItem('loginCode');
-            const storedClassName = localStorage.getItem('className');
+        // TEMPORARILY DISABLE refresh to test if the issue is with save vs refresh
+        // // Refresh student data from server to get latest avatar changes
+        // try {
+        //     const storedLoginCode = localStorage.getItem('loginCode');
+        //     const storedClassName = localStorage.getItem('className');
             
-            if (storedLoginCode && storedClassName) {
-                console.log('Refreshing student data from server...');
-                const refreshedStudent = await DatabaseAPI.authenticateStudent(storedLoginCode, storedClassName);
-                if (refreshedStudent) {
-                    console.log('Student data refreshed:', refreshedStudent);
-                    console.log('Refreshed avatar data:', refreshedStudent.avatar);
-                    this.currentStudent = refreshedStudent;
-                    navigationManager.setCurrentStudent(refreshedStudent);
-                }
-            }
-        } catch (error) {
-            console.warn('Failed to refresh student data:', error);
-            // Continue with cached data if refresh fails
-        }
+        //     if (storedLoginCode && storedClassName) {
+        //         console.log('Refreshing student data from server...');
+        //         const refreshedStudent = await DatabaseAPI.authenticateStudent(storedLoginCode, storedClassName);
+        //         if (refreshedStudent) {
+        //             console.log('Student data refreshed:', refreshedStudent);
+        //             console.log('Refreshed avatar data:', refreshedStudent.avatar);
+        //             this.currentStudent = refreshedStudent;
+        //             navigationManager.setCurrentStudent(refreshedStudent);
+        //         }
+        //     }
+        // } catch (error) {
+        //     console.warn('Failed to refresh student data:', error);
+        //     // Continue with cached data if refresh fails
+        // }
 
         console.log('Final student data for dashboard:', this.currentStudent);
         console.log('Final avatar data:', this.currentStudent.avatar);
