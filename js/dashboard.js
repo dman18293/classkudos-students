@@ -133,6 +133,11 @@ class DashboardManager {
             return `<img src="${avatar.imageData}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" alt="${student.name}'s creature" />`;
         }
 
+        // If it's the new avatar gallery format (has emoji property), use it directly
+        if (avatar.emoji) {
+            return `<span style="font-size: 3rem; line-height: 1;">${avatar.emoji}</span>`;
+        }
+
         // If it's a creature-style avatar (new Pokemon system), try to display the emoji
         if (avatar.creature) {
             const creatureEmoji = this.getCreatureEmoji(avatar.creature);
