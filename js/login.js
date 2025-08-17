@@ -1,91 +1,53 @@
-// Login System for Student Portal
+// Simple Login System for Student Portal - Compatible with Main App Database
 
 class LoginManager {
     constructor() {
         this.selectedTeacher = null;
+        this.selectedStudent = null;
         this.teachers = [];
         this.students = [];
         this.init();
     }
 
     async init() {
+        console.log('Initializing student login...');
         await this.loadTeachers();
         this.setupEventListeners();
-        this.renderTeachers();
     }
 
     async loadTeachers() {
         try {
             console.log('Loading teachers from database...');
             
-            // Try to load real teachers from the public API
-            try {
-                const response = await fetch('https://classkudos.org/.netlify/functions/getPublicTeachers');
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success && data.teachers && data.teachers.length > 0) {
-                        this.teachers = data.teachers;
-                        console.log('Loaded real teachers from database:', this.teachers);
-                        this.renderTeachers();
-                        return;
-                    }
-                }
-            } catch (error) {
-                console.warn('Failed to load real teachers:', error);
+            // Load teachers from the database (compatible with main app)
+            const response = await fetch('/.netlify/functions/getPublicTeachers');
+            if (response.ok) {
+                this.teachers = await response.json();
+                console.log('Loaded teachers:', this.teachers);
+            } else {
+                throw new Error(`Failed to load teachers: ${response.status}`);
             }
             
-            // Fallback to static teacher list with complete data structure
-            this.teachers = [
-                {
-                    id: 'user@domain.com', // Replace with your actual email
-                    name: 'Your Name',     // Replace with your actual name
-                    email: 'user@domain.com',
-                    className: 'Your Class',
-                    subject: 'General',
-                    avatar: '👨‍🏫' // Add avatar emoji
-                }
-            ];
-            
-            // Try to load from localStorage if available
-            try {
-                const storedTeachers = localStorage.getItem('classkudos_teachers');
-                if (storedTeachers) {
-                    const parsed = JSON.parse(storedTeachers);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        // Ensure all teacher objects have required properties
-                        this.teachers = parsed.map(teacher => ({
-                            id: teacher.id || teacher.email || 'unknown',
-                            name: teacher.name || 'Teacher',
-                            email: teacher.email || teacher.id || '',
-                            className: teacher.className || 'Class',
-                            subject: teacher.subject || 'General',
-                            avatar: teacher.avatar || '👨‍🏫'
-                        }));
-                    }
-                }
-            } catch (e) {
-                console.warn('Failed to parse stored teachers');
-            }
-            
-            console.log('Using fallback teachers:', this.teachers);
-            
-            // Make sure to render teachers after loading
             this.renderTeachers();
+            
         } catch (error) {
             console.error('Error loading teachers:', error);
-            // Fallback to demo teacher with complete data
-            this.teachers = [
-                {
-                    id: 'demo@teacher.com',
-                    name: 'Demo Teacher',
-                    email: 'demo@teacher.com',
-                    className: 'Demo Class',
-                    subject: 'General',
-                    avatar: '👨‍🏫'
-                }
-            ];
-            this.showError('Using demo teachers. Please check your connection.');
-            this.renderTeachers();
+            // Fallback to encourage user to contact their teacher
+            this.showError('Unable to load teacher list. Please contact your teacher for the student portal link.');
+        }
+    }
+
+    async loadStudentsForTeacher(teacherEmail) {
+        try {
+            console.log('Loading students for teacher:', teacherEmail);
+            
+            // For security, we don't expose all students publicly
+            // Instead, we'll let them enter their name and validate during authentication
+            this.showStudentNameInput();
+            
+        } catch (error) {
+            console.error('Error setting up student selection:', error);
+            this.showError('Unable to set up student selection.');
         }
     }
 
@@ -98,570 +60,310 @@ class LoginManager {
             });
         }
 
-        // Student search
-        const studentSearch = document.getElementById('student-search');
-        if (studentSearch) {
-            studentSearch.addEventListener('input', (e) => {
-                this.filterStudents(e.target.value);
+        // Student name input
+        const studentNameInput = document.getElementById('student-name');
+        if (studentNameInput) {
+            studentNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.handleStudentNameSubmit();
+                }
+            });
+        }
+
+        // Access code input
+        const accessCodeInput = document.getElementById('access-code');
+        if (accessCodeInput) {
+            accessCodeInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.submitAccessCode();
+                }
             });
         }
     }
 
-    renderTeachers(filter = '') {
-        const teacherGrid = document.getElementById('teacher-grid');
-        console.log('Rendering teachers:', {
-            teacherGrid: teacherGrid,
-            teachersCount: this.teachers.length,
-            teachers: this.teachers,
-            filter: filter
-        });
-        
-        if (!teacherGrid) {
-            console.error('Teacher grid element not found!');
+    renderTeachers() {
+        const grid = document.getElementById('teacher-grid');
+        if (!grid) return;
+
+        if (this.teachers.length === 0) {
+            grid.innerHTML = '<div class="no-results">No teachers found. Please contact your administrator.</div>';
             return;
         }
 
-        const filteredTeachers = this.teachers.filter(teacher => {
-            // Safely check each property with fallbacks
-            const name = teacher.name || '';
-            const className = teacher.className || '';
-            const subject = teacher.subject || '';
-            const email = teacher.email || '';
-            
-            return name.toLowerCase().includes(filter.toLowerCase()) ||
-                   className.toLowerCase().includes(filter.toLowerCase()) ||
-                   subject.toLowerCase().includes(filter.toLowerCase()) ||
-                   email.toLowerCase().includes(filter.toLowerCase());
-        });
-
-        teacherGrid.innerHTML = '';
-
-        if (filteredTeachers.length === 0) {
-            teacherGrid.innerHTML = `
-                <div class="no-results">
-                    <p>No teachers found. Try a different search term.</p>
-                </div>
-            `;
-            return;
-        }
-
-        filteredTeachers.forEach(teacher => {
-            const teacherCard = document.createElement('div');
-            teacherCard.className = 'teacher-card';
-            teacherCard.innerHTML = `
-                <span class="teacher-avatar">${teacher.avatar}</span>
-                <div class="teacher-name">${teacher.name}</div>
-                <div class="teacher-class">${teacher.className}</div>
-                <div class="teacher-subject">${teacher.subject}</div>
-            `;
-            
-            teacherCard.addEventListener('click', () => {
-                this.selectTeacher(teacher);
-            });
-
-            teacherGrid.appendChild(teacherCard);
-        });
-    }
-
-    async selectTeacher(teacher) {
-        this.selectedTeacher = teacher;
-        
-        // Show loading state
-        this.showLoading(true);
-        
-        try {
-            // Instead of loading students, just show the login form
-            // Students will be authenticated directly with their login codes
-            
-            // Switch to student selection
-            document.getElementById('teacher-selection').classList.add('hidden');
-            document.getElementById('student-selection').classList.remove('hidden');
-            
-            // Show simple login interface instead of student list
-            this.renderLoginForm();
-            
-        } catch (error) {
-            console.error('Error setting up login:', error);
-            this.showError('Failed to set up login. Please try again.');
-        } finally {
-            this.showLoading(false);
-        }
-    }
-
-    renderLoginForm() {
-        const studentSelection = document.getElementById('student-selection');
-        if (!studentSelection) return;
-
-        studentSelection.innerHTML = `
-            <h3>Step 2: Enter Your Login Code</h3>
-            <div class="direct-login-container">
-                <div class="login-info">
-                    <h4>Class: ${this.selectedTeacher.className}</h4>
-                    <p>Teacher: ${this.selectedTeacher.name}</p>
-                </div>
-                <div class="login-form">
-                    <div class="input-group">
-                        <label for="directLoginCode">Your Login Code:</label>
-                        <input type="text" id="directLoginCode" class="login-code-input" placeholder="Enter your login code..." maxlength="10" autocomplete="off">
-                    </div>
-                    <button class="btn btn-primary" id="directLoginBtn">Login</button>
-                    <button class="btn btn-secondary" id="backToTeachersBtn">Back to Teachers</button>
-                </div>
-                <div class="help-text">
-                    💡 Ask your teacher if you don't know your login code
+        grid.innerHTML = this.teachers.map(teacher => `
+            <div class="teacher-card" data-email="${teacher.email}" onclick="loginManager.selectTeacher('${teacher.email}')">
+                <div class="teacher-icon">👨‍🏫</div>
+                <div class="teacher-info">
+                    <h4>${teacher.name || teacher.email}</h4>
+                    <p>${teacher.class_count || 0} classes</p>
                 </div>
             </div>
-        `;
+        `).join('');
+    }
 
-        // Add event listeners
-        const directLoginBtn = document.getElementById('directLoginBtn');
-        const directLoginCode = document.getElementById('directLoginCode');
-        const backToTeachersBtn = document.getElementById('backToTeachersBtn');
-
-        if (directLoginBtn && directLoginCode) {
-            const handleLogin = async () => {
-                const loginCode = directLoginCode.value.trim();
-                if (!loginCode) {
-                    this.showError('Please enter your login code');
-                    return;
-                }
-
-                console.log('Attempting login with:', {
-                    loginCode: loginCode.toUpperCase(),
-                    className: this.selectedTeacher.className,
-                    teacherEmail: this.selectedTeacher.email,
-                    selectedTeacher: this.selectedTeacher
-                });
-
-                this.showLoading(true);
-                try {
-                    const authenticatedStudent = await DatabaseAPI.authenticateStudent(
-                        loginCode.toUpperCase(), 
-                        this.selectedTeacher.className
-                    );
-                    
-                    if (authenticatedStudent) {
-                        console.log('Login successful:', authenticatedStudent);
-                        navigationManager.setCurrentStudent(authenticatedStudent);
-                        this.showSuccess(`Welcome back, ${authenticatedStudent.name}!`);
-                        
-                        setTimeout(() => {
-                            navigationManager.showPage('dashboard');
-                            if (window.dashboardManager) {
-                                window.dashboardManager.loadDashboard();
-                            }
-                        }, 1000);
-                    }
-                } catch (error) {
-                    console.error('Login error:', error);
-                    console.error('Error details:', {
-                        message: error.message,
-                        loginCode: loginCode.toUpperCase(),
-                        className: this.selectedTeacher.className
-                    });
-                    
-                    if (error.message.includes('Invalid login code')) {
-                        this.showError('Incorrect login code. Please check with your teacher.');
-                    } else if (error.message.includes('class')) {
-                        this.showError(`No student found in class "${this.selectedTeacher.className}". Please check the class name with your teacher.`);
-                    } else {
-                        this.showError('Login failed. Please try again or contact your teacher.');
-                    }
-                } finally {
-                    this.showLoading(false);
-                }
-            };
-
-            directLoginBtn.addEventListener('click', handleLogin);
-            directLoginCode.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    handleLogin();
-                }
-            });
-        }
-
-        if (backToTeachersBtn) {
-            backToTeachersBtn.addEventListener('click', () => {
-                document.getElementById('student-selection').classList.add('hidden');
-                document.getElementById('teacher-selection').classList.remove('hidden');
-                this.selectedTeacher = null;
-            });
+    showStudentNameInput() {
+        // Hide teacher selection and show student name input
+        document.getElementById('teacher-selection').style.display = 'none';
+        document.getElementById('student-selection').style.display = 'block';
+        
+        // Update the student selection to be a name input instead of a grid
+        const studentGrid = document.getElementById('student-grid');
+        if (studentGrid) {
+            studentGrid.innerHTML = `
+                <div class="student-name-input">
+                    <label for="student-name-field">Enter your full name exactly as it appears in class:</label>
+                    <input type="text" id="student-name-field" placeholder="Your full name..." />
+                    <button onclick="loginManager.handleStudentNameSubmit()">Continue</button>
+                </div>
+            `;
+            
+            // Focus on the input
+            setTimeout(() => {
+                document.getElementById('student-name-field').focus();
+            }, 100);
         }
     }
 
-    renderStudents(filter = '') {
-        const studentGrid = document.getElementById('student-grid');
-        if (!studentGrid) return;
+    selectTeacher(teacherEmail) {
+        console.log('Selected teacher:', teacherEmail);
+        this.selectedTeacher = teacherEmail;
+        
+        // Highlight selected teacher
+        document.querySelectorAll('.teacher-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        document.querySelector(`[data-email="${teacherEmail}"]`).classList.add('selected');
+        
+        // Load students for this teacher
+        this.loadStudentsForTeacher(teacherEmail);
+    }
 
-        const filteredStudents = this.students.filter(student => 
-            student.name.toLowerCase().includes(filter.toLowerCase())
-        );
+    handleStudentNameSubmit() {
+        const nameInput = document.getElementById('student-name-field');
+        const studentName = nameInput ? nameInput.value.trim() : '';
+        
+        if (!studentName) {
+            this.showError('Please enter your name');
+            return;
+        }
+        
+        this.selectedStudent = {
+            name: studentName,
+            teacherEmail: this.selectedTeacher
+        };
+        
+        // Show access code step
+        document.getElementById('student-selection').style.display = 'none';
+        document.getElementById('code-entry').style.display = 'block';
+        
+        // Focus on access code input
+        setTimeout(() => {
+            document.getElementById('access-code').focus();
+        }, 100);
+    }
 
-        studentGrid.innerHTML = '';
-
-        if (filteredStudents.length === 0) {
-            studentGrid.innerHTML = `
-                <div class="no-results">
-                    <p>No students found. Try a different search term.</p>
-                </div>
-            `;
+    async submitAccessCode() {
+        const accessCode = document.getElementById('access-code').value.trim();
+        const errorDiv = document.getElementById('code-error');
+        
+        if (!accessCode) {
+            errorDiv.textContent = 'Please enter an access code';
             return;
         }
 
-        filteredStudents.forEach(student => {
-            const studentCard = document.createElement('div');
-            studentCard.className = 'student-card';
-            
-            // Generate avatar preview based on student's avatar data
-            const avatarStyle = this.generateAvatarStyle(student.avatar);
-            
-            studentCard.innerHTML = `
-                <div class="student-avatar-preview" style="${avatarStyle}">
-                    ${student.name.charAt(0).toUpperCase()}
-                </div>
-                <div class="student-name">${student.name}</div>
-                <div class="student-points">${student.kudosPoints} Kudos Points</div>
-                <div class="student-level">Level ${student.level}</div>
-                <div class="login-code-hint">🔐 Login code required</div>
-            `;
-            
-            studentCard.addEventListener('click', () => {
-                this.selectStudent(student);
+        if (!this.selectedStudent || !this.selectedTeacher) {
+            errorDiv.textContent = 'Please select a teacher and enter your name first';
+            return;
+        }
+
+        try {
+            this.showLoading('Authenticating...');
+            errorDiv.textContent = '';
+
+            // Authenticate with the database
+            const response = await fetch('/.netlify/functions/studentAuth', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    studentName: this.selectedStudent.name,
+                    teacherEmail: this.selectedTeacher,
+                    accessCode: accessCode
+                })
             });
 
-            studentGrid.appendChild(studentCard);
-        });
-    }
+            if (!response.ok) {
+                throw new Error('Invalid access code');
+            }
 
-    generateAvatarStyle(avatar) {
-        if (!avatar) return `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);`;
-        
-        return `background: ${avatar.color || '#667eea'};`;
-    }
-
-    async selectStudent(student) {
-        // Show custom login code modal
-        const loginCode = await this.showLoginCodeModal(student.name);
-        
-        if (!loginCode) {
-            return; // User cancelled
-        }
-        
-        // Show loading state
-        this.showLoading(true);
-        
-        try {
-            // Use real database authentication
-            const authenticatedStudent = await DatabaseAPI.authenticateStudent(
-                loginCode.toUpperCase().trim(), 
-                this.selectedTeacher.className
-            );
+            const result = await response.json();
             
-            if (authenticatedStudent) {
-                // Set current student in navigation manager
-                navigationManager.setCurrentStudent(authenticatedStudent);
-                
-                // Show success message
-                this.showSuccess(`Welcome back, ${authenticatedStudent.name}!`);
-                
-                // Navigate to dashboard
-                setTimeout(() => {
-                    navigationManager.showPage('dashboard');
-                    if (window.dashboardManager) {
-                        window.dashboardManager.loadDashboard();
-                    }
-                }, 1000);
+            if (result.success) {
+                // Store authentication data
+                this.storeAuthData(result);
+                console.log('Login successful, redirecting to dashboard');
+                this.redirectToDashboard();
             } else {
-                this.showError('Authentication failed. Please try again.');
+                throw new Error(result.error || 'Authentication failed');
             }
             
         } catch (error) {
-            console.error('Error authenticating student:', error);
-            if (error.message.includes('Invalid login code')) {
-                this.showError('Incorrect login code. Please check with your teacher.');
-            } else {
-                this.showError('Failed to authenticate. Please try again.');
-            }
+            console.error('Authentication failed:', error);
+            errorDiv.textContent = 'Invalid access code or student name. Please check and try again.';
         } finally {
-            this.showLoading(false);
+            this.hideLoading();
+        }
+    }
+
+    storeAuthData(authData) {
+        const authInfo = {
+            studentName: this.selectedStudent.name,
+            teacherEmail: this.selectedTeacher,
+            studentData: authData.student,
+            authenticated: true,
+            timestamp: new Date().toISOString()
+        };
+        
+        localStorage.setItem('studentAuth', JSON.stringify(authInfo));
+        localStorage.setItem('currentStudent', JSON.stringify(authData.student));
+        console.log('Stored authentication data');
+    }
+
+    redirectToDashboard() {
+        // Hide login page and show dashboard
+        document.getElementById('login-page').classList.remove('active');
+        document.getElementById('dashboard-page').classList.add('active');
+        
+        // Update navigation
+        document.getElementById('dashboard-link').style.display = 'inline';
+        document.getElementById('avatar-link').style.display = 'inline';
+        document.getElementById('logout-link').style.display = 'inline';
+        
+        // Initialize dashboard if available
+        if (window.dashboardManager) {
+            window.dashboardManager.init();
+        } else if (window.initDashboard) {
+            window.initDashboard();
         }
     }
 
     filterTeachers(searchTerm) {
-        this.renderTeachers(searchTerm);
-    }
-
-    filterStudents(searchTerm) {
-        this.renderStudents(searchTerm);
-    }
-
-    // Show custom login code modal
-    showLoginCodeModal(studentName) {
-        return new Promise((resolve) => {
-            // Create modal HTML
-            const modalHTML = `
-                <div class="login-code-overlay" id="loginCodeOverlay">
-                    <div class="login-code-modal">
-                        <div class="modal-header">
-                            <h3>🔐 Welcome ${studentName}!</h3>
-                            <p>Please enter your login code to access your account</p>
-                        </div>
-                        <div class="modal-body">
-                            <div class="input-group">
-                                <label for="loginCodeInput">Login Code:</label>
-                                <input type="text" id="loginCodeInput" class="login-code-input" placeholder="Enter your code..." maxlength="10" autocomplete="off">
-                            </div>
-                            <div class="help-text">
-                                💡 Ask your teacher if you don't know your login code
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-secondary" id="cancelLoginBtn">Cancel</button>
-                            <button class="btn btn-primary" id="submitLoginBtn">Login</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            // Add modal to page
-            document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-            // Add modal styles if not already added
-            if (!document.getElementById('login-code-modal-styles')) {
-                const styles = document.createElement('style');
-                styles.id = 'login-code-modal-styles';
-                styles.textContent = `
-                    .login-code-overlay {
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: rgba(0, 0, 0, 0.5);
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        z-index: 1000;
-                        animation: fadeIn 0.3s ease;
-                    }
-                    .login-code-modal {
-                        background: white;
-                        border-radius: 20px;
-                        max-width: 450px;
-                        width: 90%;
-                        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-                        animation: slideIn 0.3s ease;
-                    }
-                    .modal-header {
-                        padding: 2rem 2rem 1rem;
-                        text-align: center;
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        color: white;
-                        border-radius: 20px 20px 0 0;
-                    }
-                    .modal-header h3 {
-                        margin: 0 0 0.5rem;
-                        font-size: 1.5rem;
-                    }
-                    .modal-header p {
-                        margin: 0;
-                        opacity: 0.9;
-                        font-size: 1rem;
-                    }
-                    .modal-body {
-                        padding: 2rem;
-                    }
-                    .input-group {
-                        margin-bottom: 1rem;
-                    }
-                    .input-group label {
-                        display: block;
-                        margin-bottom: 0.5rem;
-                        font-weight: 600;
-                        color: #333;
-                    }
-                    .login-code-input {
-                        width: 100%;
-                        padding: 12px 16px;
-                        border: 2px solid #e9ecef;
-                        border-radius: 10px;
-                        font-size: 1.1rem;
-                        text-align: center;
-                        font-weight: bold;
-                        letter-spacing: 1px;
-                        transition: border-color 0.3s ease;
-                    }
-                    .login-code-input:focus {
-                        outline: none;
-                        border-color: #667eea;
-                        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-                    }
-                    .help-text {
-                        font-size: 0.9rem;
-                        color: #666;
-                        text-align: center;
-                        margin-top: 1rem;
-                    }
-                    .modal-footer {
-                        padding: 1rem 2rem 2rem;
-                        display: flex;
-                        gap: 1rem;
-                        justify-content: flex-end;
-                    }
-                    .btn {
-                        padding: 10px 20px;
-                        border: none;
-                        border-radius: 10px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                    }
-                    .btn-secondary {
-                        background: #6c757d;
-                        color: white;
-                    }
-                    .btn-secondary:hover {
-                        background: #5a6268;
-                    }
-                    .btn-primary {
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        color: white;
-                    }
-                    .btn-primary:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-                    }
-                    @keyframes fadeIn {
-                        from { opacity: 0; }
-                        to { opacity: 1; }
-                    }
-                    @keyframes slideIn {
-                        from { transform: translateY(-50px); opacity: 0; }
-                        to { transform: translateY(0); opacity: 1; }
-                    }
-                `;
-                document.head.appendChild(styles);
-            }
-
-            // Get elements
-            const overlay = document.getElementById('loginCodeOverlay');
-            const input = document.getElementById('loginCodeInput');
-            const cancelBtn = document.getElementById('cancelLoginBtn');
-            const submitBtn = document.getElementById('submitLoginBtn');
-
-            // Focus input
-            setTimeout(() => input.focus(), 100);
-
-            // Handle submit
-            const handleSubmit = () => {
-                const code = input.value.trim();
-                if (code) {
-                    overlay.remove();
-                    resolve(code);
-                } else {
-                    input.focus();
-                    input.style.borderColor = '#e74c3c';
-                    setTimeout(() => {
-                        input.style.borderColor = '';
-                    }, 1000);
-                }
-            };
-
-            // Handle cancel
-            const handleCancel = () => {
-                overlay.remove();
-                resolve(null);
-            };
-
-            // Event listeners
-            submitBtn.addEventListener('click', handleSubmit);
-            cancelBtn.addEventListener('click', handleCancel);
+        const cards = document.querySelectorAll('.teacher-card');
+        const term = searchTerm.toLowerCase();
+        
+        cards.forEach(card => {
+            const teacherName = card.querySelector('h4').textContent.toLowerCase();
             
-            // Enter key submit
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    handleSubmit();
-                }
-            });
-
-            // Escape key cancel
-            document.addEventListener('keydown', function escapeHandler(e) {
-                if (e.key === 'Escape') {
-                    document.removeEventListener('keydown', escapeHandler);
-                    handleCancel();
-                }
-            });
-
-            // Click outside to cancel
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    handleCancel();
-                }
-            });
-
-            // Auto-uppercase input
-            input.addEventListener('input', (e) => {
-                e.target.value = e.target.value.toUpperCase();
-            });
+            if (teacherName.includes(term)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
         });
     }
 
-    showLoading(show) {
+    showLoading(message = 'Loading...') {
         const overlay = document.getElementById('loading-overlay');
         if (overlay) {
-            if (show) {
-                overlay.classList.remove('hidden');
-            } else {
-                overlay.classList.add('hidden');
-            }
+            const text = overlay.querySelector('p');
+            if (text) text.textContent = message;
+            overlay.style.display = 'flex';
+        }
+    }
+
+    hideLoading() {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) {
+            overlay.style.display = 'none';
         }
     }
 
     showError(message) {
-        // Simple alert for now - can be enhanced with custom modal later
-        alert('Error: ' + message);
+        console.error('Login Error:', message);
+        alert(message); // Simple error display - can be enhanced
     }
 
-    showSuccess(message) {
-        // Simple alert for now - can be enhanced with custom toast later
-        alert(message);
+    // Check if user is already authenticated
+    checkExistingAuth() {
+        const authData = localStorage.getItem('studentAuth');
+        if (authData) {
+            try {
+                const auth = JSON.parse(authData);
+                const hoursSinceAuth = (new Date() - new Date(auth.timestamp)) / (1000 * 60 * 60);
+                
+                // Auto-login if authenticated within last 8 hours
+                if (hoursSinceAuth < 8 && auth.authenticated) {
+                    console.log('Found existing authentication, redirecting to dashboard');
+                    this.redirectToDashboard();
+                    return true;
+                }
+            } catch (error) {
+                console.warn('Invalid auth data in localStorage');
+                localStorage.removeItem('studentAuth');
+            }
+        }
+        return false;
+    }
+
+    logout() {
+        localStorage.removeItem('studentAuth');
+        localStorage.removeItem('currentStudent');
+        
+        // Reset UI
+        document.getElementById('dashboard-page').classList.remove('active');
+        document.getElementById('avatar-page').classList.remove('active');
+        document.getElementById('login-page').classList.add('active');
+        
+        // Reset navigation
+        document.getElementById('dashboard-link').style.display = 'none';
+        document.getElementById('avatar-link').style.display = 'none';
+        document.getElementById('logout-link').style.display = 'none';
+        
+        // Reset login state
+        this.selectedTeacher = null;
+        this.selectedStudent = null;
+        
+        // Show teacher selection again
+        document.getElementById('teacher-selection').style.display = 'block';
+        document.getElementById('student-selection').style.display = 'none';
+        document.getElementById('code-entry').style.display = 'none';
+        
+        console.log('Logged out successfully');
     }
 }
 
 // Global functions for navigation
-function backToTeacherSelection() {
-    document.getElementById('student-selection').classList.add('hidden');
-    document.getElementById('teacher-selection').classList.remove('hidden');
-    
-    // Clear student search
-    document.getElementById('student-search').value = '';
+function showLoginPage() {
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    document.getElementById('login-page').classList.add('active');
 }
 
-// Initialize login manager
-let loginManager;
+function showDashboard() {
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    document.getElementById('dashboard-page').classList.add('active');
+}
 
+function showAvatarBuilder() {
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    document.getElementById('avatar-page').classList.add('active');
+}
+
+function logout() {
+    if (window.loginManager) {
+        window.loginManager.logout();
+    }
+}
+
+// Initialize when DOM is loaded
+let loginManager;
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing login manager...');
+    console.log('Student portal initializing...');
     loginManager = new LoginManager();
     
-    // Make sure login page is visible
-    if (window.navigationManager) {
-        window.navigationManager.showPage('login');
+    // Check for existing authentication
+    if (!loginManager.checkExistingAuth()) {
+        // Show login page if not authenticated
+        showLoginPage();
     }
-    
-    // Debug: Add a simple teacher immediately to test
-    setTimeout(() => {
-        const teacherGrid = document.getElementById('teacher-grid');
-        if (teacherGrid && teacherGrid.children.length === 0) {
-            console.log('No teachers rendered, adding debug teacher...');
-            teacherGrid.innerHTML = `
-                <div class="teacher-card" style="padding: 20px; border: 1px solid #ccc; margin: 10px; cursor: pointer;">
-                    <span class="teacher-avatar">👨‍🏫</span>
-                    <div class="teacher-name">Debug Teacher</div>
-                    <div class="teacher-class">Debug Class</div>
-                    <div class="teacher-subject">General</div>
-                </div>
-            `;
-        }
-    }, 1000);
 });
