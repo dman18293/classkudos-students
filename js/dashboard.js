@@ -20,26 +20,25 @@ class DashboardManager {
             return;
         }
 
-        // TEMPORARILY DISABLE refresh to test if the issue is with save vs refresh
-        // // Refresh student data from server to get latest avatar changes
-        // try {
-        //     const storedLoginCode = localStorage.getItem('loginCode');
-        //     const storedClassName = localStorage.getItem('className');
+        // Refresh student data from server to get latest avatar changes and points
+        try {
+            const storedLoginCode = localStorage.getItem('loginCode');
+            const storedClassName = localStorage.getItem('className');
             
-        //     if (storedLoginCode && storedClassName) {
-        //         console.log('Refreshing student data from server...');
-        //         const refreshedStudent = await DatabaseAPI.authenticateStudent(storedLoginCode, storedClassName);
-        //         if (refreshedStudent) {
-        //             console.log('Student data refreshed:', refreshedStudent);
-        //             console.log('Refreshed avatar data:', refreshedStudent.avatar);
-        //             this.currentStudent = refreshedStudent;
-        //             navigationManager.setCurrentStudent(refreshedStudent);
-        //         }
-        //     }
-        // } catch (error) {
-        //     console.warn('Failed to refresh student data:', error);
-        //     // Continue with cached data if refresh fails
-        // }
+            if (storedLoginCode && storedClassName) {
+                console.log('Refreshing student data from server...');
+                const refreshedStudent = await DatabaseAPI.authenticateStudent(storedLoginCode, storedClassName);
+                if (refreshedStudent) {
+                    console.log('Student data refreshed:', refreshedStudent);
+                    console.log('Refreshed avatar data:', refreshedStudent.avatar);
+                    this.currentStudent = refreshedStudent;
+                    navigationManager.setCurrentStudent(refreshedStudent);
+                }
+            }
+        } catch (error) {
+            console.warn('Failed to refresh student data:', error);
+            // Continue with cached data if refresh fails
+        }
 
         console.log('Final student data for dashboard:', JSON.stringify(this.currentStudent, null, 2));
         console.log('Final avatar data:', JSON.stringify(this.currentStudent.avatar, null, 2));
@@ -683,8 +682,14 @@ class DashboardManager {
         }
     }
 
-    // Simulate earning Kudos points (for demonstration)
+    // Simulate earning Kudos points (for demonstration) - DISABLED FOR SYNC
+    // Points should only be awarded by teachers through the main Class Kudos app
     async simulateEarningPoints() {
+        console.log('simulateEarningPoints disabled - points should only come from teacher app');
+        Utils.showToast('Points are awarded by your teacher through the main Class Kudos app', 'info');
+        return;
+        
+        /* DISABLED TO PREVENT SYNC ISSUES
         const pointsToAward = Math.floor(Math.random() * 15) + 5; // 5-20 points
         const reasons = [
             'Math homework completed!',
@@ -725,6 +730,7 @@ class DashboardManager {
             console.error('Error awarding points:', error);
             Utils.showToast('Error awarding points', 'error');
         }
+        */ // END DISABLED CODE
     }
 
     // Animate points gain for visual feedback

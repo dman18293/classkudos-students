@@ -408,7 +408,7 @@ class AvatarBuilderManager {
             }
 
             // Save to the database
-            const updatedStudent = await MockDataAPI.updateStudentAvatar(
+            const updatedStudent = await DatabaseAPI.updateStudentAvatar(
                 this.currentStudent.id,
                 this.currentStudent.avatar
             );
