@@ -167,19 +167,20 @@ class AvatarBuilderManager {
             container.style.visibility = 'visible';
             container.style.opacity = '1';
 
+            // Create simple avatar gallery instead of complex customization
             container.innerHTML = `
                 <div class="avatar-builder-header">
-                    <h2>🐾 Create Your Perfect Creature</h2>
-                    <p>Customize every detail of your unique creature companion!</p>
+                    <h2>🎨 Choose Your Avatar</h2>
+                    <p>Select from our collection of friendly creatures!</p>
                 </div>
 
                 <div class="avatar-builder-content">
                     <div class="avatar-preview-section">
                         <div class="avatar-display" id="avatar-display">
-                            ${this.renderCreature()}
+                            ${this.renderCurrentAvatar()}
                         </div>
                         <div class="avatar-preview-info">
-                            <h3 class="preview-name">${this.currentStudent.name}'s Creature</h3>
+                            <h3 class="preview-name">${this.currentStudent.name}'s Avatar</h3>
                             <div class="preview-stats">
                                 <div class="stat-row">
                                     <span>Level:</span>
@@ -189,55 +190,243 @@ class AvatarBuilderManager {
                                     <span>Kudos Points:</span>
                                     <span>${this.currentStudent.kudosPoints}</span>
                                 </div>
-                                <div class="stat-row">
-                                    <span>Style Points:</span>
-                                    <span>${this.calculateStylePoints()}</span>
-                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="customization-options">
-                        ${this.renderCategoryTabs()}
-                        ${this.renderPresetSection()}
-                        ${this.renderRandomizeSection()}
-                        ${this.renderCustomizationPanel()}
-                        ${this.renderSaveSection()}
+                    <div class="avatar-gallery-grid">
+                        ${this.renderAvatarGallery()}
+                    </div>
+
+                    <div class="avatar-actions">
+                        <button class="save-creature-btn" onclick="avatarBuilderManager.saveSelectedAvatar()">
+                            💾 Save Avatar
+                        </button>
+                        <button class="back-to-dashboard-btn" onclick="navigationManager.showPage('dashboard')">
+                            🏠 Back to Dashboard
+                        </button>
                     </div>
                 </div>
+
+                <style>
+                .avatar-gallery-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                    gap: 1rem;
+                    max-height: 400px;
+                    overflow-y: auto;
+                    padding: 1rem;
+                    background: rgba(255, 255, 255, 0.1);
+                    border-radius: 15px;
+                    margin: 1rem 0;
+                }
+
+                .avatar-option {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    padding: 1rem;
+                    background: rgba(255, 255, 255, 0.1);
+                    border-radius: 10px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    border: 2px solid transparent;
+                }
+
+                .avatar-option:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                    transform: translateY(-2px);
+                }
+
+                .avatar-option.selected {
+                    border-color: #4CAF50;
+                    background: rgba(76, 175, 80, 0.2);
+                }
+
+                .avatar-emoji {
+                    font-size: 3rem;
+                    margin-bottom: 0.5rem;
+                }
+
+                .avatar-name {
+                    font-size: 0.8rem;
+                    text-align: center;
+                    color: white;
+                }
+
+                .avatar-actions {
+                    display: flex;
+                    gap: 1rem;
+                    justify-content: center;
+                    margin-top: 2rem;
+                }
+
+                .save-creature-btn, .back-to-dashboard-btn {
+                    padding: 1rem 2rem;
+                    border: none;
+                    border-radius: 10px;
+                    font-size: 1.1rem;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                }
+
+                .save-creature-btn {
+                    background: linear-gradient(135deg, #4CAF50, #45a049);
+                    color: white;
+                }
+
+                .back-to-dashboard-btn {
+                    background: linear-gradient(135deg, #667eea, #764ba2);
+                    color: white;
+                }
+
+                .save-creature-btn:hover, .back-to-dashboard-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                }
+                </style>
             `;
 
-            this.updateAvatarPreview();
+            console.log('Avatar gallery rendered successfully');
+
+        } catch (error) {
+            console.error('Error rendering avatar gallery:', error);
+            container.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: white;">
+                    <h2>🎨 Avatar Gallery</h2>
+                    <p>There was an issue loading the avatar gallery.</p>
+                    <button onclick="location.reload()" style="padding: 1rem 2rem; background: #667eea; color: white; border: none; border-radius: 10px; cursor: pointer;">
+                        🔄 Refresh Page
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    renderCurrentAvatar() {
+        // Render the current student's selected avatar
+        const avatar = this.currentStudent.avatar || this.getDefaultAvatar();
+        return `
+            <div style="font-size: 4rem; padding: 2rem; background: linear-gradient(135deg, ${avatar.color || '#4CAF50'}, ${this.adjustColor(avatar.color || '#4CAF50', -20)}); border-radius: 50%; display: flex; align-items: center; justify-content: center; width: 120px; height: 120px; margin: 0 auto;">
+                ${avatar.emoji || '🤖'}
+            </div>
+        `;
+    }
+
+    renderAvatarGallery() {
+        const avatars = this.getPresetAvatars();
+        const currentAvatarId = this.currentStudent.avatar?.id || 'robot';
+        
+        return avatars.map(avatar => `
+            <div class="avatar-option ${currentAvatarId === avatar.id ? 'selected' : ''}" 
+                 onclick="avatarBuilderManager.selectAvatar('${avatar.id}')">
+                <div class="avatar-emoji" style="background: linear-gradient(135deg, ${avatar.color}, ${this.adjustColor(avatar.color, -20)}); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    ${avatar.emoji}
+                </div>
+                <div class="avatar-name">${avatar.name}</div>
+            </div>
+        `).join('');
+    }
+
+    getPresetAvatars() {
+        return [
+            { id: 'robot', emoji: '🤖', color: '#4CAF50', name: 'Friendly Robot' },
+            { id: 'cat', emoji: '🐱', color: '#FF9800', name: 'Happy Cat' },
+            { id: 'dog', emoji: '🐶', color: '#8BC34A', name: 'Loyal Dog' },
+            { id: 'panda', emoji: '🐼', color: '#9C27B0', name: 'Cute Panda' },
+            { id: 'lion', emoji: '🦁', color: '#FF5722', name: 'Brave Lion' },
+            { id: 'tiger', emoji: '🐯', color: '#FF6F00', name: 'Strong Tiger' },
+            { id: 'elephant', emoji: '🐘', color: '#607D8B', name: 'Wise Elephant' },
+            { id: 'monkey', emoji: '🐵', color: '#795548', name: 'Playful Monkey' },
+            { id: 'rabbit', emoji: '🐰', color: '#E91E63', name: 'Swift Rabbit' },
+            { id: 'bear', emoji: '🐻', color: '#3F51B5', name: 'Kind Bear' },
+            { id: 'fox', emoji: '🦊', color: '#F44336', name: 'Clever Fox' },
+            { id: 'penguin', emoji: '🐧', color: '#00BCD4', name: 'Cool Penguin' },
+            { id: 'owl', emoji: '🦉', color: '#6D4C41', name: 'Smart Owl' },
+            { id: 'dolphin', emoji: '🐬', color: '#2196F3', name: 'Ocean Dolphin' },
+            { id: 'turtle', emoji: '🐢', color: '#4CAF50', name: 'Steady Turtle' },
+            { id: 'bee', emoji: '🐝', color: '#FFC107', name: 'Busy Bee' },
+            { id: 'butterfly', emoji: '🦋', color: '#9C27B0', name: 'Pretty Butterfly' },
+            { id: 'dragon', emoji: '🐉', color: '#F44336', name: 'Fire Dragon' },
+            { id: 'unicorn', emoji: '🦄', color: '#E91E63', name: 'Magic Unicorn' },
+            { id: 'koala', emoji: '🐨', color: '#8BC34A', name: 'Sleepy Koala' },
+            { id: 'pig', emoji: '🐷', color: '#E91E63', name: 'Happy Pig' },
+            { id: 'cow', emoji: '🐮', color: '#795548', name: 'Moo Cow' },
+            { id: 'horse', emoji: '🐴', color: '#6D4C41', name: 'Fast Horse' },
+            { id: 'sheep', emoji: '🐑', color: '#FFF', name: 'Fluffy Sheep' },
+            { id: 'chicken', emoji: '🐔', color: '#FF9800', name: 'Clucky Chicken' },
+            { id: 'frog', emoji: '🐸', color: '#4CAF50', name: 'Jumping Frog' },
+            { id: 'fish', emoji: '🐠', color: '#00BCD4', name: 'Colorful Fish' },
+            { id: 'octopus', emoji: '🐙', color: '#9C27B0', name: 'Smart Octopus' },
+            { id: 'whale', emoji: '🐳', color: '#2196F3', name: 'Big Whale' },
+            { id: 'shark', emoji: '🦈', color: '#607D8B', name: 'Cool Shark' }
+        ];
+    }
+
+    getDefaultAvatar() {
+        return { id: 'robot', emoji: '🤖', color: '#4CAF50', name: 'Friendly Robot' };
+    }
+
+    adjustColor(color, percent) {
+        const num = parseInt(color.replace("#", ""), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = (num >> 16) + amt;
+        const G = (num >> 8 & 0x00FF) + amt;
+        const B = (num & 0x0000FF) + amt;
+        return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+            (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+    }
+
+    selectAvatar(avatarId) {
+        const avatars = this.getPresetAvatars();
+        const selectedAvatar = avatars.find(a => a.id === avatarId);
+        
+        if (selectedAvatar) {
+            this.currentStudent.avatar = selectedAvatar;
             
-            // Force a repaint
-            container.offsetHeight;
-            
-            console.log('Creature builder container visibility:', {
-                display: container.style.display,
-                visibility: container.style.visibility,
-                opacity: container.style.opacity,
-                offsetHeight: container.offsetHeight,
-                scrollHeight: container.scrollHeight
+            // Update the UI
+            document.querySelectorAll('.avatar-option').forEach(option => {
+                option.classList.remove('selected');
             });
             
-        } catch (error) {
-            console.error('Error rendering creature builder:', error);
-            const container = document.querySelector('.avatar-builder-container');
-            if (container) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 3rem; color: white; background: #667eea; min-height: 400px; display: flex; flex-direction: column; justify-content: center;">
-                        <h2>🐾 Creature Builder</h2>
-                        <p>Loading your amazing creature customization tools...</p>
-                        <div style="margin-top: 2rem;">
-                            <button onclick="location.reload()" style="padding: 1rem 2rem; background: #28a745; color: white; border: none; border-radius: 10px; cursor: pointer;">
-                                🔄 Refresh Page
-                            </button>
-                        </div>
-                    </div>
-                `;
+            event.target.closest('.avatar-option').classList.add('selected');
+            
+            // Update the preview
+            const display = document.getElementById('avatar-display');
+            if (display) {
+                display.innerHTML = this.renderCurrentAvatar();
             }
         }
     }
+
+    async saveSelectedAvatar() {
+        try {
+            if (!this.currentStudent.avatar) {
+                alert('Please select an avatar first!');
+                return;
+            }
+
+            // Save to the database
+            const updatedStudent = await MockDataAPI.updateStudentAvatar(
+                this.currentStudent.id,
+                this.currentStudent.avatar
+            );
+
+            if (updatedStudent) {
+                Utils.showToast('Avatar saved successfully!', 'success');
+                // Go back to dashboard
+                navigationManager.showPage('dashboard');
+            } else {
+                Utils.showToast('Failed to save avatar. Please try again.', 'error');
+            }
+        } catch (error) {
+            console.error('Error saving avatar:', error);
+            Utils.showToast('Error saving avatar. Please try again.', 'error');
+        }
+    }
+
+    // Keep the rest of the original methods for compatibility
 
     renderCreature() {
         const creature = this.currentAvatar;
