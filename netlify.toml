@@ -1,9 +1,6 @@
 [build]
   publish = "."
-  command = "echo 'Student portal build complete'"
-
-[build.environment]
-  NODE_VERSION = "18"
+  command = "npm run build"
 
 [[redirects]]
   from = "/*"

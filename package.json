@@ -1,0 +1,8 @@
+{
+  "name": "class-kudos-student-portal",
+  "version": "1.0.0",
+  "description": "Student portal for Class Kudos",
+  "scripts": {
+    "build": "echo 'Static site - no build needed'"
+  }
+}
