@@ -1,5 +1,3 @@
-const { Client } = require('pg');
-
 exports.handler = async function(event, context) {
   // Set CORS headers
   const headers = {
@@ -26,11 +24,6 @@ exports.handler = async function(event, context) {
   }
 
   try {
-    const client = new Client({
-      connectionString: process.env.NETLIFY_DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
-    });
-
     const { classCode } = event.queryStringParameters || {};
     
     if (!classCode) {
@@ -41,23 +34,30 @@ exports.handler = async function(event, context) {
       };
     }
 
-    await client.connect();
-    
-    // Get all students in the class, sorted by points
-    const res = await client.query(
-      'SELECT id, name, points, avatar FROM students WHERE class = $1 ORDER BY points DESC',
-      [classCode]
-    );
-
-    await client.end();
-
-    const leaderboard = res.rows.map((student, index) => ({
-      rank: index + 1,
-      studentId: student.id,
-      name: student.name,
-      points: student.points || 0,
-      avatar: student.avatar
-    }));
+    // Return demo leaderboard data
+    const leaderboard = [
+      {
+        rank: 1,
+        studentId: 1,
+        name: 'Demo Student 1',
+        points: 100,
+        avatar: null
+      },
+      {
+        rank: 2,
+        studentId: 2,
+        name: 'Demo Student 2',
+        points: 75,
+        avatar: null
+      },
+      {
+        rank: 3,
+        studentId: 3,
+        name: 'Demo Student 3',
+        points: 50,
+        avatar: null
+      }
+    ];
 
     return {
       statusCode: 200,
