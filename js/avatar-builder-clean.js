@@ -408,6 +408,7 @@ class AvatarBuilderManager {
             }
 
             // Save to the database
+            const savedAvatarData = this.currentStudent.avatar; // Preserve our new format
             const updatedStudent = await DatabaseAPI.updateStudentAvatar(
                 this.currentStudent.id,
                 this.currentStudent.avatar
@@ -415,7 +416,8 @@ class AvatarBuilderManager {
 
             if (updatedStudent) {
                 Utils.showToast('Avatar saved successfully!', 'success');
-                // Update navigation manager with the new student data
+                // Update navigation manager but preserve our new avatar format
+                updatedStudent.avatar = savedAvatarData; // Keep the new format locally
                 navigationManager.setCurrentStudent(updatedStudent);
                 // Go back to dashboard using the proper function that refreshes data
                 if (typeof showDashboard === 'function') {

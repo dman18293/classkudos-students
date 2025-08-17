@@ -31,6 +31,14 @@ class DashboardManager {
                 if (refreshedStudent) {
                     console.log('Student data refreshed:', refreshedStudent);
                     console.log('Refreshed avatar data:', refreshedStudent.avatar);
+                    
+                    // Preserve local avatar if it's in the new gallery format
+                    const currentAvatar = this.currentStudent?.avatar;
+                    if (currentAvatar && currentAvatar.emoji && currentAvatar.id) {
+                        console.log('Preserving local avatar in new format:', currentAvatar);
+                        refreshedStudent.avatar = currentAvatar;
+                    }
+                    
                     this.currentStudent = refreshedStudent;
                     navigationManager.setCurrentStudent(refreshedStudent);
                 }
