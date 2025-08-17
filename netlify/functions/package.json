@@ -2,6 +2,6 @@
   "name": "student-portal-functions",
   "version": "1.0.0",
   "dependencies": {
-    "mongodb": "^6.0.0"
+    "pg": "^8.11.3"
   }
 }
