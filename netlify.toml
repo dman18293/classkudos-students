@@ -1,5 +1,4 @@
 [build]
-  base = "student-portal"
   publish = "."
   functions = "netlify/functions"
   command = "echo 'Student portal build complete'"
