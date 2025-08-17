@@ -1,6 +1,7 @@
+const { Client } = require('pg');
+
 /**
- * Simple function to return mock teachers for student login
- * No external dependencies to avoid package.json issues
+ * Get list of teachers for student login selection
  */
 exports.handler = async function(event, context) {
   // Set CORS headers
@@ -24,20 +25,29 @@ exports.handler = async function(event, context) {
   }
 
   try {
-    // Return a simple list of teachers
-    // In a real scenario, this would connect to your database
-    const teachers = [
-      {
-        email: 'damienmdarr@gmail.com',
-        name: 'Mr. Darr',
-        class_count: 1
-      }
-    ];
+    const client = new Client({
+      connectionString: process.env.NETLIFY_DATABASE_URL,
+      ssl: { rejectUnauthorized: false }
+    });
+
+    await client.connect();
+    
+    // Get teachers who have students (active classes)
+    const res = await client.query(`
+      SELECT DISTINCT t.email, t.display_name as name, 
+             COUNT(DISTINCT s.class) as class_count
+      FROM teachers t
+      JOIN students s ON s.teacher_email = t.email
+      GROUP BY t.email, t.display_name
+      ORDER BY t.display_name
+    `);
+
+    await client.end();
     
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(teachers)
+      body: JSON.stringify(res.rows)
     };
     
   } catch (error) {
