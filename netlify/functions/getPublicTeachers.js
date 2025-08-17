@@ -32,22 +32,25 @@ exports.handler = async function(event, context) {
 
     await client.connect();
     
-    // Get teachers who have students (active classes)
+    // Simple query first - just get all teachers
     const res = await client.query(`
-      SELECT DISTINCT t.email, t.display_name as name, 
-             COUNT(DISTINCT s.class) as class_count
-      FROM teachers t
-      JOIN students s ON s.teacher_email = t.email
-      GROUP BY t.email, t.display_name
-      ORDER BY t.display_name
+      SELECT email, display_name as name
+      FROM teachers
+      ORDER BY display_name
     `);
 
     await client.end();
     
+    // Add a class_count of 1 for each teacher for now
+    const teachers = res.rows.map(teacher => ({
+      ...teacher,
+      class_count: 1
+    }));
+    
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(res.rows)
+      body: JSON.stringify(teachers)
     };
     
   } catch (error) {
@@ -58,7 +61,8 @@ exports.handler = async function(event, context) {
       headers,
       body: JSON.stringify({ 
         error: 'Failed to get teachers',
-        details: error.message 
+        details: error.message,
+        stack: error.stack
       })
     };
   }
