@@ -3,7 +3,7 @@
 
 const DatabaseAPI = {
     // Base URL for Netlify functions - points to main Class Kudos site
-    baseURL: 'https://classkudos.org/.netlify/functions',
+    baseURL: window.location.hostname.includes('localhost') || window.location.protocol === 'file:' ? 'https://classkudos.org/.netlify/functions' : '/.netlify/functions',
 
     // Authenticate student with login code
     async authenticateStudent(loginCode, className) {
