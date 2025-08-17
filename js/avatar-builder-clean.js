@@ -415,8 +415,14 @@ class AvatarBuilderManager {
 
             if (updatedStudent) {
                 Utils.showToast('Avatar saved successfully!', 'success');
-                // Go back to dashboard
-                navigationManager.showPage('dashboard');
+                // Update navigation manager with the new student data
+                navigationManager.setCurrentStudent(updatedStudent);
+                // Go back to dashboard using the proper function that refreshes data
+                if (typeof showDashboard === 'function') {
+                    showDashboard();
+                } else {
+                    navigationManager.showPage('dashboard');
+                }
             } else {
                 Utils.showToast('Failed to save avatar. Please try again.', 'error');
             }
