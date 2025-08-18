@@ -120,14 +120,31 @@
                 return;
             }
             
+            // Debug: Show what we're sending
+            console.log('Sending:', { classCode, studentCode });
+            
             try {
+                const requestBody = JSON.stringify({ classCode, studentCode });
+                console.log('Request body:', requestBody);
+                
                 const response = await fetch('/.netlify/functions/studentAuth', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ classCode, studentCode })
+                    body: requestBody
                 });
                 
-                const result = await response.json();
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (e) {
+                    throw new Error(`Invalid JSON response: ${responseText}`);
+                }
                 
                 if (response.ok && result.success) {
                     messageDiv.innerHTML = '<div class="success">Login successful!</div>';
@@ -138,9 +155,10 @@
                     document.getElementById('student-info').textContent = 
                         `Welcome ${result.student.name}! Points: ${result.student.points || 0}`;
                 } else {
-                    messageDiv.innerHTML = `<div class="error">Login failed: ${result.error}</div>`;
+                    messageDiv.innerHTML = `<div class="error">Login failed: ${result.error || 'Unknown error'}</div>`;
                 }
             } catch (error) {
+                console.error('Full error:', error);
                 messageDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
             }
         }
