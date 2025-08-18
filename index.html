@@ -3,424 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class Kudos Student Portal</title>
+    <title>Class Kudos Student Portal - Fresh</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
-        }
-        
-        .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .header h1 {
-            color: #667eea;
-            font-size: 2.5em;
-            margin: 0;
-        }
-        
-        .header .subtitle {
-            color: #666;
-            font-size: 1.1em;
-            margin-top: 5px;
-        }
-        
-        .container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
             align-items: center;
-            padding: 20px;
+            justify-content: center;
         }
-        
-        .login-box {
+        .login-container {
             background: white;
-            border-radius: 16px;
             padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             max-width: 400px;
             width: 100%;
         }
-        
-        .login-box h2 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 1.8em;
+        h1 { color: #333; text-align: center; margin-bottom: 30px; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #555; font-weight: bold; }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 2px solid #ddd; 
+            border-radius: 8px; 
+            font-size: 16px; 
         }
-        
-        .form-group {
-            margin-bottom: 20px;
+        button { 
+            width: 100%; 
+            padding: 15px; 
+            background: #667eea; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            margin-top: 15px;
         }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.2s;
-        }
-        
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .form-group small {
-            color: #666;
-            font-size: 0.9em;
-            margin-top: 4px;
-            display: block;
-        }
-        
-        .login-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-            margin-bottom: 15px;
-        }
-        
-        .login-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-        }
-        
-        .login-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .message {
-            text-align: center;
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 0.9em;
-        }
-        
-        .error {
-            background: #ffe6e6;
-            color: #d32f2f;
-            border: 1px solid #ffcdd2;
-        }
-        
-        .success {
-            background: #e6ffe6;
-            color: #2e7d32;
-            border: 1px solid #c8e6c9;
-        }
-        
-        .info {
-            background: #e3f2fd;
-            color: #1565c0;
-            border: 1px solid #bbdefb;
-        }
-        
-        .help-box {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-        
-        .help-box h4 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .help-box p {
-            color: #666;
-            margin-bottom: 5px;
-        }
-        
-        .dashboard {
-            display: none;
-            text-align: center;
-            color: white;
-            padding: 40px 20px;
-        }
-        
-        .dashboard.active {
-            display: block;
-        }
-        
-        .dashboard h1 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        
-        .points {
-            font-size: 3em;
-            color: #FFD700;
-            font-weight: bold;
-            margin: 20px 0;
-        }
-        
-        .dashboard-content {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 30px;
-            border-radius: 12px;
-            margin: 20px auto;
-            max-width: 600px;
-        }
-        
-        .nav-links {
-            margin-top: 20px;
-        }
-        
-        .nav-links button {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 10px 20px;
-            margin: 0 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .nav-links button:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-        
-        .hidden {
-            display: none;
-        }
+        button:hover { background: #5a6fd8; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .error { color: red; margin-top: 15px; padding: 10px; background: #ffe6e6; border-radius: 5px; }
+        .success { color: green; margin-top: 15px; padding: 10px; background: #e6ffe6; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <div class="header">
-        <h1>Class Kudos!</h1>
-        <div class="subtitle">Student Portal</div>
-    </div>
-
-    <!-- Login Page -->
-    <div id="login-page" class="container">
-        <div class="login-box">
-            <h2>Student Login</h2>
-            
-            <div id="message" class="message info">
-                Enter your class code and student ID to access your dashboard.
-            </div>
-            
-            <form id="login-form" onsubmit="handleLogin(event)">
-                <div class="form-group">
-                    <label for="classCode">Class Code</label>
-                    <input type="text" id="classCode" placeholder="e.g., MARTINEZ, TEST, PEREZ" required>
-                    <small>Ask your teacher for your class code</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="studentCode">Student ID</label>
-                    <input type="text" id="studentCode" placeholder="e.g., 1843, 7660" required>
-                    <small>Ask your teacher for your student ID number</small>
-                </div>
-                
-                <button type="submit" class="login-btn" id="loginBtn">
-                    Enter Portal
-                </button>
-            </form>
-            
-            <div class="help-box">
-                <h4>Need help?</h4>
-                <p><strong>Class Codes:</strong> Use the first word of your class name in UPPERCASE</p>
-                <p><strong>Student ID:</strong> Use the number your teacher gave you</p>
-                <p><strong>Examples:</strong> MARTINEZ/1843, TEST/7660, PEREZ/3303</p>
-            </div>
+    <div class="login-container">
+        <h1>Student Portal Login</h1>
+        <div class="input-group">
+            <label for="class-code">Class Code</label>
+            <input type="text" id="class-code" placeholder="e.g., MARTINEZ" />
         </div>
-    </div>
-
-    <!-- Dashboard Page -->
-    <div id="dashboard-page" class="dashboard">
-        <h1>Welcome, <span id="studentName">Student</span>!</h1>
-        <div class="points" id="studentPoints">0</div>
-        <div style="font-size: 1.2em; margin-bottom: 20px;">Kudos Points</div>
-        
-        <div class="dashboard-content">
-            <h3>🎉 Dashboard Loaded Successfully!</h3>
-            <p>Your Class Kudos dashboard is ready.</p>
-            <div id="studentInfo" style="margin-top: 20px;"></div>
+        <div class="input-group">
+            <label for="student-code">Student Code</label>
+            <input type="text" id="student-code" placeholder="e.g., 1843" />
         </div>
-        
-        <div class="nav-links">
-            <button onclick="showLogin()">Back to Login</button>
-            <button onclick="alert('Avatar builder coming soon!')">Avatar Builder</button>
-        </div>
+        <button id="login-btn" onclick="login()">Enter Portal</button>
+        <div id="message"></div>
     </div>
 
     <script>
-        console.log('Class Kudos Student Portal - Script loaded');
-        
-        // Global state
-        let currentStudent = null;
-        
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, checking for existing session...');
-            checkExistingSession();
-        });
-        
-        // Check for existing login session
-        function checkExistingSession() {
-            try {
-                const savedStudent = localStorage.getItem('classkudos_student');
-                if (savedStudent) {
-                    const student = JSON.parse(savedStudent);
-                    console.log('Found existing session:', student);
-                    showDashboard(student);
-                } else {
-                    console.log('No existing session found');
-                    showLogin();
-                }
-            } catch (error) {
-                console.error('Error checking session:', error);
-                localStorage.removeItem('classkudos_student');
-                showLogin();
-            }
-        }
-        
-        // Handle login form submission
-        async function handleLogin(event) {
-            event.preventDefault();
-            
-            const classCode = document.getElementById('classCode').value.trim().toUpperCase();
-            const studentCode = document.getElementById('studentCode').value.trim();
+        async function login() {
+            const classCode = document.getElementById('class-code').value.trim().toUpperCase();
+            const studentCode = document.getElementById('student-code').value.trim();
             const messageDiv = document.getElementById('message');
-            const loginBtn = document.getElementById('loginBtn');
+            const loginBtn = document.getElementById('login-btn');
             
-            console.log('Login attempt:', { classCode, studentCode });
+            messageDiv.innerHTML = '';
             
             if (!classCode || !studentCode) {
-                showMessage('Please fill in both fields', 'error');
+                messageDiv.innerHTML = '<div class="error">Please fill in both fields</div>';
                 return;
             }
             
+            loginBtn.textContent = 'Logging in...';
+            loginBtn.disabled = true;
+            
             try {
-                // Show loading state
-                loginBtn.disabled = true;
-                loginBtn.textContent = 'Logging in...';
-                showMessage('Logging in...', 'info');
+                console.log('FRESH LOGIN ATTEMPT:', { classCode, studentCode });
                 
-                // Make authentication request
-                const response = await fetch('/.netlify/functions/studentAuth', {
+                const response = await fetch('/.netlify/functions/newStudentAuth', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        classCode: classCode,
-                        studentCode: studentCode
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ classCode, studentCode })
                 });
                 
-                console.log('Auth response status:', response.status);
+                console.log('Response status:', response.status);
                 const result = await response.json();
-                console.log('Auth response data:', result);
+                console.log('Response data:', result);
                 
                 if (response.ok && result.success) {
-                    // Success!
-                    showMessage(`Welcome ${result.student.name}!`, 'success');
+                    messageDiv.innerHTML = `<div class="success">✅ SUCCESS! Welcome ${result.student.name}!<br>Class: ${result.student.class}<br>Points: ${result.student.points}</div>`;
                     
-                    // Save session
+                    // Store student info
                     localStorage.setItem('classkudos_student', JSON.stringify(result.student));
                     
-                    // Show dashboard after a brief delay
+                    // Redirect to main portal after 2 seconds
                     setTimeout(() => {
-                        showDashboard(result.student);
-                    }, 1000);
-                    
+                        window.location.href = '/index.html';
+                    }, 2000);
                 } else {
-                    // Login failed
-                    const errorMsg = result.error || result.details || 'Login failed';
-                    showMessage(errorMsg, 'error');
-                    console.error('Login failed:', result);
+                    throw new Error(result.error || result.message || 'Login failed');
                 }
-                
             } catch (error) {
                 console.error('Login error:', error);
-                showMessage('Connection error. Please try again.', 'error');
+                messageDiv.innerHTML = `<div class="error">❌ ${error.message}</div>`;
             } finally {
-                // Reset button
-                loginBtn.disabled = false;
                 loginBtn.textContent = 'Enter Portal';
+                loginBtn.disabled = false;
             }
         }
         
-        // Show message to user
-        function showMessage(text, type = 'info') {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = text;
-            messageDiv.className = `message ${type}`;
-        }
-        
-        // Show login page
-        function showLogin() {
-            document.getElementById('login-page').classList.remove('hidden');
-            document.getElementById('dashboard-page').classList.remove('active');
-            showMessage('Enter your class code and student ID to access your dashboard.', 'info');
-        }
-        
-        // Show dashboard
-        function showDashboard(student) {
-            console.log('Showing dashboard for:', student);
-            
-            // Hide login, show dashboard
-            document.getElementById('login-page').classList.add('hidden');
-            document.getElementById('dashboard-page').classList.add('active');
-            
-            // Update dashboard content
-            document.getElementById('studentName').textContent = student.name;
-            document.getElementById('studentPoints').textContent = student.points || 0;
-            
-            // Show student info
-            document.getElementById('studentInfo').innerHTML = `
-                <p><strong>Class:</strong> ${student.class}</p>
-                <p><strong>Student ID:</strong> ${student.id}</p>
-                <p><strong>Login Time:</strong> ${new Date().toLocaleTimeString()}</p>
-            `;
-            
-            currentStudent = student;
-        }
-        
-        // Logout function (called from nav)
-        function logout() {
-            localStorage.removeItem('classkudos_student');
-            currentStudent = null;
-            showLogin();
-        }
-        
-        console.log('Class Kudos Student Portal - Ready!');
+        // Allow Enter key
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') login();
+        });
     </script>
 </body>
 </html>
-/* Cache bust: 20250818-125254 */
