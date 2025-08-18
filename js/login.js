@@ -1,184 +1,64 @@
-// Simple Login System for Student Portal - Compatible with Main App Database
+// Simple Class Code + Name Login System for Student Portal
 
 class LoginManager {
     constructor() {
-        this.selectedTeacher = null;
-        this.selectedStudent = null;
-        this.teachers = [];
-        this.students = [];
         this.init();
     }
 
     async init() {
-        console.log('Initializing student login...');
-        await this.loadTeachers();
+        console.log('Initializing simple student login...');
         this.setupEventListeners();
     }
 
-    async loadTeachers() {
-        try {
-            console.log('Loading teachers from database...');
-            
-            // Load teachers from the database (compatible with main app)
-            const response = await fetch('/.netlify/functions/getPublicTeachers');
-            if (response.ok) {
-                this.teachers = await response.json();
-                console.log('Loaded teachers:', this.teachers);
-            } else {
-                throw new Error(`Failed to load teachers: ${response.status}`);
-            }
-            
-            this.renderTeachers();
-            
-        } catch (error) {
-            console.error('Error loading teachers:', error);
-            // Fallback to encourage user to contact their teacher
-            this.showError('Unable to load teacher list. Please contact your teacher for the student portal link.');
-        }
-    }
-
-    async loadStudentsForTeacher(teacherEmail) {
-        try {
-            console.log('Loading students for teacher:', teacherEmail);
-            
-            // For security, we don't expose all students publicly
-            // Instead, we'll let them enter their name and validate during authentication
-            this.showStudentNameInput();
-            
-        } catch (error) {
-            console.error('Error setting up student selection:', error);
-            this.showError('Unable to set up student selection.');
-        }
-    }
-
     setupEventListeners() {
-        // Teacher search
-        const teacherSearch = document.getElementById('teacher-search');
-        if (teacherSearch) {
-            teacherSearch.addEventListener('input', (e) => {
-                this.filterTeachers(e.target.value);
-            });
-        }
-
-        // Student name input
-        const studentNameInput = document.getElementById('student-name');
-        if (studentNameInput) {
-            studentNameInput.addEventListener('keypress', (e) => {
+        // Enter key handlers
+        const classCodeInput = document.getElementById('class-code-input');
+        const studentCodeInput = document.getElementById('student-code-input');
+        
+        if (classCodeInput) {
+            classCodeInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
-                    this.handleStudentNameSubmit();
+                    document.getElementById('student-code-input').focus();
                 }
             });
         }
 
-        // Access code input
-        const accessCodeInput = document.getElementById('access-code');
-        if (accessCodeInput) {
-            accessCodeInput.addEventListener('keypress', (e) => {
+        if (studentCodeInput) {
+            studentCodeInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
-                    this.submitAccessCode();
+                    this.handleSimpleLogin();
                 }
             });
         }
     }
 
-    renderTeachers() {
-        const grid = document.getElementById('teacher-grid');
-        if (!grid) return;
-
-        if (this.teachers.length === 0) {
-            grid.innerHTML = '<div class="no-results">No teachers found. Please contact your administrator.</div>';
-            return;
-        }
-
-        grid.innerHTML = this.teachers.map(teacher => `
-            <div class="teacher-card" data-email="${teacher.email}" onclick="loginManager.selectTeacher('${teacher.email}')">
-                <div class="teacher-icon">👨‍🏫</div>
-                <div class="teacher-info">
-                    <h4>${teacher.name || teacher.email}</h4>
-                    <p>${teacher.class_count || 0} classes</p>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    showStudentNameInput() {
-        // Hide teacher selection and show student name input
-        document.getElementById('teacher-selection').style.display = 'none';
-        document.getElementById('student-selection').style.display = 'block';
+    async handleSimpleLogin() {
+        const classCode = document.getElementById('class-code-input').value.trim();
+        const studentCode = document.getElementById('student-code-input').value.trim();
+        const errorDiv = document.getElementById('login-error');
+        const loginButton = document.getElementById('login-button');
         
-        // Update the student selection to be a name input instead of a grid
-        const studentGrid = document.getElementById('student-grid');
-        if (studentGrid) {
-            studentGrid.innerHTML = `
-                <div class="student-name-input">
-                    <label for="student-name-field">Enter your full name exactly as it appears in class:</label>
-                    <input type="text" id="student-name-field" placeholder="Your full name..." />
-                    <button onclick="loginManager.handleStudentNameSubmit()">Continue</button>
-                </div>
-            `;
-            
-            // Focus on the input
-            setTimeout(() => {
-                document.getElementById('student-name-field').focus();
-            }, 100);
-        }
-    }
-
-    selectTeacher(teacherEmail) {
-        console.log('Selected teacher:', teacherEmail);
-        this.selectedTeacher = teacherEmail;
+        // Clear previous errors
+        errorDiv.textContent = '';
         
-        // Highlight selected teacher
-        document.querySelectorAll('.teacher-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-        document.querySelector(`[data-email="${teacherEmail}"]`).classList.add('selected');
-        
-        // Load students for this teacher
-        this.loadStudentsForTeacher(teacherEmail);
-    }
-
-    handleStudentNameSubmit() {
-        const nameInput = document.getElementById('student-name-field');
-        const studentName = nameInput ? nameInput.value.trim() : '';
-        
-        if (!studentName) {
-            this.showError('Please enter your name');
+        // Validate inputs
+        if (!classCode) {
+            this.showError('Please enter your class code');
+            document.getElementById('class-code-input').focus();
             return;
         }
         
-        this.selectedStudent = {
-            name: studentName,
-            teacherEmail: this.selectedTeacher
-        };
-        
-        // Show access code step
-        document.getElementById('student-selection').style.display = 'none';
-        document.getElementById('code-entry').style.display = 'block';
-        
-        // Focus on access code input
-        setTimeout(() => {
-            document.getElementById('access-code').focus();
-        }, 100);
-    }
-
-    async submitAccessCode() {
-        const accessCode = document.getElementById('access-code').value.trim();
-        const errorDiv = document.getElementById('code-error');
-        
-        if (!accessCode) {
-            errorDiv.textContent = 'Please enter an access code';
-            return;
-        }
-
-        if (!this.selectedStudent || !this.selectedTeacher) {
-            errorDiv.textContent = 'Please select a teacher and enter your name first';
+        if (!studentCode) {
+            this.showError('Please enter your student code');
+            document.getElementById('student-code-input').focus();
             return;
         }
 
         try {
-            this.showLoading('Authenticating...');
-            errorDiv.textContent = '';
+            // Disable button and show loading
+            loginButton.disabled = true;
+            loginButton.textContent = 'Logging in...';
+            this.showLoading('Checking your codes...');
 
             // Authenticate with the database
             const response = await fetch('/.netlify/functions/studentAuth', {
@@ -187,80 +67,60 @@ class LoginManager {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    studentName: this.selectedStudent.name,
-                    teacherEmail: this.selectedTeacher,
-                    accessCode: accessCode
+                    classCode: classCode.toUpperCase(), // Normalize to uppercase
+                    studentCode: studentCode.toUpperCase() // Normalize to uppercase
                 })
             });
 
+            const result = await response.json();
+
             if (!response.ok) {
-                throw new Error('Invalid access code');
+                throw new Error(result.details || result.error || 'Login failed');
             }
 
-            const result = await response.json();
-            
-            if (result.success) {
-                // Store authentication data
-                this.storeAuthData(result);
-                console.log('Login successful, redirecting to dashboard');
-                this.redirectToDashboard();
+            if (result.success && result.student) {
+                console.log('Login successful:', result.student);
+                
+                // Store student info in localStorage
+                localStorage.setItem('classkudos_student', JSON.stringify(result.student));
+                
+                // Show success and redirect to dashboard
+                this.showSuccess('Welcome ' + result.student.name + '!');
+                setTimeout(() => {
+                    this.redirectToDashboard(result.student);
+                }, 1000);
+                
             } else {
-                throw new Error(result.error || 'Authentication failed');
+                throw new Error('Invalid response from server');
             }
-            
+
         } catch (error) {
-            console.error('Authentication failed:', error);
-            errorDiv.textContent = 'Invalid access code or student name. Please check and try again.';
-        } finally {
+            console.error('Login error:', error);
+            this.showError(error.message);
+            
+            // Re-enable button
+            loginButton.disabled = false;
+            loginButton.textContent = 'Enter Portal';
             this.hideLoading();
         }
     }
 
-    storeAuthData(authData) {
-        const authInfo = {
-            studentName: this.selectedStudent.name,
-            teacherEmail: this.selectedTeacher,
-            studentData: authData.student,
-            authenticated: true,
-            timestamp: new Date().toISOString()
-        };
-        
-        localStorage.setItem('studentAuth', JSON.stringify(authInfo));
-        localStorage.setItem('currentStudent', JSON.stringify(authData.student));
-        console.log('Stored authentication data');
-    }
-
-    redirectToDashboard() {
-        // Hide login page and show dashboard
-        document.getElementById('login-page').classList.remove('active');
-        document.getElementById('dashboard-page').classList.add('active');
-        
-        // Update navigation
-        document.getElementById('dashboard-link').style.display = 'inline';
-        document.getElementById('avatar-link').style.display = 'inline';
-        document.getElementById('logout-link').style.display = 'inline';
-        
-        // Initialize dashboard if available
-        if (window.dashboardManager) {
-            window.dashboardManager.init();
-        } else if (window.initDashboard) {
-            window.initDashboard();
+    showError(message) {
+        const errorDiv = document.getElementById('login-error');
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
         }
+        console.error('Login Error:', message);
     }
 
-    filterTeachers(searchTerm) {
-        const cards = document.querySelectorAll('.teacher-card');
-        const term = searchTerm.toLowerCase();
-        
-        cards.forEach(card => {
-            const teacherName = card.querySelector('h4').textContent.toLowerCase();
-            
-            if (teacherName.includes(term)) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
+    showSuccess(message) {
+        const errorDiv = document.getElementById('login-error');
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.style.color = '#28a745';
+            errorDiv.style.display = 'block';
+        }
     }
 
     showLoading(message = 'Loading...') {
@@ -279,40 +139,35 @@ class LoginManager {
         }
     }
 
-    showError(message) {
-        console.error('Login Error:', message);
-        alert(message); // Simple error display - can be enhanced
-    }
-
-    // Check if user is already authenticated
-    checkExistingAuth() {
-        const authData = localStorage.getItem('studentAuth');
-        if (authData) {
-            try {
-                const auth = JSON.parse(authData);
-                const hoursSinceAuth = (new Date() - new Date(auth.timestamp)) / (1000 * 60 * 60);
-                
-                // Auto-login if authenticated within last 8 hours
-                if (hoursSinceAuth < 8 && auth.authenticated) {
-                    console.log('Found existing authentication, redirecting to dashboard');
-                    this.redirectToDashboard();
-                    return true;
-                }
-            } catch (error) {
-                console.warn('Invalid auth data in localStorage');
-                localStorage.removeItem('studentAuth');
-            }
+    redirectToDashboard(student) {
+        console.log('Redirecting to dashboard with student:', student);
+        
+        // Hide login page
+        document.getElementById('login-page').classList.remove('active');
+        
+        // Show dashboard
+        document.getElementById('dashboard-page').classList.add('active');
+        
+        // Update navigation
+        document.getElementById('dashboard-link').style.display = 'inline';
+        document.getElementById('avatar-link').style.display = 'inline';
+        document.getElementById('logout-link').style.display = 'inline';
+        
+        // Hide loading
+        this.hideLoading();
+        
+        // Initialize dashboard with student data
+        if (window.dashboardManager) {
+            window.dashboardManager.loadStudentData(student);
         }
-        return false;
     }
 
     logout() {
-        localStorage.removeItem('studentAuth');
-        localStorage.removeItem('currentStudent');
+        // Clear stored data
+        localStorage.removeItem('classkudos_student');
         
         // Reset UI
         document.getElementById('dashboard-page').classList.remove('active');
-        document.getElementById('avatar-page').classList.remove('active');
         document.getElementById('login-page').classList.add('active');
         
         // Reset navigation
@@ -320,16 +175,31 @@ class LoginManager {
         document.getElementById('avatar-link').style.display = 'none';
         document.getElementById('logout-link').style.display = 'none';
         
-        // Reset login state
-        this.selectedTeacher = null;
-        this.selectedStudent = null;
+        // Clear form
+        document.getElementById('class-code-input').value = '';
+        document.getElementById('student-code-input').value = '';
+        document.getElementById('login-error').textContent = '';
+        document.getElementById('login-error').style.color = '#dc3545';
         
-        // Show teacher selection again
-        document.getElementById('teacher-selection').style.display = 'block';
-        document.getElementById('student-selection').style.display = 'none';
-        document.getElementById('code-entry').style.display = 'none';
-        
-        console.log('Logged out successfully');
+        // Re-enable button
+        const loginButton = document.getElementById('login-button');
+        loginButton.disabled = false;
+        loginButton.textContent = 'Enter Portal';
+    }
+
+    // Check if student is already logged in on page load
+    checkExistingLogin() {
+        const storedStudent = localStorage.getItem('classkudos_student');
+        if (storedStudent) {
+            try {
+                const student = JSON.parse(storedStudent);
+                console.log('Found existing login:', student);
+                this.redirectToDashboard(student);
+            } catch (error) {
+                console.error('Error parsing stored student data:', error);
+                localStorage.removeItem('classkudos_student');
+            }
+        }
     }
 }
 
@@ -340,11 +210,23 @@ function showLoginPage() {
 }
 
 function showDashboard() {
+    const student = localStorage.getItem('classkudos_student');
+    if (!student) {
+        showLoginPage();
+        return;
+    }
+    
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     document.getElementById('dashboard-page').classList.add('active');
 }
 
 function showAvatarBuilder() {
+    const student = localStorage.getItem('classkudos_student');
+    if (!student) {
+        showLoginPage();
+        return;
+    }
+    
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     document.getElementById('avatar-page').classList.add('active');
 }
@@ -355,15 +237,11 @@ function logout() {
     }
 }
 
-// Initialize when DOM is loaded
-let loginManager;
+// Initialize login manager when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Student portal initializing...');
-    loginManager = new LoginManager();
-    
-    // Check for existing authentication
-    if (!loginManager.checkExistingAuth()) {
-        // Show login page if not authenticated
-        showLoginPage();
-    }
+    window.loginManager = new LoginManager();
+    // Check for existing login after a short delay
+    setTimeout(() => {
+        window.loginManager.checkExistingLogin();
+    }, 500);
 });
