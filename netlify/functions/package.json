@@ -1,0 +1,10 @@
+{
+  "name": "class-kudos-student-functions",
+  "version": "1.0.0",
+  "description": "Netlify functions for Class Kudos Student Portal",
+  "dependencies": {
+    "pg": "^8.11.3",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
