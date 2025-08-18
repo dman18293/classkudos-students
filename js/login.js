@@ -1,4 +1,4 @@
-// Simple Class Code + Name Login System for Student Portal
+// Simple Class Code + Student Code Login System for Student Portal
 
 class LoginManager {
     constructor() {
@@ -39,7 +39,10 @@ class LoginManager {
         const loginButton = document.getElementById('login-button');
         
         // Clear previous errors
-        errorDiv.textContent = '';
+        if (errorDiv) {
+            errorDiv.textContent = '';
+            errorDiv.style.color = '#dc3545';
+        }
         
         // Validate inputs
         if (!classCode) {
@@ -56,9 +59,13 @@ class LoginManager {
 
         try {
             // Disable button and show loading
-            loginButton.disabled = true;
-            loginButton.textContent = 'Logging in...';
+            if (loginButton) {
+                loginButton.disabled = true;
+                loginButton.textContent = 'Logging in...';
+            }
             this.showLoading('Checking your codes...');
+
+            console.log('Attempting login with:', { classCode, studentCode });
 
             // Authenticate with the database
             const response = await fetch('/.netlify/functions/studentAuth', {
@@ -73,6 +80,7 @@ class LoginManager {
             });
 
             const result = await response.json();
+            console.log('Server response:', result);
 
             if (!response.ok) {
                 throw new Error(result.details || result.error || 'Login failed');
@@ -96,11 +104,13 @@ class LoginManager {
 
         } catch (error) {
             console.error('Login error:', error);
-            this.showError(error.message);
+            this.showError(error.message || 'Login failed. Please check your codes.');
             
             // Re-enable button
-            loginButton.disabled = false;
-            loginButton.textContent = 'Enter Portal';
+            if (loginButton) {
+                loginButton.disabled = false;
+                loginButton.textContent = 'Enter Portal';
+            }
             this.hideLoading();
         }
     }
@@ -109,6 +119,7 @@ class LoginManager {
         const errorDiv = document.getElementById('login-error');
         if (errorDiv) {
             errorDiv.textContent = message;
+            errorDiv.style.color = '#dc3545';
             errorDiv.style.display = 'block';
         }
         console.error('Login Error:', message);
@@ -143,15 +154,21 @@ class LoginManager {
         console.log('Redirecting to dashboard with student:', student);
         
         // Hide login page
-        document.getElementById('login-page').classList.remove('active');
+        const loginPage = document.getElementById('login-page');
+        if (loginPage) loginPage.classList.remove('active');
         
         // Show dashboard
-        document.getElementById('dashboard-page').classList.add('active');
+        const dashboardPage = document.getElementById('dashboard-page');
+        if (dashboardPage) dashboardPage.classList.add('active');
         
         // Update navigation
-        document.getElementById('dashboard-link').style.display = 'inline';
-        document.getElementById('avatar-link').style.display = 'inline';
-        document.getElementById('logout-link').style.display = 'inline';
+        const dashboardLink = document.getElementById('dashboard-link');
+        const avatarLink = document.getElementById('avatar-link');
+        const logoutLink = document.getElementById('logout-link');
+        
+        if (dashboardLink) dashboardLink.style.display = 'inline';
+        if (avatarLink) avatarLink.style.display = 'inline';
+        if (logoutLink) logoutLink.style.display = 'inline';
         
         // Hide loading
         this.hideLoading();
@@ -167,24 +184,39 @@ class LoginManager {
         localStorage.removeItem('classkudos_student');
         
         // Reset UI
-        document.getElementById('dashboard-page').classList.remove('active');
-        document.getElementById('login-page').classList.add('active');
+        const dashboardPage = document.getElementById('dashboard-page');
+        const loginPage = document.getElementById('login-page');
+        
+        if (dashboardPage) dashboardPage.classList.remove('active');
+        if (loginPage) loginPage.classList.add('active');
         
         // Reset navigation
-        document.getElementById('dashboard-link').style.display = 'none';
-        document.getElementById('avatar-link').style.display = 'none';
-        document.getElementById('logout-link').style.display = 'none';
+        const dashboardLink = document.getElementById('dashboard-link');
+        const avatarLink = document.getElementById('avatar-link');
+        const logoutLink = document.getElementById('logout-link');
+        
+        if (dashboardLink) dashboardLink.style.display = 'none';
+        if (avatarLink) avatarLink.style.display = 'none';
+        if (logoutLink) logoutLink.style.display = 'none';
         
         // Clear form
-        document.getElementById('class-code-input').value = '';
-        document.getElementById('student-code-input').value = '';
-        document.getElementById('login-error').textContent = '';
-        document.getElementById('login-error').style.color = '#dc3545';
+        const classCodeInput = document.getElementById('class-code-input');
+        const studentCodeInput = document.getElementById('student-code-input');
+        const errorDiv = document.getElementById('login-error');
+        const loginButton = document.getElementById('login-button');
+        
+        if (classCodeInput) classCodeInput.value = '';
+        if (studentCodeInput) studentCodeInput.value = '';
+        if (errorDiv) {
+            errorDiv.textContent = '';
+            errorDiv.style.color = '#dc3545';
+        }
         
         // Re-enable button
-        const loginButton = document.getElementById('login-button');
-        loginButton.disabled = false;
-        loginButton.textContent = 'Enter Portal';
+        if (loginButton) {
+            loginButton.disabled = false;
+            loginButton.textContent = 'Enter Portal';
+        }
     }
 
     // Check if student is already logged in on page load
@@ -206,7 +238,8 @@ class LoginManager {
 // Global functions for navigation
 function showLoginPage() {
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-    document.getElementById('login-page').classList.add('active');
+    const loginPage = document.getElementById('login-page');
+    if (loginPage) loginPage.classList.add('active');
 }
 
 function showDashboard() {
@@ -217,7 +250,8 @@ function showDashboard() {
     }
     
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-    document.getElementById('dashboard-page').classList.add('active');
+    const dashboardPage = document.getElementById('dashboard-page');
+    if (dashboardPage) dashboardPage.classList.add('active');
 }
 
 function showAvatarBuilder() {
@@ -228,7 +262,8 @@ function showAvatarBuilder() {
     }
     
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-    document.getElementById('avatar-page').classList.add('active');
+    const avatarPage = document.getElementById('avatar-page');
+    if (avatarPage) avatarPage.classList.add('active');
 }
 
 function logout() {
@@ -239,6 +274,7 @@ function logout() {
 
 // Initialize login manager when page loads
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing login manager...');
     window.loginManager = new LoginManager();
     // Check for existing login after a short delay
     setTimeout(() => {
