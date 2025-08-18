@@ -310,9 +310,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Also make it available immediately
+window.AvatarBuilderManager = AvatarBuilderManager;
+
 // Global function for navigation
 function initAvatarBuilder() {
-    if (window.avatarBuilderManager) {
+    if (!window.avatarBuilderManager) {
+        window.avatarBuilderManager = new AvatarBuilderManager();
+    } else {
         window.avatarBuilderManager.loadAvatarBuilder();
     }
 }

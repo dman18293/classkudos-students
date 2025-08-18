@@ -225,9 +225,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Also make it available immediately for login redirects
+window.DashboardManager = DashboardManager;
+
 // Global function for navigation
 function initDashboard() {
-    if (window.dashboardManager) {
+    if (!window.dashboardManager) {
+        window.dashboardManager = new DashboardManager();
+    } else {
         window.dashboardManager.loadDashboard();
     }
 }
