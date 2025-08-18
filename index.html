@@ -1,21 +1,69 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class Kudos Student Portal</title>
+    <title>Class Kudos Student Portal - FIXED</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/avatar-builder.css">
+    <style>
+        /* Inline emergency styles to ensure it works */
+        .login-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        .input-group small {
+            color: #666;
+            font-size: 14px;
+        }
+        #login-button {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .error-message {
+            color: red;
+            margin-top: 10px;
+            padding: 10px;
+            background: #ffe6e6;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
 </head>
-<body>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin: 0; font-family: Arial, sans-serif;">
     <!-- Navigation Header -->
     <nav class="student-nav">
         <div class="nav-container">
             <div class="logo">
                 <h1>Class Kudos</h1>
-                <span>Student Portal</span>
+                <span>Student Portal - UPDATED VERSION</span>
             </div>
             <div class="nav-menu" id="nav-menu">
                 <a href="#" onclick="showLoginPage()">Login</a>
@@ -32,66 +80,62 @@
         <div id="login-page" class="page active">
             <div class="login-container">
                 <div class="login-header">
-                    <h2>Welcome to Class Kudos!</h2>
-                    <p>Select your teacher and find your name to get started</p>
+                    <h2 style="text-align: center; color: #333;">Welcome to Class Kudos!</h2>
+                    <p style="text-align: center; color: #666;">Enter your class code and student code to get started</p>
                 </div>
                 
-                <div class="login-steps">
-                    <!-- Step 1: Select Teacher -->
-                    <div class="login-step" id="teacher-selection">
-                        <h3>Step 1: Find Your Teacher</h3>
-                        <div class="search-container">
-                            <input type="text" id="teacher-search" placeholder="Search for your teacher or class..." />
-                        </div>
-                        <div class="teacher-grid" id="teacher-grid">
-                            <!-- Teachers will be populated here -->
-                        </div>
+                <div class="simple-login-form">
+                    <div class="input-group">
+                        <label for="class-code-input">Class Code</label>
+                        <input type="text" id="class-code-input" placeholder="Enter your class code (e.g., DARR25)" />
+                        <small>Ask your teacher for your class code</small>
                     </div>
-
-                    <!-- Step 2: Select Student -->
-                    <div class="login-step" id="student-selection" style="display: none;">
-                        <h3>Step 2: Find Your Name</h3>
-                        <div class="search-container">
-                            <input type="text" id="student-search" placeholder="Search for your name..." />
-                        </div>
-                        <div class="student-grid" id="student-grid">
-                            <!-- Students will be populated here -->
-                        </div>
+                    
+                    <div class="input-group">
+                        <label for="student-code-input">Student Code</label>
+                        <input type="text" id="student-code-input" placeholder="Enter your student code" />
+                        <small>Ask your teacher for your unique student code</small>
                     </div>
-
-                    <!-- Step 3: Enter Access Code -->
-                    <div class="login-step" id="code-entry" style="display: none;">
-                        <h3>Step 3: Enter Access Code</h3>
-                        <p>Enter the code provided by your teacher:</p>
-                        <div class="code-container">
-                            <input type="text" id="access-code" placeholder="Enter code..." maxlength="10" />
-                            <button id="submit-code" onclick="submitAccessCode()">Enter Portal</button>
-                        </div>
-                        <div id="code-error" class="error-message"></div>
+                    
+                    <button id="login-button" onclick="if(window.loginManager) window.loginManager.handleSimpleLogin(); else alert('Login system loading...');">
+                        Enter Portal
+                    </button>
+                    
+                    <div id="login-error" class="error-message"></div>
+                    
+                    <div class="help-section" style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                        <h4 style="color: #333;">Need help?</h4>
+                        <p style="color: #666;">Ask your teacher for:</p>
+                        <ul style="color: #666;">
+                            <li>Your class code</li>
+                            <li>Your unique student code</li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Dashboard Page -->
-        <div id="dashboard-page" class="page">
+        <div id="dashboard-page" class="page" style="display: none;">
             <div class="dashboard-container">
-                <!-- Dashboard content will be loaded here -->
+                <h2>Student Dashboard</h2>
+                <p>Dashboard content will be loaded here...</p>
             </div>
         </div>
 
         <!-- Avatar Builder Page -->
-        <div id="avatar-page" class="page">
+        <div id="avatar-page" class="page" style="display: none;">
             <div class="avatar-container">
-                <!-- Avatar builder content will be loaded here -->
+                <h2>Avatar Builder</h2>
+                <p>Avatar builder content will be loaded here...</p>
             </div>
         </div>
     </main>
 
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="loading-overlay" style="display: none;">
-        <div class="loading-spinner"></div>
-        <p>Loading...</p>
+    <div id="loading-overlay" class="loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; text-align: center; color: white; padding-top: 200px;">
+        <div class="loading-spinner" style="font-size: 48px;">⏳</div>
+        <p style="font-size: 18px; margin-top: 20px;">Loading...</p>
     </div>
 
     <!-- Scripts -->
