@@ -159,8 +159,8 @@
                 
                 console.log('Attempting login with:', { classCode, studentCode });
                 
-                // Try the new studentAuth2 function
-                const response = await fetch('/.netlify/functions/studentAuth2', {
+                // Try the new studentLogin function
+                const response = await fetch('/.netlify/functions/studentLogin', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
