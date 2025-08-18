@@ -175,7 +175,7 @@ class LoginManager {
         
         // Initialize dashboard with student data
         if (window.dashboardManager) {
-            window.dashboardManager.loadStudentData(student);
+            window.dashboardManager.loadDashboard();
         }
     }
 
