@@ -1,4 +1,4 @@
-﻿exports.handler = async function(event, context) {
+exports.handler = async function(event, context) {
   // Set CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -60,4 +60,3 @@
     };
   }
 };
-# Deployment trigger 08/18/2025 12:21:38
