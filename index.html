@@ -863,6 +863,22 @@
             console.log('Enhanced portal loaded successfully');
             setupEventListeners();
             populateAvatarOptions();
+            
+            // Check for saved session
+            const savedSession = sessionStorage.getItem('studentSession');
+            if (savedSession) {
+                try {
+                    const sessionData = JSON.parse(savedSession);
+                    currentStudent = sessionData.student;
+                    currentClass = sessionData.classCode;
+                    currentStudentCode = sessionData.studentCode;
+                    console.log('Restored session for:', currentStudent.name);
+                    showDashboard();
+                } catch (e) {
+                    console.log('Failed to restore session:', e);
+                    sessionStorage.removeItem('studentSession');
+                }
+            }
         });
 
         function setupEventListeners() {
@@ -925,6 +941,13 @@
                     currentClass = classCode;
                     currentStudentCode = studentCode;
                     
+                    // Save session for persistence
+                    sessionStorage.setItem('studentSession', JSON.stringify({
+                        student: currentStudent,
+                        classCode: currentClass,
+                        studentCode: currentStudentCode
+                    }));
+                    
                     console.log('Login successful:', currentStudent);
                     
                     // Show dashboard
@@ -970,6 +993,14 @@
             document.getElementById('studentClass').textContent = currentClass;
             document.getElementById('displayStudentCode').textContent = currentStudentCode;
             
+            // Set total kudos from student data (use xp if available, otherwise points)
+            const totalKudos = currentStudent.xp || currentStudent.points || 0;
+            document.getElementById('totalKudos').textContent = totalKudos;
+            
+            // Set level (default to 1 if not available)
+            const level = currentStudent.level || Math.max(1, Math.floor(totalKudos / 100) + 1);
+            document.getElementById('studentLevel').textContent = level;
+            
             // Set avatar initials as fallback
             const initials = currentStudent.name.split(' ').map(n => n[0]).join('').substring(0, 2);
             document.getElementById('avatarInitials').textContent = initials;
@@ -1004,11 +1035,49 @@
         async function loadDashboardData() {
             console.log('Loading dashboard for student:', currentStudent);
             
+            // Refresh student data to get latest points/xp
+            await refreshStudentData();
+            
             // Load all data in parallel
             await Promise.all([
                 loadStudentKudos(),
                 loadLeaderboard()
             ]);
+        }
+
+        async function refreshStudentData() {
+            try {
+                // Re-authenticate to get fresh student data
+                const response = await fetch('/.netlify/functions/consistentStudentAuth', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        classCode: currentClass,
+                        studentCode: currentStudentCode
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        // Update current student data
+                        currentStudent = data.student;
+                        // Update session storage
+                        sessionStorage.setItem('studentSession', JSON.stringify({
+                            student: currentStudent,
+                            classCode: currentClass,
+                            studentCode: currentStudentCode
+                        }));
+                        // Update profile display
+                        updateStudentProfile();
+                        console.log('Refreshed student data:', currentStudent);
+                    }
+                }
+            } catch (e) {
+                console.log('Failed to refresh student data:', e);
+            }
         }
 
         async function loadStudentKudos() {
@@ -1077,8 +1146,12 @@
         }
 
         function updateKudosStats(kudos) {
-            const totalPoints = kudos.reduce((sum, kudo) => sum + (kudo.points || 1), 0);
-            document.getElementById('totalKudos').textContent = totalPoints;
+            // Don't override totalKudos if it's already set from student profile
+            const currentTotal = document.getElementById('totalKudos').textContent;
+            if (!currentTotal || currentTotal === '0') {
+                const totalPoints = kudos.reduce((sum, kudo) => sum + (kudo.points || 1), 0);
+                document.getElementById('totalKudos').textContent = totalPoints;
+            }
             
             // Calculate recent kudos (last 7 days)
             const oneWeekAgo = new Date();
@@ -1234,6 +1307,9 @@
             currentStudent = null;
             currentClass = null;
             currentStudentCode = null;
+            
+            // Clear session storage
+            sessionStorage.removeItem('studentSession');
             
             // Reset form
             document.getElementById('loginForm').reset();
