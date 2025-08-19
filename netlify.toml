@@ -4,7 +4,7 @@
 
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/portal.html"
   status = 200
 
 [[headers]]
