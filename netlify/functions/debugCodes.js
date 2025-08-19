@@ -2,15 +2,18 @@ const { Client } = require('pg');
 
 // Generate consistent student ID using the same hash function as main app
 function generateConsistentStudentId(name) {
+    // Generate a simple 4-digit code based on the student's name
+    // This ensures the same student always gets the same ID
     let hash = 0;
-    const str = name.toLowerCase().trim();
-    for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
+    if (name.length === 0) return "1000";
+    for (let i = 0; i < name.length; i++) {
+        const char = name.charCodeAt(i);
         hash = ((hash << 5) - hash) + char;
         hash = hash & hash; // Convert to 32-bit integer
     }
-    // Ensure it's always a 4-digit number between 1000-9999
-    return Math.abs(hash % 9000) + 1000;
+    // Convert to 4-digit code (1000-9999)
+    const code = (Math.abs(hash) % 9000) + 1000;
+    return code.toString();
 }
 
 exports.handler = async (event, context) => {
