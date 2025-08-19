@@ -64,6 +64,10 @@ exports.handler = async function(event, context) {
       updates.push(`xp = $${paramCount}`);
       values.push(xp);
       paramCount++;
+      // Also sync points with xp for consistency
+      updates.push(`points = $${paramCount}`);
+      values.push(xp);
+      paramCount++;
     }
 
     if (level !== undefined) {
