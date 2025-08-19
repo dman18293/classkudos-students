@@ -1008,6 +1008,12 @@
                 // Load from localStorage as fallback
                 loadSavedAvatar();
             }
+            
+            // Update initial stats from login data
+            if (currentStudent.points !== undefined) {
+                document.getElementById('totalKudos').textContent = currentStudent.points;
+                updateXPDisplay(currentStudent.points);
+            }
         }
 
         async function loadDashboardData() {
