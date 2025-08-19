@@ -79,7 +79,7 @@
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const classCode = document.getElementById('classCode').value.trim().toUpperCase();
+            const classCode = document.getElementById('classCode').value.trim();
             const studentCode = document.getElementById('studentCode').value.trim();
             const errorDiv = document.getElementById('error');
             
@@ -148,10 +148,6 @@
         }
         
         // Auto-format inputs
-        document.getElementById('classCode').addEventListener('input', e => {
-            e.target.value = e.target.value.toUpperCase();
-        });
-        
         document.getElementById('studentCode').addEventListener('input', e => {
             e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
         });
