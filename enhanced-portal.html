@@ -1192,10 +1192,17 @@
 
         async function loadLeaderboard() {
             try {
+                console.log('Loading leaderboard for class:', currentClass);
                 const response = await fetch(`/.netlify/functions/getLeaderboard?classCode=${currentClass}`);
+                console.log('Leaderboard response status:', response.status);
                 const data = await response.json();
+                console.log('Leaderboard data received:', data);
                 
                 if (response.ok && data.success) {
+                    console.log('Leaderboard entries:', data.leaderboard.length);
+                    data.leaderboard.forEach((student, index) => {
+                        console.log(`Leaderboard entry ${index}: name="${student.name}", points=${student.total_points}`);
+                    });
                     updateLeaderboard(data.leaderboard || []);
                 } else {
                     console.error('Failed to load leaderboard:', data.message);
