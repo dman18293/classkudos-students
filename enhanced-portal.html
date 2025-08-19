@@ -570,16 +570,6 @@
         .level-up-notification p {
             font-size: 1.2em;
         }
-        
-        /* Simple CSS fix to hide JSON text and show only clean names */
-        .student-name {
-            font-size: 0 !important;
-        }
-        
-        .student-name::after {
-            font-size: 16px;
-            content: attr(data-name);
-        }
     </style>
 </head>
 <body>
@@ -1248,29 +1238,11 @@
                         <div style="font-size: 1.5em; font-weight: bold; color: #667eea; margin-right: 15px; min-width: 40px;">
                             #${rank}
                         </div>
-                        <div style="margin-right: 15px; font-size: 1.8em;">
+                        <div style="margin-right: 15px; font-size: 2.5em; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(102, 126, 234, 0.1);">
                             ${avatar}
                         </div>
                         <div style="flex-grow: 1;">
-                            <div style="font-weight: 500; color: #333;" class="student-name" data-name="${(() => {
-                                let displayName = student.name;
-                                try {
-                                    if (typeof displayName === 'string' && displayName.includes('{"seed"')) {
-                                        const parsed = JSON.parse(displayName);
-                                        if (parsed.seed) {
-                                            displayName = parsed.seed.split('-')[0];
-                                        }
-                                    }
-                                } catch (e) {
-                                    if (displayName.includes('{"seed":"')) {
-                                        const match = displayName.match(/"seed":"([^"]+)"/);
-                                        if (match) {
-                                            displayName = match[1].split('-')[0];
-                                        }
-                                    }
-                                }
-                                return displayName + (isCurrentStudent ? ' (You)' : '');
-                            })()}">
+                            <div style="font-weight: 500; color: #333;">
                                 ${student.name} ${isCurrentStudent ? '(You)' : ''}
                             </div>
                             <div style="color: #666; font-size: 0.9em;">
