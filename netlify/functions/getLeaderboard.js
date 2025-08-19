@@ -54,20 +54,28 @@ exports.handler = async function(event, context) {
     const leaderboard = res.rows.map((student, index) => {
       // Parse the name if it's stored as JSON
       let displayName = student.name;
+      console.log(`Processing student ${index}: original name = "${student.name}"`);
+      
       try {
         if (typeof student.name === 'string' && student.name.startsWith('{')) {
+          console.log(`Parsing JSON name for student ${index}: ${student.name}`);
           const nameObj = JSON.parse(student.name);
           if (nameObj.seed) {
             // Extract the actual name from the seed format
             displayName = nameObj.seed.split('-')[0];
+            console.log(`Extracted name from seed: ${displayName}`);
           } else if (nameObj.name) {
             displayName = nameObj.name;
+            console.log(`Used name property: ${displayName}`);
           }
         }
       } catch (e) {
+        console.log(`Error parsing name for student ${index}: ${e.message}`);
         // If parsing fails, use the name as is
         displayName = student.name;
       }
+
+      console.log(`Final name for student ${index}: "${displayName}"`);
 
       return {
         rank: index + 1,
