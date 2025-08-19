@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Kudos Student Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 { color: #667eea; text-align: center; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+        button:hover { background: #5a6fd8; }
+        .error { color: red; margin-top: 10px; text-align: center; }
+        .dashboard { display: none; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
+        .stat { background: #f8f9fa; padding: 15px; border-radius: 5px; text-align: center; }
+        .stat h3 { margin: 0; color: #667eea; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="loginSection">
+            <h1>Class Kudos</h1>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="classCode">Class Code</label>
+                    <input type="text" id="classCode" required placeholder="e.g., DARR">
+                </div>
+                <div class="form-group">
+                    <label for="studentCode">Student Code</label>
+                    <input type="text" id="studentCode" required placeholder="4-digit code">
+                </div>
+                <button type="submit">Login</button>
+            </form>
+            <div id="error" class="error"></div>
+        </div>
+
+        <div id="dashboardSection" class="dashboard">
+            <h1>Welcome!</h1>
+            <div class="stats">
+                <div class="stat">
+                    <h3 id="totalKudos">0</h3>
+                    <p>Total Kudos</p>
+                </div>
+                <div class="stat">
+                    <h3 id="classRank">#-</h3>
+                    <p>Class Rank</p>
+                </div>
+                <div class="stat">
+                    <h3 id="recentKudos">0</h3>
+                    <p>This Week</p>
+                </div>
+            </div>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        console.log('Page loaded successfully');
+        
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const classCode = document.getElementById('classCode').value.trim();
+            const studentCode = document.getElementById('studentCode').value.trim();
+            const errorDiv = document.getElementById('error');
+            
+            errorDiv.textContent = '';
+            
+            if (!classCode || !studentCode) {
+                errorDiv.textContent = 'Please enter both codes';
+                return;
+            }
+            
+            if (studentCode.length !== 4) {
+                errorDiv.textContent = 'Student code must be 4 digits';
+                return;
+            }
+            
+            try {
+                console.log('Attempting login...', {classCode, studentCode});
+                
+                const response = await fetch('/.netlify/functions/consistentStudentAuth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ classCode, studentCode })
+                });
+                
+                const data = await response.json();
+                console.log('Login response:', data);
+                
+                if (data.success) {
+                    showDashboard(data.student);
+                } else {
+                    errorDiv.textContent = data.message || 'Login failed';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorDiv.textContent = 'Connection error';
+            }
+        });
+        
+        function showDashboard(student) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+            
+            // Load student data
+            loadKudos(student.id);
+        }
+        
+        async function loadKudos(studentId) {
+            try {
+                const response = await fetch(`/.netlify/functions/getKudos?studentId=${studentId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const total = data.kudos.reduce((sum, k) => sum + (k.points || 1), 0);
+                    document.getElementById('totalKudos').textContent = total;
+                }
+            } catch (error) {
+                console.error('Error loading kudos:', error);
+            }
+        }
+        
+        function logout() {
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('loginForm').reset();
+            document.getElementById('error').textContent = '';
+        }
+        
+        // Auto-format inputs
+        document.getElementById('studentCode').addEventListener('input', e => {
+            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+        });
+    </script>
+</body>
+</html>
