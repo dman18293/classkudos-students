@@ -52,7 +52,13 @@ exports.handler = async function(event, context) {
           // Try to parse as JSON first (newer format)
           const parsed = JSON.parse(student.summary_log);
           if (Array.isArray(parsed)) {
-            activities = parsed;
+            activities = parsed.map(activity => ({
+              type: 'add',
+              points: activity.delta || activity.points || 1,
+              reason: activity.reason || 'Great work!',
+              timestamp: activity.date || activity.timestamp || new Date().toISOString(),
+              date: activity.date || activity.timestamp || new Date().toLocaleDateString()
+            }));
           } else if (parsed.activities && Array.isArray(parsed.activities)) {
             activities = parsed.activities;
           }
@@ -69,21 +75,24 @@ exports.handler = async function(event, context) {
         }
       }
       
-      // If we don't have detailed activities but have points, generate reasonable activities
-      if (activities.length === 0 && student.points > 0) {
+      // Check if activities account for all points, if not generate additional ones
+      const totalLoggedPoints = activities.reduce((sum, activity) => sum + (activity.points || 1), 0);
+      const missingPoints = student.points - totalLoggedPoints;
+      
+      if (missingPoints > 0) {
         const today = new Date();
         const reasons = [
-          'Listening', 'Participation', 'Great work!', 'Helping others', 'Following directions',
+          'Participation', 'Great work!', 'Helping others', 'Following directions',
           'Being respectful', 'Completing tasks', 'Active learning', 'Good behavior', 'Teamwork'
         ];
         
-        // Generate activities to match the total points
-        let remainingPoints = student.points;
+        // Generate activities for the missing points
+        let remainingPoints = missingPoints;
         const generatedActivities = [];
         
-        while (remainingPoints > 0 && generatedActivities.length < 20) { // Max 20 activities
+        while (remainingPoints > 0 && generatedActivities.length < 20) { // Max 20 additional activities
           const pointsToAdd = Math.min(remainingPoints, Math.random() < 0.7 ? 1 : Math.floor(Math.random() * 3) + 2);
-          const daysAgo = Math.floor(Math.random() * 14); // Spread over last 2 weeks
+          const daysAgo = Math.floor(Math.random() * 14) + 1; // Spread over last 2 weeks (but not today)
           const activityDate = new Date(today.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
           
           generatedActivities.push({
@@ -97,8 +106,8 @@ exports.handler = async function(event, context) {
           remainingPoints -= pointsToAdd;
         }
         
-        // Sort by date (newest first)
-        activities = generatedActivities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        // Combine existing and generated activities, sort by date (newest first)
+        activities = [...activities, ...generatedActivities].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       }
       
       await client.end();
