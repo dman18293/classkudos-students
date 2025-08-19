@@ -729,12 +729,61 @@
         // XP requirements for each level
         const xpRequirements = [0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700, 3250];
 
+        // Session persistence functions
+        function saveSession(student, classCode, studentCode) {
+            const sessionData = {
+                student: student,
+                classCode: classCode,
+                studentCode: studentCode,
+                timestamp: Date.now()
+            };
+            sessionStorage.setItem('studentSession', JSON.stringify(sessionData));
+            console.log('Session saved:', sessionData);
+        }
+
+        function loadSession() {
+            const sessionData = sessionStorage.getItem('studentSession');
+            if (sessionData) {
+                try {
+                    const parsed = JSON.parse(sessionData);
+                    // Check if session is less than 24 hours old
+                    const isValid = (Date.now() - parsed.timestamp) < (24 * 60 * 60 * 1000);
+                    if (isValid) {
+                        console.log('Valid session found:', parsed);
+                        return parsed;
+                    } else {
+                        sessionStorage.removeItem('studentSession');
+                        console.log('Session expired, removed');
+                    }
+                } catch (e) {
+                    console.error('Error parsing session:', e);
+                    sessionStorage.removeItem('studentSession');
+                }
+            }
+            return null;
+        }
+
+        function clearSession() {
+            sessionStorage.removeItem('studentSession');
+            console.log('Session cleared');
+        }
+
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Enhanced portal with avatars & XP loaded successfully!');
             setupEventListeners();
             populateAvatarGrid();
             loadSavedAvatar();
+            
+            // Check for existing session
+            const existingSession = loadSession();
+            if (existingSession) {
+                console.log('Restoring session for:', existingSession.student.name);
+                currentStudent = existingSession.student;
+                currentClass = existingSession.classCode;
+                currentStudentCode = existingSession.studentCode;
+                showDashboard();
+            }
         });
 
         function setupEventListeners() {
@@ -960,6 +1009,9 @@
                     
                     console.log('Login successful:', currentStudent);
                     
+                    // Save session for persistence
+                    saveSession(currentStudent, classCode, studentCode);
+                    
                     // Show dashboard
                     showDashboard();
                 } else {
@@ -1008,11 +1060,27 @@
                 // Load from localStorage as fallback
                 loadSavedAvatar();
             }
-            
-            // Update initial stats from login data
-            if (currentStudent.points !== undefined) {
-                document.getElementById('totalKudos').textContent = currentStudent.points;
-                updateXPDisplay(currentStudent.points);
+        }
+
+        function refreshStudentData() {
+            // Update all student data displays with current student data
+            if (currentStudent) {
+                document.getElementById('totalKudos').textContent = currentStudent.points || 0;
+                updateXPDisplay(currentStudent.points || 0);
+                
+                // Update avatar if changed
+                if (currentStudent.avatar_data && currentStudent.avatar_data !== selectedAvatar) {
+                    selectedAvatar = currentStudent.avatar_data;
+                    document.getElementById('avatarDisplay').textContent = selectedAvatar;
+                    localStorage.setItem('studentAvatar', selectedAvatar);
+                }
+                
+                // Update session with latest data
+                if (currentClass && currentStudentCode) {
+                    saveSession(currentStudent, currentClass, currentStudentCode);
+                }
+                
+                console.log('Student data refreshed - Points:', currentStudent.points);
             }
         }
 
@@ -1044,12 +1112,8 @@
                         currentStudent.points = data.student.points;
                         currentStudent.avatar_data = data.student.avatar_data;
                         
-                        // Update avatar if we have one from database
-                        if (data.student.avatar_data && data.student.avatar_data !== selectedAvatar) {
-                            selectedAvatar = data.student.avatar_data;
-                            document.getElementById('avatarDisplay').textContent = selectedAvatar;
-                            localStorage.setItem('studentAvatar', selectedAvatar);
-                        }
+                        // Refresh the display with updated data
+                        refreshStudentData();
                     }
                     
                     updateKudosStats(kudos);
@@ -1219,6 +1283,9 @@
             currentLevel = 1;
             currentXP = 0;
             lastKudosCount = 0;
+            
+            // Clear session storage
+            clearSession();
             
             // Reset form
             document.getElementById('loginForm').reset();
