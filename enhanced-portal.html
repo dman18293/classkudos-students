@@ -1243,7 +1243,27 @@
                         </div>
                         <div style="flex-grow: 1;">
                             <div style="font-weight: 500; color: #333;">
-                                ${student.name} ${isCurrentStudent ? '(You)' : ''}
+                                ${(() => {
+                                    let displayName = student.name;
+                                    try {
+                                        // If name looks like JSON, parse it
+                                        if (typeof displayName === 'string' && displayName.includes('{"seed"')) {
+                                            const parsed = JSON.parse(displayName);
+                                            if (parsed.seed) {
+                                                displayName = parsed.seed.split('-')[0];
+                                            }
+                                        }
+                                    } catch (e) {
+                                        // If parsing fails, try to extract name from string
+                                        if (displayName.includes('{"seed":"')) {
+                                            const match = displayName.match(/"seed":"([^"]+)"/);
+                                            if (match) {
+                                                displayName = match[1].split('-')[0];
+                                            }
+                                        }
+                                    }
+                                    return displayName;
+                                })()} ${isCurrentStudent ? '(You)' : ''}
                             </div>
                             <div style="color: #666; font-size: 0.9em;">
                                 Level ${level} • ${student.total_points} points
