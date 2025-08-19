@@ -43,9 +43,9 @@ exports.handler = async function(event, context) {
 
     await client.connect();
     
-    // Get all students in the class, sorted by points
+    // Get leaderboard for the specified class - include xp and level
     const res = await client.query(
-      'SELECT id, name, points, avatar_data FROM students WHERE class = $1 ORDER BY points DESC',
+      'SELECT id, name, points, avatar_data, xp, level FROM students WHERE class = $1 ORDER BY points DESC',
       [classCode]
     );
 

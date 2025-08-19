@@ -61,9 +61,9 @@ exports.handler = async (event, context) => {
         await client.connect();
         console.log('Database connected successfully');
 
-        // Get all students from the specified class
+        // Get all students from the specified class - include xp and level for student portal
         const query = `
-            SELECT id, name, points, avatar_data
+            SELECT id, name, points, avatar_data, xp, level
             FROM students 
             WHERE UPPER(class) = UPPER($1)
         `;
