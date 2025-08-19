@@ -797,11 +797,50 @@
         function saveSelectedAvatar() {
             document.getElementById('avatarDisplay').textContent = selectedAvatar;
             localStorage.setItem('studentAvatar', selectedAvatar);
+            
+            // Save avatar to database
+            if (currentStudent && currentStudent.id) {
+                saveAvatarToDatabase(selectedAvatar);
+            }
+            
             closeAvatarModal();
             console.log('Avatar saved:', selectedAvatar);
         }
 
+        async function saveAvatarToDatabase(avatar) {
+            try {
+                const response = await fetch('/.netlify/functions/updateStudentAvatar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        studentId: currentStudent.id,
+                        avatar: avatar
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    console.log('Avatar saved to database successfully');
+                } else {
+                    console.error('Failed to save avatar to database:', data.error);
+                }
+            } catch (error) {
+                console.error('Error saving avatar to database:', error);
+            }
+        }
+
         function loadSavedAvatar() {
+            // First try to load from student data (database)
+            if (currentStudent && currentStudent.avatar_data) {
+                selectedAvatar = currentStudent.avatar_data;
+                document.getElementById('avatarDisplay').textContent = selectedAvatar;
+                localStorage.setItem('studentAvatar', selectedAvatar);
+                return;
+            }
+            
+            // Fall back to localStorage
             const saved = localStorage.getItem('studentAvatar');
             if (saved && avatarOptions.includes(saved)) {
                 selectedAvatar = saved;
@@ -959,6 +998,16 @@
             document.getElementById('studentName').textContent = currentStudent.name;
             document.getElementById('studentClass').textContent = currentClass;
             document.getElementById('displayStudentCode').textContent = currentStudentCode;
+            
+            // Load avatar from database if available
+            if (currentStudent.avatar_data) {
+                selectedAvatar = currentStudent.avatar_data;
+                document.getElementById('avatarDisplay').textContent = selectedAvatar;
+                localStorage.setItem('studentAvatar', selectedAvatar);
+            } else {
+                // Load from localStorage as fallback
+                loadSavedAvatar();
+            }
         }
 
         async function loadDashboardData() {
@@ -982,6 +1031,21 @@
                 
                 if (response.ok && data.success) {
                     const kudos = data.kudos || [];
+                    
+                    // Update current student data if returned
+                    if (data.student) {
+                        // Update points from database
+                        currentStudent.points = data.student.points;
+                        currentStudent.avatar_data = data.student.avatar_data;
+                        
+                        // Update avatar if we have one from database
+                        if (data.student.avatar_data && data.student.avatar_data !== selectedAvatar) {
+                            selectedAvatar = data.student.avatar_data;
+                            document.getElementById('avatarDisplay').textContent = selectedAvatar;
+                            localStorage.setItem('studentAvatar', selectedAvatar);
+                        }
+                    }
+                    
                     updateKudosStats(kudos);
                     updateKudosFeed(kudos, silent);
                 } else {
@@ -1001,7 +1065,8 @@
         }
 
         function updateKudosStats(kudos) {
-            const totalPoints = kudos.reduce((sum, kudo) => sum + (kudo.points || 1), 0);
+            // Use actual points from database rather than calculating from kudos
+            const totalPoints = currentStudent.points || 0;
             document.getElementById('totalKudos').textContent = totalPoints;
             
             // Update XP and level
@@ -1082,6 +1147,7 @@
                 const isCurrentStudent = student.id === currentStudent.id;
                 const rank = index + 1;
                 const level = calculateLevel(student.total_points);
+                const avatar = student.avatar_data || '🤖';
                 
                 // Update current student's rank
                 if (isCurrentStudent) {
@@ -1094,6 +1160,9 @@
                                 border-radius: 8px; ${isCurrentStudent ? 'border: 2px solid #2196f3;' : ''}">
                         <div style="font-size: 1.5em; font-weight: bold; color: #667eea; margin-right: 15px; min-width: 40px;">
                             #${rank}
+                        </div>
+                        <div style="margin-right: 15px; font-size: 1.8em;">
+                            ${avatar}
                         </div>
                         <div style="flex-grow: 1;">
                             <div style="font-weight: 500; color: #333;">

@@ -5,7 +5,7 @@ exports.handler = async function(event, context) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS'
+    'Access-Control-Allow-Methods': 'POST, OPTIONS'
   };
 
   // Handle preflight requests
@@ -17,7 +17,7 @@ exports.handler = async function(event, context) {
     };
   }
 
-  if (event.httpMethod !== 'GET') {
+  if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
       headers,
@@ -26,13 +26,13 @@ exports.handler = async function(event, context) {
   }
 
   try {
-    const { classCode } = event.queryStringParameters || {};
+    const { studentId, avatar } = JSON.parse(event.body || '{}');
     
-    if (!classCode) {
+    if (!studentId || !avatar) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Missing classCode parameter' })
+        body: JSON.stringify({ success: false, error: 'Missing studentId or avatar' })
       };
     }
 
@@ -43,37 +43,34 @@ exports.handler = async function(event, context) {
 
     await client.connect();
     
-    // Get all students in the class, sorted by points
+    // Update student's avatar
     const res = await client.query(
-      'SELECT id, name, points, avatar_data FROM students WHERE class = $1 ORDER BY points DESC',
-      [classCode]
+      'UPDATE students SET avatar_data = $1 WHERE id = $2',
+      [avatar, studentId]
     );
-
+    
     await client.end();
 
-    const leaderboard = res.rows.map((student, index) => ({
-      rank: index + 1,
-      id: student.id,
-      name: student.name,
-      total_points: student.points || 0,
-      avatar_data: student.avatar_data
-    }));
+    if (res.rowCount === 0) {
+      return {
+        statusCode: 404,
+        headers,
+        body: JSON.stringify({ success: false, error: 'Student not found' })
+      };
+    }
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({
-        success: true,
-        leaderboard: leaderboard
-      })
+      body: JSON.stringify({ success: true, message: 'Avatar updated successfully' })
     };
 
   } catch (error) {
-    console.error('Error getting leaderboard:', error);
+    console.error('Error updating avatar:', error);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal server error: ' + error.message })
+      body: JSON.stringify({ success: false, error: error.message })
     };
   }
 };
