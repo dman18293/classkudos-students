@@ -49,12 +49,15 @@ exports.handler = async function(event, context) {
     await client.connect();
     console.log('Database connected successfully');
 
-    // Simple query - find student by ID and class
+    // Simple query - find student by ID and class (updated to match main app logic)
     const query = `
-      SELECT id, name, class, points, avatar_data as avatar 
+      SELECT id, name, class, points, avatar_data as avatar, teacher_email
       FROM students 
       WHERE CAST(id AS TEXT) = $1 
-      AND UPPER(TRIM(class)) LIKE UPPER(TRIM($2)) || '%'
+      AND (
+        UPPER(TRIM(class)) LIKE UPPER(TRIM($2)) || '%' OR
+        UPPER(TRIM(class)) LIKE '%' || UPPER(TRIM($2)) || '%'
+      )
     `;
     
     console.log('Executing query with:', [studentCode, classCode]);
@@ -64,12 +67,25 @@ exports.handler = async function(event, context) {
     console.log('Query completed, rows found:', result.rows.length);
 
     if (result.rows.length === 0) {
+      // Let's also try a broader search to debug
+      const debugQuery = `SELECT id, name, class FROM students WHERE CAST(id AS TEXT) = $1`;
+      const debugClient = new Client({
+        connectionString: process.env.NETLIFY_DATABASE_URL,
+        ssl: { rejectUnauthorized: false }
+      });
+      await debugClient.connect();
+      const debugResult = await debugClient.query(debugQuery, [studentCode]);
+      await debugClient.end();
+      
+      console.log('Debug - Student exists with this ID:', debugResult.rows);
+      
       return {
         statusCode: 404,
         headers,
         body: JSON.stringify({ 
           error: 'Student not found',
-          message: `No student with code ${studentCode} found in class ${classCode}`
+          message: `No student with code ${studentCode} found in class ${classCode}`,
+          debug: `Found ${debugResult.rows.length} students with ID ${studentCode}: ${JSON.stringify(debugResult.rows)}`
         })
       };
     }
