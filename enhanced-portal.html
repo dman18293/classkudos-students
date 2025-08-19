@@ -809,7 +809,7 @@
 
         async function saveAvatarToDatabase(avatar) {
             try {
-                const response = await fetch('/.netlify/functions/updateStudentAvatar', {
+                const response = await fetch('https://classkudos.org/.netlify/functions/updateStudentAvatar', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -937,7 +937,7 @@
             try {
                 console.log('Attempting login with:', { classCode, studentCode });
                 
-                const response = await fetch('/.netlify/functions/consistentStudentAuth', {
+                const response = await fetch(`https://classkudos.org/.netlify/functions/consistentStudentAuth`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1030,7 +1030,7 @@
             try {
                 console.log('Loading kudos for student ID:', currentStudent.id);
                 
-                const response = await fetch(`/.netlify/functions/getKudos?studentId=${currentStudent.id}&classCode=${currentClass}`);
+                const response = await fetch(`https://classkudos.org/.netlify/functions/getStudentKudos?studentId=${currentStudent.id}&classCode=${currentClass}`);
                 const data = await response.json();
                 
                 console.log('Kudos data:', data);
@@ -1128,7 +1128,7 @@
 
         async function loadLeaderboard() {
             try {
-                const response = await fetch(`/.netlify/functions/getLeaderboard?classCode=${currentClass}`);
+                const response = await fetch(`https://classkudos.org/.netlify/functions/getStudentLeaderboard?classCode=${currentClass}`);
                 const data = await response.json();
                 
                 if (response.ok && data.success) {

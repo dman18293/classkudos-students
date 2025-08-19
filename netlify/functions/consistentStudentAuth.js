@@ -63,7 +63,7 @@ exports.handler = async (event, context) => {
 
         // Get all students from the specified class
         const query = `
-            SELECT id, name 
+            SELECT id, name, points, avatar_data
             FROM students 
             WHERE UPPER(class) = UPPER($1)
         `;
