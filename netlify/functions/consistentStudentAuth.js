@@ -60,10 +60,9 @@ exports.handler = async (event, context) => {
 
         // Get all students from the specified class
         const query = `
-            SELECT s.id, s.name 
-            FROM students s 
-            JOIN classes c ON s.class_id = c.id 
-            WHERE UPPER(c.class_code) = UPPER($1)
+            SELECT id, name 
+            FROM students 
+            WHERE UPPER(class) = UPPER($1)
         `;
         
         const result = await client.query(query, [classCode]);
