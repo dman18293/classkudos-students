@@ -61,9 +61,12 @@ exports.handler = async (event, context) => {
         await client.connect();
         console.log('Database connected successfully');
 
-        // Get all students from the specified class - include xp and level for student portal
+        // Get all students from the specified class - handle missing columns gracefully
         const query = `
-            SELECT id, name, points, avatar_data, xp, level
+            SELECT id, name, points, 
+                   COALESCE(avatar_data, '') as avatar_data, 
+                   COALESCE(xp, points) as xp, 
+                   COALESCE(level, 1) as level
             FROM students 
             WHERE UPPER(class) = UPPER($1)
         `;

@@ -43,9 +43,9 @@ exports.handler = async function(event, context) {
 
     await client.connect();
     
-    // Get leaderboard for the specified class - include xp and level
+    // Get leaderboard for the specified class - handle missing columns gracefully
     const res = await client.query(
-      'SELECT id, name, points, avatar_data, xp, level FROM students WHERE class = $1 ORDER BY points DESC',
+      'SELECT id, name, points, COALESCE(avatar_data, \'\') as avatar_data, COALESCE(xp, points) as xp, COALESCE(level, 1) as level FROM students WHERE class = $1 ORDER BY points DESC',
       [classCode]
     );
 

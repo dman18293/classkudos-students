@@ -30,7 +30,7 @@ exports.handler = async function(event, context) {
     if (studentId) {
       // Get specific student's data and parse their activities from summary_log
       const studentRes = await client.query(
-        'SELECT id, name, class, points, present, summary_log, avatar_data, xp, level FROM students WHERE id = $1', 
+        'SELECT id, name, class, points, present, summary_log, COALESCE(avatar_data, \'\') as avatar_data, COALESCE(xp, points) as xp, COALESCE(level, 1) as level FROM students WHERE id = $1', 
         [studentId]
       );
       
@@ -88,7 +88,7 @@ exports.handler = async function(event, context) {
     } else if (classCode) {
       // Get all students in a class
       const res = await client.query(
-        'SELECT id, name, class, points, present, summary_log, avatar_data, xp, level FROM students WHERE class = $1 ORDER BY points DESC, name', 
+        'SELECT id, name, class, points, present, summary_log, COALESCE(avatar_data, \'\') as avatar_data, COALESCE(xp, points) as xp, COALESCE(level, 1) as level FROM students WHERE class = $1 ORDER BY points DESC, name', 
         [classCode]
       );
       
