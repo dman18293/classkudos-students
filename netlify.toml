@@ -4,7 +4,7 @@
 
 [[redirects]]
   from = "/*"
-  to = "/portal.html"
+  to = "/enhanced-portal.html"
   status = 200
 
 [[headers]]
