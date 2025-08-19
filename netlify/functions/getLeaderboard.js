@@ -51,13 +51,32 @@ exports.handler = async function(event, context) {
 
     await client.end();
 
-    const leaderboard = res.rows.map((student, index) => ({
-      rank: index + 1,
-      id: student.id,
-      name: student.name,
-      total_points: student.points || 0,
-      avatar_data: student.avatar_data
-    }));
+    const leaderboard = res.rows.map((student, index) => {
+      // Parse the name if it's stored as JSON
+      let displayName = student.name;
+      try {
+        if (typeof student.name === 'string' && student.name.startsWith('{')) {
+          const nameObj = JSON.parse(student.name);
+          if (nameObj.seed) {
+            // Extract the actual name from the seed format
+            displayName = nameObj.seed.split('-')[0];
+          } else if (nameObj.name) {
+            displayName = nameObj.name;
+          }
+        }
+      } catch (e) {
+        // If parsing fails, use the name as is
+        displayName = student.name;
+      }
+
+      return {
+        rank: index + 1,
+        id: student.id,
+        name: displayName,
+        total_points: student.points || 0,
+        avatar_data: student.avatar_data
+      };
+    });
 
     return {
       statusCode: 200,
