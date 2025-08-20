@@ -2118,6 +2118,15 @@
         async function loadDashboardData() {
             console.log('Loading dashboard for student:', currentStudent);
             
+            // Refresh XP display with current points
+            if (currentStudent && currentStudent.points !== undefined) {
+                updateXPDisplay(currentStudent.points);
+            } else {
+                // Fallback to localStorage if currentStudent.points is not available
+                const storedPoints = parseInt(localStorage.getItem('studentPoints') || '0');
+                updateXPDisplay(storedPoints);
+            }
+            
             // Initialize badge collection with current level
             updateBadgeCollection(currentLevel || 1);
             
@@ -2442,7 +2451,10 @@
             document.getElementById(section).classList.add('active');
             
             // Load data for specific sections
-            if (section === 'myKudos') {
+            if (section === 'dashboard') {
+                // Refresh dashboard with latest XP data
+                refreshStudentData();
+            } else if (section === 'myKudos') {
                 loadStudentKudos();
             } else if (section === 'leaderboard') {
                 loadLeaderboard();
@@ -3065,7 +3077,7 @@
                     if (data.success) {
                         console.log(`Kudos Colosseum: Awarded ${xpAmount} XP to ${currentStudent.name}. Total XP: ${newTotalPoints}`);
                         
-                        // Update the display immediately
+                        // Update all displays immediately regardless of current section
                         document.getElementById('totalKudos').textContent = newTotalPoints;
                         updateXPDisplay(newTotalPoints);
                     } else {
@@ -3080,10 +3092,8 @@
                         showLevelUpNotification(newLevel);
                     }
                     
-                    // Refresh the dashboard if it's visible
-                    if (document.getElementById('dashboard').classList.contains('active')) {
-                        refreshStudentData();
-                    }
+                    // Always refresh student data to ensure consistency
+                    refreshStudentData();
                 }
             } catch (error) {
                 console.error('Error awarding Colosseum XP:', error);
