@@ -1131,38 +1131,55 @@
                 avatars: ['happy', 'cheerful', 'smile', 'joy', 'bright']
             },
             3: {
-                category: "Adventure Pack",
-                avatars: ['explorer-premium', 'adventurer-elite', 'treasure-hunter']
+                category: "Hero Squad",
+                avatars: ['superhero', 'super-student', 'captain-awesome']
             },
             6: {
-                category: "Elemental Masters",
-                avatars: ['fire-master', 'water-sage', 'earth-guardian']
+                category: "Animal Kingdom",
+                avatars: ['panda-master', 'koala-warrior', 'fox-genius']
             },
             9: {
-                category: "Cosmic Warriors",
-                avatars: ['star-knight', 'galaxy-ranger', 'nebula-wizard']
+                category: "Space Explorers",
+                avatars: ['astronaut', 'space-ranger', 'galaxy-pilot']
             },
             12: {
-                category: "Legendary Beasts",
-                avatars: ['dragon-rider', 'phoenix-lord', 'unicorn-whisperer']
+                category: "Magical Beings",
+                avatars: ['fairy-guardian', 'elf-scholar', 'wizard-apprentice']
             },
             15: {
-                category: "Mystic Scholars",
-                avatars: ['crystal-mage', 'ancient-scribe', 'time-keeper']
+                category: "Cool Vehicles",
+                avatars: ['spaceship-pilot', 'racecar-driver', 'airplane-captain']
             },
             18: {
-                category: "Ultimate Champions",
-                avatars: ['champion-supreme', 'legendary-hero', 'master-of-all']
+                category: "Ultimate Legends",
+                avatars: ['legend-supreme', 'master-champion', 'ultimate-hero']
             }
         };
 
-        // Keep original basic avatars available at all levels
+        // Keep original basic avatars available at all levels + add exciting new ones
         const basicAvatars = [
-            'sunny', 'friendly', 'cool', 'awesome', 'super',
-            'star', 'champion', 'hero', 'winner', 'amazing', 'fantastic', 'wonderful', 'brilliant', 'clever', 'smart',
-            'creative', 'artistic', 'musical', 'sporty', 'adventurous', 'brave', 'kind', 'gentle', 'caring', 'helpful',
-            'magical', 'mystic', 'cosmic', 'rainbow', 'thunder', 'lightning', 'ocean', 'forest', 'mountain', 'desert',
-            'phoenix', 'dragon', 'unicorn', 'pegasus', 'griffin', 'tiger', 'lion', 'wolf', 'eagle', 'dolphin'
+            // Original positive traits
+            'sunny', 'friendly', 'cool', 'awesome', 'super', 'star', 'champion', 'hero', 'winner', 'amazing', 
+            'fantastic', 'wonderful', 'brilliant', 'clever', 'smart', 'creative', 'artistic', 'musical', 'sporty', 
+            'adventurous', 'brave', 'kind', 'gentle', 'caring', 'helpful',
+            
+            // Animals
+            'cat', 'dog', 'tiger', 'lion', 'wolf', 'eagle', 'dolphin', 'bear', 'elephant', 'giraffe',
+            'monkey', 'rabbit', 'turtle', 'owl', 'penguin', 'kangaroo', 'zebra', 'shark', 'whale', 'butterfly',
+            
+            // Professions (Heroes)
+            'doctor', 'firefighter', 'police-officer', 'teacher', 'scientist', 'engineer', 'pilot', 'chef',
+            'artist', 'musician', 'athlete', 'dancer', 'photographer', 'detective', 'nurse', 'builder',
+            
+            // Fantasy & Magical
+            'dragon', 'unicorn', 'phoenix', 'pegasus', 'griffin', 'fairy', 'elf', 'wizard', 'knight', 'mage',
+            'angel', 'genie', 'centaur', 'mermaid', 'pixie',
+            
+            // Space & Sci-Fi
+            'alien', 'robot', 'cyborg', 'android', 'martian', 'cosmic-being',
+            
+            // Objects & Vehicles (as character concepts)
+            'rocket', 'car', 'plane', 'boat', 'train', 'bicycle', 'skateboard'
         ];
 
         // Function to get available avatars for current level
@@ -1366,8 +1383,8 @@
             basicCategory.className = 'avatar-category';
             basicCategory.innerHTML = `
                 <div class="category-header">
-                    <div class="category-title">🎯 Basic Collection</div>
-                    <div class="category-progress">${basicAvatars.length} avatars</div>
+                    <div class="category-title">� Amazing Collection</div>
+                    <div class="category-progress">${basicAvatars.length} avatars • Always Available</div>
                 </div>
                 <div class="category-grid" id="basicGrid"></div>
             `;
