@@ -1127,6 +1127,7 @@
         let currentClass = null;
         let currentStudentCode = null;
         let selectedAvatar = 'happy';
+        let selectedAvatarStyle = 'adventurer';
         let currentXP = 0;
         let currentLevel = 1;
         let lastKudosCount = 0;
@@ -1214,6 +1215,26 @@
             18: {
                 category: "Ultimate Legends",
                 avatars: ['legend-supreme', 'master-champion', 'ultimate-hero']
+            },
+            21: {
+                category: "Robot Academy",
+                style: "bottts",
+                avatars: ['cyber-student', 'robo-scholar', 'tech-genius', 'data-master', 'circuit-hero']
+            },
+            24: {
+                category: "Pixel Heroes",
+                style: "pixel-art", 
+                avatars: ['pixel-warrior', 'retro-gamer', '8bit-champion', 'arcade-master', 'digital-legend']
+            },
+            27: {
+                category: "Shape Shifters",
+                style: "shapes",
+                avatars: ['geo-master', 'pattern-hero', 'abstract-genius', 'form-champion', 'design-legend']
+            },
+            30: {
+                category: "Big Smile Squad",
+                style: "big-smile",
+                avatars: ['mega-smile', 'super-grin', 'joy-master', 'happiness-hero', 'cheer-champion']
             }
         };
 
@@ -1274,9 +1295,9 @@
             return lockedAvatars;
         }
 
-        // Function to generate avatar URL - using adventurer style for students, different from main app's bottts
-        function getAvatarUrl(seed) {
-            return `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(seed)}`;
+        // Function to generate avatar URL - supports multiple Dicebear styles
+        function getAvatarUrl(seed, style = 'adventurer') {
+            return `https://api.dicebear.com/7.x/${style}/svg?seed=${encodeURIComponent(seed)}`;
         }
 
         // XP requirements for each level
@@ -1453,7 +1474,7 @@
             
             const basicGrid = document.getElementById('basicGrid');
             basicAvatars.forEach(avatar => {
-                createAvatarOption(avatar, basicGrid, false);
+                createAvatarOption(avatar, basicGrid, false, null, 'adventurer');
             });
             
             // Unlocked Premium Categories
@@ -1472,7 +1493,7 @@
                     
                     const categoryGrid = document.getElementById(`level${levelReq}Grid`);
                     pack.avatars.forEach(avatar => {
-                        createAvatarOption(avatar, categoryGrid, false);
+                        createAvatarOption(avatar, categoryGrid, false, null, pack.style || 'adventurer');
                     });
                 }
             }
@@ -1503,7 +1524,7 @@
                     
                     const categoryGrid = document.getElementById(`locked${levelReq}Grid`);
                     pack.avatars.forEach(avatar => {
-                        createAvatarOption(avatar, categoryGrid, true, parseInt(levelReq));
+                        createAvatarOption(avatar, categoryGrid, true, parseInt(levelReq), pack.style || 'adventurer');
                     });
                 }
             }
@@ -1520,7 +1541,7 @@
             }
         }
         
-        function createAvatarOption(avatar, container, isLocked = false, unlockLevel = null) {
+        function createAvatarOption(avatar, container, isLocked = false, unlockLevel = null, style = 'adventurer') {
             const option = document.createElement('div');
             option.className = 'avatar-option';
             
@@ -1532,7 +1553,7 @@
             }
             
             const img = document.createElement('img');
-            img.src = getAvatarUrl(avatar);
+            img.src = getAvatarUrl(avatar, style);
             img.alt = avatar;
             option.appendChild(img);
             
@@ -1554,7 +1575,7 @@
                     alert(`🔒 This avatar unlocks at Level ${unlockLevel}!\n\nKeep earning points to reach it! You're currently Level ${Math.floor(parseInt(localStorage.getItem('studentPoints') || '0') / 100) + 1}.`);
                 };
             } else {
-                option.onclick = () => selectAvatar(avatar, option);
+                option.onclick = () => selectAvatar(avatar, option, style);
             }
             
             container.appendChild(option);
@@ -1579,7 +1600,7 @@
             }
         }
 
-        function selectAvatar(avatar, element) {
+        function selectAvatar(avatar, element, style = 'adventurer') {
             // Remove previous selection
             document.querySelectorAll('.avatar-option').forEach(opt => {
                 opt.classList.remove('selected');
@@ -1588,6 +1609,7 @@
             // Add selection to clicked avatar
             element.classList.add('selected');
             selectedAvatar = avatar;
+            selectedAvatarStyle = style;
         }
 
         function openAvatarModal() {
@@ -1617,8 +1639,9 @@
         }
 
         function saveSelectedAvatar() {
-            document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar);
+            document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar, selectedAvatarStyle);
             localStorage.setItem('studentAvatar', selectedAvatar);
+            localStorage.setItem('studentAvatarStyle', selectedAvatarStyle);
             
             // Save avatar to database
             if (currentStudent && currentStudent.id) {
@@ -1626,7 +1649,7 @@
             }
             
             closeAvatarModal();
-            console.log('Avatar saved:', selectedAvatar);
+            console.log('Avatar saved:', selectedAvatar, 'Style:', selectedAvatarStyle);
         }
 
         async function saveAvatarToDatabase(avatar) {
@@ -1662,16 +1685,21 @@
                 } else {
                     selectedAvatar = currentStudent.avatar_data;
                 }
-                document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar);
+                // For now, assume adventurer style for database avatars (backward compatibility)
+                selectedAvatarStyle = 'adventurer';
+                document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar, selectedAvatarStyle);
                 localStorage.setItem('studentAvatar', selectedAvatar);
+                localStorage.setItem('studentAvatarStyle', selectedAvatarStyle);
                 return;
             }
             
             // Fall back to localStorage
             const saved = localStorage.getItem('studentAvatar');
-            if (saved && avatarOptions.includes(saved)) {
+            const savedStyle = localStorage.getItem('studentAvatarStyle') || 'adventurer';
+            if (saved) {
                 selectedAvatar = saved;
-                document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar);
+                selectedAvatarStyle = savedStyle;
+                document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar, selectedAvatarStyle);
             }
         }
 
@@ -1912,8 +1940,11 @@
                 } else {
                     selectedAvatar = currentStudent.avatar_data;
                 }
-                document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar);
+                // For now, assume adventurer style for database avatars (backward compatibility)
+                selectedAvatarStyle = 'adventurer';
+                document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar, selectedAvatarStyle);
                 localStorage.setItem('studentAvatar', selectedAvatar);
+                localStorage.setItem('studentAvatarStyle', selectedAvatarStyle);
             } else {
                 // Load from localStorage as fallback
                 loadSavedAvatar();
