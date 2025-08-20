@@ -121,6 +121,31 @@
             margin-bottom: 30px;
         }
         
+        .dashboard-columns {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+        
+        .dashboard-left {
+            flex: 2;
+            min-width: 0;
+        }
+        
+        .dashboard-right {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-columns {
+                flex-direction: column;
+            }
+            .dashboard-right {
+                min-width: 0;
+            }
+        }
+        
         .student-profile {
             display: flex;
             align-items: center;
@@ -286,6 +311,83 @@
         .stat-card p {
             font-size: 1.1em;
             opacity: 0.9;
+        }
+        
+        /* Badge Collection Styles */
+        .badge-collection {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+        
+        .badge-collection h3 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .badge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .achievement-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 10px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+            transition: all 0.3s ease;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .achievement-badge:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(255, 215, 0, 0.5);
+        }
+        
+        .achievement-badge.locked {
+            background: linear-gradient(135deg, #ccc 0%, #999 100%);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            opacity: 0.6;
+        }
+        
+        .badge-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .badge-level {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+        
+        .badge-title {
+            font-size: 0.7em;
+            color: #333;
+            text-align: center;
+            margin-top: 5px;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
         }
         
         .navigation {
@@ -708,49 +810,62 @@
         <!-- Dashboard Content -->
         <div id="dashboard" class="content-section active">
             <div class="dashboard">
-                <div class="student-profile">
-                    <div class="avatar-container">
-                        <div class="avatar" id="studentAvatar" onclick="openAvatarModal()">
-                            <img id="avatarDisplay" src="https://api.dicebear.com/7.x/adventurer/svg?seed=happy" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                <div class="dashboard-columns">
+                    <div class="dashboard-left">
+                        <div class="student-profile">
+                            <div class="avatar-container">
+                                <div class="avatar" id="studentAvatar" onclick="openAvatarModal()">
+                                    <img id="avatarDisplay" src="https://api.dicebear.com/7.x/adventurer/svg?seed=happy" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                </div>
+                                <div class="level-badge" id="levelBadge">1</div>
+                            </div>
+                            
+                            <div class="student-info">
+                                <h2 id="studentName">Loading...</h2>
+                                <div class="student-meta">
+                                    Class: <strong id="studentClass">-</strong> • 
+                                    Student Code: <span class="student-code" id="displayStudentCode">-</span>
+                                </div>
+                                <button class="edit-avatar-btn" onclick="openAvatarModal()">
+                                    🎨 Customize Avatar
+                                </button>
+                                
+                                <div class="xp-progress">
+                                    <div class="xp-bar">
+                                        <div class="xp-fill" id="xpBar" style="width: 0%"></div>
+                                    </div>
+                                    <div class="xp-text" id="xpText">XP: 0 / 100 (Level 1)</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="level-badge" id="levelBadge">1</div>
+
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h4 id="totalKudos">0</h4>
+                                <p>Total Points</p>
+                            </div>
+                            <div class="stat-card">
+                                <h4 id="classRank">#-</h4>
+                                <p>Class Rank</p>
+                            </div>
+                            <div class="stat-card">
+                                <h4 id="recentKudos">0</h4>
+                                <p>This Week</p>
+                            </div>
+                            <div class="stat-card">
+                                <h4 id="studentLevel">1</h4>
+                                <p>Level</p>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="student-info">
-                        <h2 id="studentName">Loading...</h2>
-                        <div class="student-meta">
-                            Class: <strong id="studentClass">-</strong> • 
-                            Student Code: <span class="student-code" id="displayStudentCode">-</span>
-                        </div>
-                        <button class="edit-avatar-btn" onclick="openAvatarModal()">
-                            🎨 Customize Avatar
-                        </button>
-                        
-                        <div class="xp-progress">
-                            <div class="xp-bar">
-                                <div class="xp-fill" id="xpBar" style="width: 0%"></div>
+                    <div class="dashboard-right">
+                        <div class="badge-collection">
+                            <h3>🏆 My Achievements</h3>
+                            <div class="badge-grid" id="badgeGrid">
+                                <!-- Badges will be populated by JavaScript -->
                             </div>
-                            <div class="xp-text" id="xpText">XP: 0 / 100 (Level 1)</div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h4 id="totalKudos">0</h4>
-                        <p>Total Points</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4 id="classRank">#-</h4>
-                        <p>Class Rank</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4 id="recentKudos">0</h4>
-                        <p>This Week</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4 id="studentLevel">1</h4>
-                        <p>Level</p>
                     </div>
                 </div>
             </div>
@@ -919,6 +1034,61 @@
         // Make resetStudentXP available globally for testing
         window.resetStudentXP = resetStudentXP;
 
+        // Badge Collection Functions
+        function getBadgeData() {
+            return {
+                1: { icon: "🎉", title: "First Steps!" },
+                2: { icon: "🌟", title: "Rising Star!" },
+                3: { icon: "⚡", title: "Power Player!" },
+                4: { icon: "🔥", title: "On Fire!" },
+                5: { icon: "💎", title: "Diamond Achiever!" },
+                6: { icon: "🏆", title: "Champion!" },
+                7: { icon: "🚀", title: "Rocket Scientist!" },
+                8: { icon: "👑", title: "Knowledge Royalty!" },
+                9: { icon: "🎯", title: "Master Marksman!" },
+                10: { icon: "🌈", title: "Rainbow Warrior!" },
+                11: { icon: "⭐", title: "Superstar!" },
+                12: { icon: "🔮", title: "Wisdom Oracle!" },
+                13: { icon: "🎪", title: "Learning Maestro!" },
+                14: { icon: "🌊", title: "Tsunami of Talent!" },
+                15: { icon: "🎨", title: "Master Artist!" },
+                16: { icon: "🏰", title: "Castle Builder!" },
+                17: { icon: "🦄", title: "Legendary Unicorn!" },
+                18: { icon: "🌌", title: "Galaxy Guardian!" },
+                19: { icon: "🔥", title: "Phoenix Rising!" },
+                20: { icon: "👑", title: "Ultimate Legend!" }
+            };
+        }
+
+        function updateBadgeCollection(currentLevel) {
+            const badgeGrid = document.getElementById('badgeGrid');
+            const badgeData = getBadgeData();
+            const maxDisplayLevel = 20; // Show badges up to level 20
+            
+            badgeGrid.innerHTML = '';
+            
+            for (let level = 1; level <= maxDisplayLevel; level++) {
+                const badge = badgeData[level] || { icon: "⭐", title: "Level Master!" };
+                const isUnlocked = level <= currentLevel;
+                
+                const badgeElement = document.createElement('div');
+                badgeElement.className = `achievement-badge ${!isUnlocked ? 'locked' : ''}`;
+                badgeElement.innerHTML = `
+                    <div class="badge-icon">${isUnlocked ? badge.icon : '🔒'}</div>
+                    <div class="badge-level">${level}</div>
+                    <div class="badge-title">${isUnlocked ? badge.title : `Level ${level}`}</div>
+                `;
+                
+                if (!isUnlocked) {
+                    badgeElement.title = `Unlock at Level ${level}`;
+                } else {
+                    badgeElement.title = `${badge.title} - Achieved!`;
+                }
+                
+                badgeGrid.appendChild(badgeElement);
+            }
+        }
+
         function populateAvatarGrid() {
             const grid = document.getElementById('avatarGrid');
             grid.innerHTML = '';
@@ -1077,6 +1247,9 @@
             document.getElementById('xpBar').style.width = progress.percentage + '%';
             document.getElementById('xpText').textContent = 
                 `XP: ${progress.current} / ${progress.required} (Level ${newLevel})`;
+            
+            // Update badge collection
+            updateBadgeCollection(newLevel);
         }
 
         function showLevelUpNotification(level) {
@@ -1279,6 +1452,9 @@
 
         async function loadDashboardData() {
             console.log('Loading dashboard for student:', currentStudent);
+            
+            // Initialize badge collection with current level
+            updateBadgeCollection(currentLevel || 1);
             
             // Load student kudos
             await loadStudentKudos();
