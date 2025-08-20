@@ -1699,18 +1699,15 @@
             
             // Save avatar to database
             if (currentStudent && currentStudent.id) {
-                saveAvatarToDatabase(selectedAvatar, selectedAvatarStyle);
+                saveAvatarToDatabase(selectedAvatar);
             }
             
             closeAvatarModal();
             console.log('Avatar saved:', selectedAvatar, 'Style:', selectedAvatarStyle);
         }
 
-        async function saveAvatarToDatabase(avatar, style = 'adventurer') {
+        async function saveAvatarToDatabase(avatar) {
             try {
-                // Create a format that includes both seed and style for the main app
-                const avatarData = style === 'adventurer' ? avatar : `${avatar}|${style}`;
-                
                 const response = await fetch('https://classkudos.org/.netlify/functions/updateStudentAvatar', {
                     method: 'POST',
                     headers: {
@@ -1718,7 +1715,7 @@
                     },
                     body: JSON.stringify({
                         studentId: currentStudent.id,
-                        avatar: avatarData
+                        avatar: avatar
                     })
                 });
                 
@@ -1739,18 +1736,11 @@
                 // Check if it's already a URL or a seed
                 if (currentStudent.avatar_data.startsWith('http')) {
                     selectedAvatar = currentStudent.avatar_data.split('seed=')[1] || 'default';
-                    selectedAvatarStyle = 'adventurer';
                 } else {
-                    // Check if avatar_data contains style info (format: "seed|style")
-                    if (currentStudent.avatar_data.includes('|')) {
-                        const parts = currentStudent.avatar_data.split('|');
-                        selectedAvatar = parts[0];
-                        selectedAvatarStyle = parts[1];
-                    } else {
-                        selectedAvatar = currentStudent.avatar_data;
-                        selectedAvatarStyle = 'adventurer'; // backward compatibility
-                    }
+                    selectedAvatar = currentStudent.avatar_data;
                 }
+                // For now, assume adventurer style for database avatars (backward compatibility)
+                selectedAvatarStyle = 'adventurer';
                 document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar, selectedAvatarStyle);
                 localStorage.setItem('studentAvatar', selectedAvatar);
                 localStorage.setItem('studentAvatarStyle', selectedAvatarStyle);
@@ -2001,18 +1991,11 @@
                 // Check if it's already a URL or a seed
                 if (currentStudent.avatar_data.startsWith('http')) {
                     selectedAvatar = currentStudent.avatar_data.split('seed=')[1] || 'default';
-                    selectedAvatarStyle = 'adventurer';
                 } else {
-                    // Check if avatar_data contains style info (format: "seed|style")
-                    if (currentStudent.avatar_data.includes('|')) {
-                        const parts = currentStudent.avatar_data.split('|');
-                        selectedAvatar = parts[0];
-                        selectedAvatarStyle = parts[1];
-                    } else {
-                        selectedAvatar = currentStudent.avatar_data;
-                        selectedAvatarStyle = 'adventurer'; // backward compatibility
-                    }
+                    selectedAvatar = currentStudent.avatar_data;
                 }
+                // For now, assume adventurer style for database avatars (backward compatibility)
+                selectedAvatarStyle = 'adventurer';
                 document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar, selectedAvatarStyle);
                 localStorage.setItem('studentAvatar', selectedAvatar);
                 localStorage.setItem('studentAvatarStyle', selectedAvatarStyle);
