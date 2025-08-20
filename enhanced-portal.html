@@ -4,9 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Class Kudos Student Portal - Enhanced with Avatars & XP</title>
+    <!-- Enhanced caching control for Chromebooks -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <!-- Chromebook compatibility -->
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <style>
         * {
             margin: 0;
@@ -976,8 +981,35 @@
                 <button class="nav-item active" onclick="showSection('dashboard')">Dashboard</button>
                 <button class="nav-item" onclick="showSection('myKudos')">My Kudos</button>
                 <button class="nav-item" onclick="showSection('leaderboard')">Leaderboard</button>
+                <div id="connection-status" style="color: #4CAF50; font-size: 12px; margin: 0 10px; display: flex; align-items: center;">
+                    🟢 Connected
+                </div>
+                <button class="nav-item debug-btn" onclick="toggleDebugPanel()" style="background: #f39c12; font-size: 11px; padding: 5px 8px; margin: 0 5px;" title="Connection Debug Info">
+                    🔧 Debug
+                </button>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
+        </div>
+
+        <!-- Debug Panel -->
+        <div id="debugPanel" style="
+            display: none; 
+            background: #2c3e50; 
+            color: #ecf0f1; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin: 10px 0; 
+            font-family: monospace; 
+            font-size: 12px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        ">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h4 style="margin: 0; color: #f39c12;">🔧 Connection Debug Info</h4>
+                <button onclick="copyDebugInfo()" style="background: #27ae60; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;">
+                    📋 Copy Info
+                </button>
+            </div>
+            <div id="debugInfo">Loading debug information...</div>
         </div>
 
         <!-- Dashboard Content -->
@@ -1122,6 +1154,59 @@
         let currentXP = 0;
         let currentLevel = 1;
         let lastKudosCount = 0;
+
+        // Enhanced error logging for Chromebook diagnostics
+        function logError(context, error, additionalData = {}) {
+            const errorInfo = {
+                context: context,
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                online: navigator.onLine,
+                connection: navigator.connection ? {
+                    effectiveType: navigator.connection.effectiveType,
+                    downlink: navigator.connection.downlink,
+                    rtt: navigator.connection.rtt
+                } : 'unknown',
+                error: {
+                    message: error.message || error,
+                    name: error.name,
+                    stack: error.stack,
+                    toString: error.toString()
+                },
+                url: window.location.href,
+                studentData: {
+                    currentStudent: currentStudent,
+                    currentClass: currentClass,
+                    currentLevel: currentLevel
+                },
+                ...additionalData
+            };
+            
+            console.error(`[${context}] Enhanced Error Log:`, errorInfo);
+            
+            // Check if this is a Chromebook
+            const isChromebook = /\bCrOS\b/.test(navigator.userAgent);
+            if (isChromebook) {
+                console.warn('🔍 CHROMEBOOK DETECTED - This error occurred on a Chromebook device');
+            }
+            
+            return errorInfo;
+        }
+
+        // Global error handler for unhandled errors
+        window.addEventListener('error', function(event) {
+            logError('Global Error Handler', event.error, {
+                filename: event.filename,
+                lineno: event.lineno,
+                colno: event.colno
+            });
+        });
+
+        // Global handler for unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(event) {
+            logError('Unhandled Promise Rejection', event.reason);
+        });
 
         // Avatar options using Dicebear seeds for variety
         // Avatar System with Level-Based Unlocks
@@ -1807,7 +1892,11 @@
                     showError(data.message || 'Login failed. Please check your codes and try again.');
                 }
             } catch (error) {
-                console.error('Login error:', error);
+                logError('Student Login', error, {
+                    endpoint: '../netlify/functions/consistentStudentAuth',
+                    studentCode: document.getElementById('studentCode').value,
+                    className: document.getElementById('className').value
+                });
                 showError('Connection error. Please check your internet and try again.');
             } finally {
                 // Reset button state
@@ -1896,15 +1985,37 @@
         }
 
         async function loadStudentKudos(silent = false) {
+            const kudosList = document.getElementById('kudosList');
+            
             try {
                 console.log('Loading kudos for student ID:', currentStudent.id);
                 
-                const response = await fetch(`/.netlify/functions/getKudos?studentId=${currentStudent.id}&classCode=${currentClass}`);
-                const data = await response.json();
+                if (!silent) {
+                    kudosList.innerHTML = '<p style="text-align: center; color: #666;">📚 Loading your achievements...</p>';
+                }
                 
+                // Add timeout for slow connections (common on Chromebooks)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+                
+                const response = await fetch(`/.netlify/functions/getKudos?studentId=${currentStudent.id}&classCode=${currentClass}`, {
+                    signal: controller.signal,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
                 console.log('Kudos data:', data);
                 
-                if (response.ok && data.success) {
+                if (data.success) {
                     const kudos = data.kudos || [];
                     
                     // Update current student data if returned
@@ -1920,17 +2031,43 @@
                     updateKudosStats(kudos);
                     updateKudosFeed(kudos, silent);
                 } else {
-                    console.error('Failed to load kudos:', data.message);
-                    if (!silent) {
-                        document.getElementById('kudosList').innerHTML = 
-                            '<p style="text-align: center; color: #666;">No achievements yet. Keep working hard!</p>';
-                    }
+                    throw new Error(data.message || 'Unknown error loading achievements');
                 }
+                
             } catch (error) {
-                console.error('Error loading kudos:', error);
+                const errorInfo = logError('Load Student Kudos', error, {
+                    endpoint: '../netlify/functions/getStudentKudos',
+                    requestParams: { studentCode: currentStudentCode, className: currentClass },
+                    silent: silent
+                });
+                
                 if (!silent) {
-                    document.getElementById('kudosList').innerHTML = 
-                        '<p style="text-align: center; color: #dc3545;">Error loading achievements.</p>';
+                    let errorMessage = '❌ Unable to load achievements';
+                    
+                    if (error.name === 'AbortError') {
+                        errorMessage = '⏱️ Loading timeout - Check your internet connection';
+                    } else if (error.message.includes('Failed to fetch')) {
+                        errorMessage = '🌐 Network error - Check your internet connection';
+                    } else if (error.message.includes('HTTP')) {
+                        errorMessage = `🔒 Server error: ${error.message}`;
+                    }
+                    
+                    kudosList.innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: #e74c3c;">
+                            <div style="font-size: 1.1em; margin-bottom: 10px;">${errorMessage}</div>
+                            <button onclick="loadStudentKudos()" style="
+                                background: #667eea; 
+                                color: white; 
+                                border: none; 
+                                padding: 8px 16px; 
+                                border-radius: 5px; 
+                                cursor: pointer;
+                                font-size: 14px;
+                            ">
+                                🔄 Retry
+                            </button>
+                        </div>
+                    `;
                 }
             }
         }
@@ -2022,24 +2159,79 @@
         }
 
         async function loadLeaderboard() {
+            const leaderboardList = document.getElementById('leaderboardList');
+            
             try {
                 console.log('Loading leaderboard for class:', currentClass);
-                const response = await fetch(`/.netlify/functions/getLeaderboard?classCode=${currentClass}`);
+                
+                // Show loading state immediately
+                leaderboardList.innerHTML = '<p style="text-align: center; color: #666;">📊 Loading leaderboard...</p>';
+                
+                // Add timeout for slow connections (common on Chromebooks)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                
+                const response = await fetch(`/.netlify/functions/getLeaderboard?classCode=${currentClass}`, {
+                    signal: controller.signal,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                clearTimeout(timeoutId);
                 console.log('Leaderboard response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
                 console.log('Leaderboard data received:', data);
                 
-                if (response.ok && data.success) {
+                if (data.success) {
                     console.log('Leaderboard entries:', data.leaderboard.length);
                     data.leaderboard.forEach((student, index) => {
                         console.log(`Leaderboard entry ${index}: name="${student.name}", points=${student.total_points}`);
                     });
                     updateLeaderboard(data.leaderboard || []);
                 } else {
-                    console.error('Failed to load leaderboard:', data.message);
+                    throw new Error(data.message || 'Unknown error loading leaderboard');
                 }
+                
             } catch (error) {
-                console.error('Error loading leaderboard:', error);
+                const errorInfo = logError('Load Leaderboard', error, {
+                    endpoint: '../netlify/functions/getLeaderboard',
+                    requestParams: { studentCode: currentStudentCode, className: currentClass }
+                });
+                
+                // Chromebook-friendly error display
+                let errorMessage = '❌ Unable to load leaderboard';
+                
+                if (error.name === 'AbortError') {
+                    errorMessage = '⏱️ Loading timeout - Check your internet connection';
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = '🌐 Network error - Check your internet connection';
+                } else if (error.message.includes('HTTP')) {
+                    errorMessage = `🔒 Server error: ${error.message}`;
+                }
+                
+                leaderboardList.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #e74c3c;">
+                        <div style="font-size: 1.2em; margin-bottom: 10px;">${errorMessage}</div>
+                        <button onclick="loadLeaderboard()" style="
+                            background: #667eea; 
+                            color: white; 
+                            border: none; 
+                            padding: 10px 20px; 
+                            border-radius: 5px; 
+                            cursor: pointer;
+                            font-size: 14px;
+                        ">
+                            🔄 Retry
+                        </button>
+                    </div>
+                `;
             }
         }
 
@@ -2150,6 +2342,179 @@
             console.log('Current XP:', currentXP);
             console.log('Selected Avatar:', selectedAvatar);
         };
+
+        // Connection monitoring for Chromebook diagnostics
+        function monitorConnection() {
+            const statusElement = document.getElementById('connection-status');
+            
+            function updateConnectionStatus() {
+                const isOnline = navigator.onLine;
+                const connectionType = navigator.connection ? navigator.connection.effectiveType : 'unknown';
+                const downlink = navigator.connection ? navigator.connection.downlink : 'unknown';
+                
+                if (statusElement) {
+                    statusElement.innerHTML = `
+                        <span style="color: ${isOnline ? '#4CAF50' : '#f44336'}">
+                            ${isOnline ? '🟢' : '🔴'} ${isOnline ? 'Online' : 'Offline'}
+                        </span>
+                        ${connectionType !== 'unknown' ? ` | Speed: ${connectionType}` : ''}
+                        ${downlink !== 'unknown' ? ` | Bandwidth: ${downlink}Mbps` : ''}
+                    `;
+                }
+                
+                console.log('Connection Status:', {
+                    online: isOnline,
+                    type: connectionType,
+                    downlink: downlink,
+                    userAgent: navigator.userAgent,
+                    platform: navigator.platform,
+                    timestamp: new Date().toISOString()
+                });
+            }
+            
+            // Update status immediately
+            updateConnectionStatus();
+            
+            // Monitor connection changes
+            window.addEventListener('online', updateConnectionStatus);
+            window.addEventListener('offline', updateConnectionStatus);
+            
+            // Monitor connection type changes (if supported)
+            if (navigator.connection) {
+                navigator.connection.addEventListener('change', updateConnectionStatus);
+            }
+            
+            // Periodic status check
+            setInterval(updateConnectionStatus, 30000); // Every 30 seconds
+        }
+
+        // Performance monitoring for slow connections
+        function measureNetworkPerformance() {
+            const startTime = performance.now();
+            
+            // Test with a small image request
+            const img = new Image();
+            img.onload = function() {
+                const loadTime = performance.now() - startTime;
+                console.log('Network performance test:', {
+                    loadTime: `${loadTime.toFixed(2)}ms`,
+                    status: loadTime < 1000 ? 'Good' : loadTime < 3000 ? 'Fair' : 'Poor',
+                    timestamp: new Date().toISOString()
+                });
+            };
+            img.onerror = function() {
+                console.log('Network performance test failed:', {
+                    error: 'Image load failed',
+                    timestamp: new Date().toISOString()
+                });
+            };
+            img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // 1x1 transparent gif
+        }
+
+        // Initialize monitoring when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            monitorConnection();
+            measureNetworkPerformance();
+            
+            // Test network performance every 5 minutes
+            setInterval(measureNetworkPerformance, 300000);
+            
+            // Update debug panel every 10 seconds
+            setInterval(updateDebugPanel, 10000);
+        });
+
+        // Debug panel functions
+        function toggleDebugPanel() {
+            const panel = document.getElementById('debugPanel');
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'block';
+                updateDebugPanel();
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        function updateDebugPanel() {
+            const debugInfo = document.getElementById('debugInfo');
+            if (!debugInfo) return;
+            
+            const connection = navigator.connection;
+            const isChromebook = /\bCrOS\b/.test(navigator.userAgent);
+            
+            debugInfo.innerHTML = `
+                <div style="margin-bottom: 10px;">
+                    <strong>🌐 Connection Status:</strong><br>
+                    Online: ${navigator.onLine ? '✅ Yes' : '❌ No'}<br>
+                    Type: ${connection ? connection.effectiveType : 'Unknown'}<br>
+                    Downlink: ${connection ? connection.downlink + 'Mbps' : 'Unknown'}<br>
+                    RTT: ${connection ? connection.rtt + 'ms' : 'Unknown'}
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>💻 Device Info:</strong><br>
+                    Platform: ${navigator.platform}<br>
+                    Chromebook: ${isChromebook ? '✅ Yes' : '❌ No'}<br>
+                    User Agent: ${navigator.userAgent.substring(0, 60)}...
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>📊 Student Data:</strong><br>
+                    Student: ${currentStudent || 'Not loaded'}<br>
+                    Class: ${currentClass || 'Not loaded'}<br>
+                    Level: ${currentLevel || 'Not loaded'}<br>
+                    XP: ${currentXP || 'Not loaded'}
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>🕒 Session Info:</strong><br>
+                    Page Load: ${new Date().toLocaleString()}<br>
+                    Session Duration: ${Math.floor((Date.now() - performance.timing.navigationStart) / 1000)}s<br>
+                    URL: ${window.location.href}
+                </div>
+            `;
+        }
+
+        function copyDebugInfo() {
+            const connection = navigator.connection;
+            const isChromebook = /\bCrOS\b/.test(navigator.userAgent);
+            
+            const debugText = `
+CLASS KUDOS DEBUG INFO
+======================
+Time: ${new Date().toISOString()}
+
+CONNECTION:
+- Online: ${navigator.onLine}
+- Type: ${connection ? connection.effectiveType : 'Unknown'}
+- Downlink: ${connection ? connection.downlink + 'Mbps' : 'Unknown'}
+- RTT: ${connection ? connection.rtt + 'ms' : 'Unknown'}
+
+DEVICE:
+- Platform: ${navigator.platform}
+- Chromebook: ${isChromebook}
+- User Agent: ${navigator.userAgent}
+
+STUDENT DATA:
+- Student: ${currentStudent || 'Not loaded'}
+- Class: ${currentClass || 'Not loaded'}
+- Level: ${currentLevel || 'Not loaded'}
+- XP: ${currentXP || 'Not loaded'}
+
+SESSION:
+- URL: ${window.location.href}
+- Session Duration: ${Math.floor((Date.now() - performance.timing.navigationStart) / 1000)}s
+            `.trim();
+            
+            navigator.clipboard.writeText(debugText).then(() => {
+                alert('Debug info copied to clipboard! You can paste this to share with your teacher.');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = debugText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Debug info copied to clipboard! You can paste this to share with your teacher.');
+            });
+        }
     </script>
 </body>
 </html>
