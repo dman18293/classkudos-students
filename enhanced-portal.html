@@ -2091,6 +2091,9 @@
                 document.getElementById('totalKudos').textContent = currentStudent.points || 0;
                 updateXPDisplay(currentStudent.points || 0);
                 
+                // Sync localStorage with database points
+                localStorage.setItem('studentPoints', (currentStudent.points || 0).toString());
+                
                 // Update avatar if changed
                 if (currentStudent.avatar_data && currentStudent.avatar_data !== selectedAvatar) {
                     // Check if it's already a URL or a seed
@@ -3039,15 +3042,35 @@
                 const newTotalPoints = (parseInt(localStorage.getItem('studentPoints') || '0')) + xpAmount;
                 localStorage.setItem('studentPoints', newTotalPoints.toString());
                 
+                // Also update the currentStudent object
+                if (currentStudent) {
+                    currentStudent.points = newTotalPoints;
+                }
+                
                 // Update the database
                 if (currentStudent && currentStudent.id) {
-                    await updateStudentPortal(currentStudent.name, currentClass, {
-                        colosseumScore: currentGame.score,
-                        totalPoints: newTotalPoints,
-                        lastColosseumDate: new Date().toISOString()
+                    const response = await fetch('https://classkudos.org/.netlify/functions/updateStudentPortal', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            studentId: currentStudent.id,
+                            xp: newTotalPoints,
+                            level: calculateLevel(newTotalPoints)
+                        })
                     });
                     
-                    console.log(`Kudos Colosseum: Awarded ${xpAmount} XP to ${currentStudent.name}`);
+                    const data = await response.json();
+                    if (data.success) {
+                        console.log(`Kudos Colosseum: Awarded ${xpAmount} XP to ${currentStudent.name}. Total XP: ${newTotalPoints}`);
+                        
+                        // Update the display immediately
+                        document.getElementById('totalKudos').textContent = newTotalPoints;
+                        updateXPDisplay(newTotalPoints);
+                    } else {
+                        console.error('Failed to save XP to database:', data.error);
+                    }
                     
                     // Check for level up
                     const newLevel = calculateLevel(newTotalPoints);
@@ -3059,7 +3082,7 @@
                     
                     // Refresh the dashboard if it's visible
                     if (document.getElementById('dashboard').classList.contains('active')) {
-                        loadStudentData();
+                        refreshStudentData();
                     }
                 }
             } catch (error) {
