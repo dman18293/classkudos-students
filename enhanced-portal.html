@@ -545,30 +545,107 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
             color: white;
-            padding: 30px;
-            border-radius: 15px;
+            padding: 40px;
+            border-radius: 20px;
             text-align: center;
             z-index: 2000;
-            animation: levelUpPop 3s ease-in-out;
+            animation: levelUpEpic 4s ease-in-out;
             display: none;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 3px solid #FFD700;
         }
         
-        @keyframes levelUpPop {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        @keyframes levelUpEpic {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3) rotate(-10deg); }
+            15% { opacity: 1; transform: translate(-50%, -50%) scale(1.3) rotate(5deg); }
+            30% { transform: translate(-50%, -50%) scale(0.9) rotate(-2deg); }
+            45% { transform: translate(-50%, -50%) scale(1.1) rotate(1deg); }
+            60% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            90% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8) rotate(0deg); }
+        }
+        
+        .level-up-content {
+            position: relative;
+        }
+        
+        .level-up-badge {
+            background: #FFD700;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+            border: 3px solid #FFF;
+            animation: badgeSpin 4s ease-in-out;
+        }
+        
+        @keyframes badgeSpin {
+            0% { transform: rotate(0deg) scale(0.5); }
+            25% { transform: rotate(180deg) scale(1.2); }
+            50% { transform: rotate(360deg) scale(1); }
+            75% { transform: rotate(540deg) scale(1.1); }
+            100% { transform: rotate(720deg) scale(1); }
+        }
+        
+        .level-up-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
         
         .level-up-notification h2 {
-            font-size: 2em;
-            margin-bottom: 10px;
+            font-size: 2.5em;
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: textBounce 2s ease-in-out infinite;
         }
         
-        .level-up-notification p {
+        @keyframes textBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .level-up-message {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 15px 0 5px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .level-up-subtitle {
+            font-size: 1.3em;
+            margin: 5px 0 20px;
+            opacity: 0.9;
+        }
+        
+        .level-up-achievement {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            animation: achievementGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes achievementGlow {
+            0% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
+            100% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.6); }
+        }
+        
+        .achievement-icon {
+            font-size: 2em;
+            margin-right: 10px;
+        }
+        
+        .achievement-text {
             font-size: 1.2em;
+            font-weight: bold;
         }
         
         /* Add main app emoji avatar styling for consistency */
@@ -721,8 +798,7 @@
 
     <!-- Level Up Notification -->
     <div id="levelUpNotification" class="level-up-notification">
-        <h2>🎉 LEVEL UP!</h2>
-        <p>You reached Level <span id="newLevel">2</span>!</p>
+        <!-- Content will be dynamically generated -->
     </div>
 
     <script>
@@ -750,7 +826,8 @@
         }
 
         // XP requirements for each level
-        const xpRequirements = [0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700, 3250];
+        // XP requirements for each level - easier start, progressively harder
+        const xpRequirements = [0, 25, 75, 150, 250, 400, 600, 850, 1150, 1500, 1900, 2350, 2850, 3400, 4000, 4650, 5350, 6100, 6900, 7750, 8650];
 
         // Session persistence functions
         function saveSession(student, classCode, studentCode) {
@@ -985,13 +1062,64 @@
         }
 
         function showLevelUpNotification(level) {
+            // Achievement messages and emojis for different levels
+            const levelAchievements = {
+                1: { icon: "🎉", title: "First Steps!", message: "Welcome to your learning journey!" },
+                2: { icon: "🌟", title: "Rising Star!", message: "You're building momentum!" },
+                3: { icon: "⚡", title: "Power Player!", message: "Your dedication is showing!" },
+                4: { icon: "🔥", title: "On Fire!", message: "You're really getting the hang of this!" },
+                5: { icon: "💎", title: "Diamond Achiever!", message: "Your hard work is paying off!" },
+                6: { icon: "🏆", title: "Champion!", message: "You're becoming unstoppable!" },
+                7: { icon: "🚀", title: "Rocket Scientist!", message: "Your knowledge is skyrocketing!" },
+                8: { icon: "👑", title: "Knowledge Royalty!", message: "You rule this classroom!" },
+                9: { icon: "🎯", title: "Master Marksman!", message: "Hitting every target perfectly!" },
+                10: { icon: "🌈", title: "Rainbow Warrior!", message: "You bring color to learning!" },
+                11: { icon: "⭐", title: "Superstar!", message: "Your brilliance shines bright!" },
+                12: { icon: "🔮", title: "Wisdom Oracle!", message: "You see the bigger picture!" },
+                13: { icon: "🎪", title: "Learning Maestro!", message: "You make it look effortless!" },
+                14: { icon: "🌊", title: "Tsunami of Talent!", message: "Your skills are overwhelming!" },
+                15: { icon: "🎨", title: "Master Artist!", message: "You've painted success!" },
+                16: { icon: "🏰", title: "Castle Builder!", message: "Your knowledge fortress is strong!" },
+                17: { icon: "🦄", title: "Legendary Unicorn!", message: "Rare and magical talent!" },
+                18: { icon: "🌌", title: "Galaxy Guardian!", message: "Protecting knowledge across space!" },
+                19: { icon: "🔥", title: "Phoenix Rising!", message: "Reborn stronger than ever!" },
+                20: { icon: "👑", title: "Ultimate Legend!", message: "You've achieved the impossible!" }
+            };
+            
+            const achievement = levelAchievements[level] || { 
+                icon: "⭐", 
+                title: "Level Master!", 
+                message: "Your dedication knows no bounds!" 
+            };
+            
             const notification = document.getElementById('levelUpNotification');
-            document.getElementById('newLevel').textContent = level;
+            notification.innerHTML = `
+                <div class="level-up-content">
+                    <div class="level-up-badge">
+                        <div class="level-up-number">${level}</div>
+                    </div>
+                    <h2>LEVEL UP!</h2>
+                    <div class="level-up-message">${achievement.title}</div>
+                    <div class="level-up-subtitle">${achievement.message}</div>
+                    <div class="level-up-achievement">
+                        <span class="achievement-icon">${achievement.icon}</span>
+                        <span class="achievement-text">Level ${level} Unlocked!</span>
+                    </div>
+                </div>
+            `;
+            
             notification.style.display = 'block';
             
+            // Play celebration sound if available
+            try {
+                const audio = new Audio('../Audio/ding.wav');
+                audio.play().catch(() => {}); // Ignore if audio fails
+            } catch (e) {}
+            
+            // Hide after animation completes
             setTimeout(() => {
                 notification.style.display = 'none';
-            }, 3000);
+            }, 4000);
         }
 
         async function handleLogin(event) {
@@ -1186,8 +1314,12 @@
             const totalPoints = currentStudent.points || 0;
             document.getElementById('totalKudos').textContent = totalPoints;
             
-            // Update XP and level
-            updateXPDisplay(totalPoints);
+            // Calculate XP from positive points only (no regression)
+            const positiveKudos = kudos.filter(kudo => (kudo.points || 0) > 0);
+            const positiveXP = positiveKudos.reduce((sum, kudo) => sum + (kudo.points || 0), 0);
+            
+            // Update XP and level using positive points only
+            updateXPDisplay(positiveXP);
             
             // Calculate recent kudos (last 7 days)
             const oneWeekAgo = new Date();
