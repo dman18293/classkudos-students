@@ -518,6 +518,152 @@
             box-shadow: 0 3px 10px rgba(255, 152, 0, 0.4);
         }
         
+        /* Modal Header */
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.8em;
+            color: #333;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .modal-close:hover {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        /* Tab Navigation */
+        .avatar-tabs {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 25px;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab-button:hover {
+            background: #f8f9fa;
+            color: #333;
+        }
+        
+        .tab-button.active {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
+            background: #f8fcf9;
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Avatar Categories */
+        .avatar-categories {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        
+        .avatar-category {
+            margin-bottom: 30px;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .category-header.locked {
+            background: linear-gradient(135deg, #FF9800 0%, #FF5722 100%);
+        }
+        
+        .category-title {
+            font-size: 16px;
+        }
+        
+        .category-progress {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 12px;
+            padding: 0 10px;
+        }
+        
+        .avatar-option {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+        }
+        
+        .avatar-option img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+        
         .modal-buttons {
             display: flex;
             gap: 15px;
@@ -927,10 +1073,34 @@
     <!-- Avatar Selection Modal -->
     <div id="avatarModal" class="avatar-modal">
         <div class="avatar-modal-content">
-            <h3>🎨 Choose Your Avatar</h3>
-            <div class="avatar-grid" id="avatarGrid">
-                <!-- Avatars will be populated by JavaScript -->
+            <div class="modal-header">
+                <h3>🎨 Choose Your Avatar</h3>
+                <button class="modal-close" onclick="closeAvatarModal()">×</button>
             </div>
+            
+            <!-- Tab Navigation -->
+            <div class="avatar-tabs">
+                <button class="tab-button active" onclick="switchAvatarTab('available')">
+                    ✅ Available
+                </button>
+                <button class="tab-button" onclick="switchAvatarTab('coming-soon')">
+                    🔒 Coming Soon
+                </button>
+            </div>
+            
+            <!-- Tab Content -->
+            <div id="availableTab" class="tab-content active">
+                <div class="avatar-categories" id="availableCategories">
+                    <!-- Available avatars will be populated here -->
+                </div>
+            </div>
+            
+            <div id="comingSoonTab" class="tab-content">
+                <div class="avatar-categories" id="comingSoonCategories">
+                    <!-- Locked avatars will be populated here -->
+                </div>
+            </div>
+            
             <div class="modal-buttons">
                 <button class="modal-btn primary" onclick="saveSelectedAvatar()">Save Avatar</button>
                 <button class="modal-btn secondary" onclick="closeAvatarModal()">Cancel</button>
@@ -1181,87 +1351,154 @@
         }
 
         function populateAvatarGrid() {
-            const grid = document.getElementById('avatarGrid');
-            grid.innerHTML = '';
-            
-            // Get current level for avatar unlocks
             const currentLevel = Math.floor(parseInt(localStorage.getItem('studentPoints') || '0') / 100) + 1;
             
-            // Create sections for available avatars
-            const availableAvatars = getAvailableAvatars(currentLevel);
-            const lockedPacks = getLockedAvatars(currentLevel);
+            populateAvailableTab(currentLevel);
+            populateComingSoonTab(currentLevel);
+        }
+        
+        function populateAvailableTab(currentLevel) {
+            const container = document.getElementById('availableCategories');
+            container.innerHTML = '';
             
-            // Section for available avatars
-            if (availableAvatars.length > 0) {
-                const availableSection = document.createElement('div');
-                availableSection.innerHTML = '<h3 style="color: #4CAF50; margin: 15px 0 10px 0;">✅ Available Avatars</h3>';
-                grid.appendChild(availableSection);
-                
-                availableAvatars.forEach(avatar => {
-                    const option = document.createElement('div');
-                    option.className = 'avatar-option';
+            // Basic Avatars (always available)
+            const basicCategory = document.createElement('div');
+            basicCategory.className = 'avatar-category';
+            basicCategory.innerHTML = `
+                <div class="category-header">
+                    <div class="category-title">🎯 Basic Collection</div>
+                    <div class="category-progress">${basicAvatars.length} avatars</div>
+                </div>
+                <div class="category-grid" id="basicGrid"></div>
+            `;
+            container.appendChild(basicCategory);
+            
+            const basicGrid = document.getElementById('basicGrid');
+            basicAvatars.forEach(avatar => {
+                createAvatarOption(avatar, basicGrid, false);
+            });
+            
+            // Unlocked Premium Categories
+            for (const [levelReq, pack] of Object.entries(avatarsByLevel)) {
+                if (currentLevel >= parseInt(levelReq)) {
+                    const category = document.createElement('div');
+                    category.className = 'avatar-category';
+                    category.innerHTML = `
+                        <div class="category-header">
+                            <div class="category-title">⭐ ${pack.category}</div>
+                            <div class="category-progress">Level ${levelReq} • ${pack.avatars.length} avatars</div>
+                        </div>
+                        <div class="category-grid" id="level${levelReq}Grid"></div>
+                    `;
+                    container.appendChild(category);
                     
-                    // Create img element for Dicebear avatar preview
-                    const img = document.createElement('img');
-                    img.src = getAvatarUrl(avatar);
-                    img.alt = avatar;
-                    img.style.width = '100%';
-                    img.style.height = '100%';
-                    img.style.borderRadius = '50%';
+                    const categoryGrid = document.getElementById(`level${levelReq}Grid`);
+                    pack.avatars.forEach(avatar => {
+                        createAvatarOption(avatar, categoryGrid, false);
+                    });
+                }
+            }
+        }
+        
+        function populateComingSoonTab(currentLevel) {
+            const container = document.getElementById('comingSoonCategories');
+            container.innerHTML = '';
+            
+            let hasLockedContent = false;
+            
+            // Locked Premium Categories
+            for (const [levelReq, pack] of Object.entries(avatarsByLevel)) {
+                if (currentLevel < parseInt(levelReq)) {
+                    hasLockedContent = true;
+                    const levelsToGo = parseInt(levelReq) - currentLevel;
                     
-                    option.appendChild(img);
-                    option.onclick = () => selectAvatar(avatar, option);
-                    grid.appendChild(option);
-                });
+                    const category = document.createElement('div');
+                    category.className = 'avatar-category';
+                    category.innerHTML = `
+                        <div class="category-header locked">
+                            <div class="category-title">🔒 ${pack.category}</div>
+                            <div class="category-progress">Level ${levelReq} • ${levelsToGo} level${levelsToGo > 1 ? 's' : ''} to go</div>
+                        </div>
+                        <div class="category-grid" id="locked${levelReq}Grid"></div>
+                    `;
+                    container.appendChild(category);
+                    
+                    const categoryGrid = document.getElementById(`locked${levelReq}Grid`);
+                    pack.avatars.forEach(avatar => {
+                        createAvatarOption(avatar, categoryGrid, true, parseInt(levelReq));
+                    });
+                }
             }
             
-            // Sections for locked avatar packs
-            lockedPacks.forEach(pack => {
-                const packSection = document.createElement('div');
-                packSection.innerHTML = `
-                    <h3 style="color: #FF9800; margin: 25px 0 10px 0;">
-                        🔒 ${pack.category} (Unlock at Level ${pack.level})
-                    </h3>
+            if (!hasLockedContent) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 3em; margin-bottom: 15px;">🎉</div>
+                        <h3>Congratulations!</h3>
+                        <p>You've unlocked all available avatar categories!</p>
+                        <p style="font-size: 0.9em; opacity: 0.8;">More categories coming soon...</p>
+                    </div>
                 `;
-                grid.appendChild(packSection);
+            }
+        }
+        
+        function createAvatarOption(avatar, container, isLocked = false, unlockLevel = null) {
+            const option = document.createElement('div');
+            option.className = 'avatar-option';
+            
+            if (isLocked) {
+                option.classList.add('locked');
+                option.style.opacity = '0.4';
+                option.style.filter = 'grayscale(100%)';
+                option.title = `Unlock at Level ${unlockLevel}`;
+            }
+            
+            const img = document.createElement('img');
+            img.src = getAvatarUrl(avatar);
+            img.alt = avatar;
+            option.appendChild(img);
+            
+            if (isLocked) {
+                const lockOverlay = document.createElement('div');
+                lockOverlay.innerHTML = '🔒';
+                lockOverlay.style.position = 'absolute';
+                lockOverlay.style.top = '50%';
+                lockOverlay.style.left = '50%';
+                lockOverlay.style.transform = 'translate(-50%, -50%)';
+                lockOverlay.style.fontSize = '16px';
+                lockOverlay.style.textShadow = '0 0 3px rgba(0,0,0,0.8)';
+                lockOverlay.style.zIndex = '2';
                 
-                pack.avatars.forEach(avatar => {
-                    const option = document.createElement('div');
-                    option.className = 'avatar-option locked';
-                    option.style.opacity = '0.3';
-                    option.style.filter = 'grayscale(100%)';
-                    option.title = `Unlock at Level ${pack.level}`;
-                    
-                    // Create img element for Dicebear avatar preview
-                    const img = document.createElement('img');
-                    img.src = getAvatarUrl(avatar);
-                    img.alt = avatar;
-                    img.style.width = '100%';
-                    img.style.height = '100%';
-                    img.style.borderRadius = '50%';
-                    
-                    // Add lock overlay
-                    const lockOverlay = document.createElement('div');
-                    lockOverlay.innerHTML = '🔒';
-                    lockOverlay.style.position = 'absolute';
-                    lockOverlay.style.top = '50%';
-                    lockOverlay.style.left = '50%';
-                    lockOverlay.style.transform = 'translate(-50%, -50%)';
-                    lockOverlay.style.fontSize = '20px';
-                    lockOverlay.style.textShadow = '0 0 5px rgba(0,0,0,0.8)';
-                    
-                    option.style.position = 'relative';
-                    option.appendChild(img);
-                    option.appendChild(lockOverlay);
-                    
-                    // Locked avatars are not clickable
-                    option.onclick = () => {
-                        alert(`This avatar unlocks at Level ${pack.level}! Keep earning points to unlock it!`);
-                    };
-                    
-                    grid.appendChild(option);
-                });
+                option.style.position = 'relative';
+                option.appendChild(lockOverlay);
+                
+                option.onclick = () => {
+                    alert(`🔒 This avatar unlocks at Level ${unlockLevel}!\n\nKeep earning points to reach it! You're currently Level ${Math.floor(parseInt(localStorage.getItem('studentPoints') || '0') / 100) + 1}.`);
+                };
+            } else {
+                option.onclick = () => selectAvatar(avatar, option);
+            }
+            
+            container.appendChild(option);
+        }
+
+        function switchAvatarTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
             });
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            if (tabName === 'available') {
+                document.getElementById('availableTab').classList.add('active');
+            } else if (tabName === 'coming-soon') {
+                document.getElementById('comingSoonTab').classList.add('active');
+            }
         }
 
         function selectAvatar(avatar, element) {
@@ -1277,14 +1514,24 @@
 
         function openAvatarModal() {
             document.getElementById('avatarModal').style.display = 'block';
+            populateAvatarGrid();
             
-            // Highlight current avatar
-            document.querySelectorAll('.avatar-option').forEach(opt => {
-                opt.classList.remove('selected');
-                if (opt.textContent === selectedAvatar) {
-                    opt.classList.add('selected');
-                }
-            });
+            // Reset to available tab
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelector('.tab-button').classList.add('active');
+            document.getElementById('availableTab').classList.add('active');
+            
+            // Highlight current avatar after a short delay to ensure DOM is ready
+            setTimeout(() => {
+                document.querySelectorAll('.avatar-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                    const img = opt.querySelector('img');
+                    if (img && img.src.includes(selectedAvatar)) {
+                        opt.classList.add('selected');
+                    }
+                });
+            }, 100);
         }
 
         function closeAvatarModal() {
