@@ -1280,7 +1280,6 @@
         }
 
         // XP requirements for each level
-        // XP requirements for each level - easier start, progressively harder
         const xpRequirements = [0, 25, 75, 150, 250, 400, 600, 850, 1150, 1500, 1900, 2350, 2850, 3400, 4000, 4650, 5350, 6100, 6900, 7750, 8650];
 
         // Session persistence functions
@@ -1439,22 +1438,24 @@
             const container = document.getElementById('availableCategories');
             container.innerHTML = '';
             
-            // Basic Avatars (always available)
-            const basicCategory = document.createElement('div');
-            basicCategory.className = 'avatar-category';
-            basicCategory.innerHTML = `
-                <div class="category-header">
-                    <div class="category-title">� Amazing Collection</div>
-                    <div class="category-progress">${basicAvatars.length} avatars • Always Available</div>
-                </div>
-                <div class="category-grid" id="basicGrid"></div>
-            `;
-            container.appendChild(basicCategory);
-            
-            const basicGrid = document.getElementById('basicGrid');
-            basicAvatars.forEach(avatar => {
-                createAvatarOption(avatar, basicGrid, false);
-            });
+            // Basic Avatars (backward compatibility - always available)
+            if (basicAvatars.length > 0) {
+                const basicCategory = document.createElement('div');
+                basicCategory.className = 'avatar-category';
+                basicCategory.innerHTML = `
+                    <div class="category-header">
+                        <div class="category-title">⭐ Classic Collection</div>
+                        <div class="category-progress">${basicAvatars.length} avatars • Always Available</div>
+                    </div>
+                    <div class="category-grid" id="basicGrid"></div>
+                `;
+                container.appendChild(basicCategory);
+                
+                const basicGrid = document.getElementById('basicGrid');
+                basicAvatars.forEach(avatar => {
+                    createAvatarOption(avatar, basicGrid, false);
+                });
+            }
             
             // Unlocked Premium Categories
             for (const [levelReq, pack] of Object.entries(avatarsByLevel)) {
@@ -1669,7 +1670,7 @@
             
             // Fall back to localStorage
             const saved = localStorage.getItem('studentAvatar');
-            if (saved && avatarOptions.includes(saved)) {
+            if (saved) {
                 selectedAvatar = saved;
                 document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar);
             }
