@@ -1042,8 +1042,10 @@
         }
 
         function updateXPDisplay(totalPoints) {
+            console.log('updateXPDisplay called with totalPoints:', totalPoints);
             const newLevel = calculateLevel(totalPoints);
             const progress = calculateXPProgress(totalPoints, newLevel);
+            console.log('Calculated level:', newLevel, 'Progress:', progress);
             
             // Check for level up
             if (newLevel > currentLevel && currentLevel > 1) {
@@ -1315,8 +1317,12 @@
             document.getElementById('totalKudos').textContent = totalPoints;
             
             // Calculate XP from positive points only (no regression)
+            console.log('All kudos received:', kudos);
             const positiveKudos = kudos.filter(kudo => (kudo.points || 0) > 0);
+            console.log('Positive kudos only:', positiveKudos);
             const positiveXP = positiveKudos.reduce((sum, kudo) => sum + (kudo.points || 0), 0);
+            console.log('Calculated positive XP:', positiveXP);
+            console.log('Total points (including negative):', totalPoints);
             
             // Update XP and level using positive points only
             updateXPDisplay(positiveXP);
