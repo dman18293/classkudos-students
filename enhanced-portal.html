@@ -634,7 +634,7 @@
                 <div class="student-profile">
                     <div class="avatar-container">
                         <div class="avatar" id="studentAvatar" onclick="openAvatarModal()">
-                            <span id="avatarDisplay">🤖</span>
+                            <img id="avatarDisplay" src="https://api.dicebear.com/7.x/adventurer/svg?seed=happy" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
                         </div>
                         <div class="level-badge" id="levelBadge">1</div>
                     </div>
@@ -730,18 +730,24 @@
         let currentStudent = null;
         let currentClass = null;
         let currentStudentCode = null;
-        let selectedAvatar = '🤖';
+        let selectedAvatar = 'happy';
         let currentXP = 0;
         let currentLevel = 1;
         let lastKudosCount = 0;
 
-        // Avatar options (30+ fun creatures/animals)
+        // Avatar options using Dicebear seeds for variety
         const avatarOptions = [
-            '🤖', '🐱', '🐶', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨',
-            '🐯', '🦁', '🐸', '🐵', '🐔', '🐧', '🦉', '🦄', '🐺', '🐴',
-            '🦋', '🐝', '🐛', '🦆', '🐢', '🐍', '🦎', '🐙', '🦀', '🐠',
-            '🐳', '🦈', '🐊', '🦕', '🦖', '👽', '🎭', '🎪', '🎨', '⭐'
+            'happy', 'cheerful', 'smile', 'joy', 'bright', 'sunny', 'friendly', 'cool', 'awesome', 'super',
+            'star', 'champion', 'hero', 'winner', 'amazing', 'fantastic', 'wonderful', 'brilliant', 'clever', 'smart',
+            'creative', 'artistic', 'musical', 'sporty', 'adventurous', 'brave', 'kind', 'gentle', 'caring', 'helpful',
+            'magical', 'mystic', 'cosmic', 'rainbow', 'thunder', 'lightning', 'ocean', 'forest', 'mountain', 'desert',
+            'phoenix', 'dragon', 'unicorn', 'pegasus', 'griffin', 'tiger', 'lion', 'wolf', 'eagle', 'dolphin'
         ];
+
+        // Function to generate avatar URL - using adventurer style for students, different from main app's bottts
+        function getAvatarUrl(seed) {
+            return `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(seed)}`;
+        }
 
         // XP requirements for each level
         const xpRequirements = [0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700, 3250];
@@ -827,7 +833,16 @@
             avatarOptions.forEach(avatar => {
                 const option = document.createElement('div');
                 option.className = 'avatar-option';
-                option.textContent = avatar;
+                
+                // Create img element for Dicebear avatar preview
+                const img = document.createElement('img');
+                img.src = getAvatarUrl(avatar);
+                img.alt = avatar;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.borderRadius = '50%';
+                
+                option.appendChild(img);
                 option.onclick = () => selectAvatar(avatar, option);
                 grid.appendChild(option);
             });
@@ -861,7 +876,7 @@
         }
 
         function saveSelectedAvatar() {
-            document.getElementById('avatarDisplay').textContent = selectedAvatar;
+            document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar);
             localStorage.setItem('studentAvatar', selectedAvatar);
             
             // Save avatar to database
@@ -900,8 +915,13 @@
         function loadSavedAvatar() {
             // First try to load from student data (database)
             if (currentStudent && currentStudent.avatar_data) {
-                selectedAvatar = currentStudent.avatar_data;
-                document.getElementById('avatarDisplay').textContent = selectedAvatar;
+                // Check if it's already a URL or a seed
+                if (currentStudent.avatar_data.startsWith('http')) {
+                    selectedAvatar = currentStudent.avatar_data.split('seed=')[1] || 'default';
+                } else {
+                    selectedAvatar = currentStudent.avatar_data;
+                }
+                document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar);
                 localStorage.setItem('studentAvatar', selectedAvatar);
                 return;
             }
@@ -910,7 +930,7 @@
             const saved = localStorage.getItem('studentAvatar');
             if (saved && avatarOptions.includes(saved)) {
                 selectedAvatar = saved;
-                document.getElementById('avatarDisplay').textContent = selectedAvatar;
+                document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar);
             }
         }
 
@@ -1070,8 +1090,13 @@
             
             // Load avatar from database if available
             if (currentStudent.avatar_data) {
-                selectedAvatar = currentStudent.avatar_data;
-                document.getElementById('avatarDisplay').textContent = selectedAvatar;
+                // Check if it's already a URL or a seed
+                if (currentStudent.avatar_data.startsWith('http')) {
+                    selectedAvatar = currentStudent.avatar_data.split('seed=')[1] || 'default';
+                } else {
+                    selectedAvatar = currentStudent.avatar_data;
+                }
+                document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar);
                 localStorage.setItem('studentAvatar', selectedAvatar);
             } else {
                 // Load from localStorage as fallback
@@ -1087,8 +1112,13 @@
                 
                 // Update avatar if changed
                 if (currentStudent.avatar_data && currentStudent.avatar_data !== selectedAvatar) {
-                    selectedAvatar = currentStudent.avatar_data;
-                    document.getElementById('avatarDisplay').textContent = selectedAvatar;
+                    // Check if it's already a URL or a seed
+                    if (currentStudent.avatar_data.startsWith('http')) {
+                        selectedAvatar = currentStudent.avatar_data.split('seed=')[1] || 'default';
+                    } else {
+                        selectedAvatar = currentStudent.avatar_data;
+                    }
+                    document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar);
                     localStorage.setItem('studentAvatar', selectedAvatar);
                 }
                 
@@ -1241,7 +1271,7 @@
                 const isCurrentStudent = student.id === currentStudent.id;
                 const rank = index + 1;
                 const level = calculateLevel(student.total_points);
-                const avatar = student.avatar_data || '🤖';
+                const avatar = student.avatar_data || 'default';
                 
                 // Update current student's rank
                 if (isCurrentStudent) {
@@ -1255,8 +1285,8 @@
                         <div style="font-size: 1.5em; font-weight: bold; color: #667eea; margin-right: 15px; min-width: 40px;">
                             #${rank}
                         </div>
-                        <div class="emoji-avatar-leaderboard">
-                            ${avatar}
+                        <div class="avatar" style="margin-right: 15px; width: 50px; height: 50px;">
+                            <img src="${getAvatarUrl(avatar)}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
                         </div>
                         <div style="flex-grow: 1;">
                             <div style="font-weight: 500; color: #333;">
