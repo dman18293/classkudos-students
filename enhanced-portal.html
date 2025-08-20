@@ -1152,7 +1152,17 @@
         <!-- Leaderboard Content -->
         <div id="leaderboard" class="content-section">
             <div class="dashboard">
-                <h3>🏅 Class Leaderboard</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
+                    <h3>🏅 Class Leaderboard</h3>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button onclick="loadLeaderboard(0)" style="background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                            🔄 Refresh
+                        </button>
+                        <button onclick="enableDiagnosticMode()" style="background: #6c757d; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                            🔧 Fix Issues
+                        </button>
+                    </div>
+                </div>
                 <div id="leaderboardList">
                     <p style="text-align: center; color: #666;">Loading leaderboard...</p>
                 </div>
@@ -2319,78 +2329,326 @@
             }).join('');
         }
 
-        async function loadLeaderboard(retryCount = 0) {
+        // Chromebook diagnostic and fallback system
+        let diagnosticMode = false;
+        let leaderboardAttempts = 0;
+        
+        async function testNetworkConnectivity() {
+            const testUrls = [
+                'https://www.google.com/favicon.ico',
+                'https://classkudos-students.netlify.app/favicon.ico',
+                'https://netlify.com/favicon.ico'
+            ];
+            
+            const results = [];
+            
+            for (const url of testUrls) {
+                try {
+                    const controller = new AbortController();
+                    setTimeout(() => controller.abort(), 2000);
+                    
+                    const response = await fetch(url, {
+                        signal: controller.signal,
+                        mode: 'no-cors',
+                        cache: 'no-cache'
+                    });
+                    
+                    results.push({ url: url.split('/')[2], status: 'OK' });
+                } catch (error) {
+                    results.push({ url: url.split('/')[2], status: 'FAILED' });
+                }
+            }
+            
+            return results;
+        }
+        
+        function enableDiagnosticMode() {
+            diagnosticMode = true;
+            console.log('🔧 DIAGNOSTIC MODE ENABLED - Detailed logging activated');
+            
+            // Show diagnostic info
+            const leaderboardList = document.getElementById('leaderboardList');
+            leaderboardList.innerHTML = `
+                <div style="text-align: center; padding: 20px; background: #e3f2fd; border-radius: 8px; margin: 10px;">
+                    <h3 style="color: #1976d2; margin-bottom: 15px;">🔧 Diagnostic Mode</h3>
+                    <div style="color: #333; margin-bottom: 10px; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;">
+                        <strong>Browser:</strong> ${navigator.userAgent.includes('Chrome') ? 'Chrome' : 'Other'}<br>
+                        <strong>Device:</strong> ${navigator.userAgent.includes('CrOS') ? 'Chromebook' : 'Other'}<br>
+                        <strong>Connection:</strong> ${navigator.onLine ? 'Online' : 'Offline'}<br>
+                        <strong>Class:</strong> ${currentClass}<br>
+                        <strong>Student ID:</strong> ${currentStudent?.id || 'Not set'}<br>
+                        <strong>Failed Attempts:</strong> ${leaderboardAttempts}
+                    </div>
+                    
+                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 15px 0;">
+                        <button onclick="testNetworkAndShowResults()" style="background: #2196f3; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                            🌐 Test Network
+                        </button>
+                        <button onclick="testAllMethods()" style="background: #1976d2; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                            🧪 Test All Methods
+                        </button>
+                        <button onclick="forceClearCache()" style="background: #f57c00; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                            🗑️ Clear Cache
+                        </button>
+                        <button onclick="loadLeaderboard(0); diagnosticMode=false;" style="background: #388e3c; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                            📊 Normal Load
+                        </button>
+                    </div>
+                    
+                    <div style="background: #fff3cd; padding: 10px; border-radius: 4px; font-size: 0.85em; color: #856404; margin-top: 15px;">
+                        � <strong>Teachers:</strong> Use these tools to help troubleshoot student connection issues.<br>
+                        Students can try "Clear Cache" if the leaderboard won't load.
+                    </div>
+                </div>
+            `;
+        }
+        
+        async function testNetworkAndShowResults() {
             const leaderboardList = document.getElementById('leaderboardList');
             
+            leaderboardList.innerHTML = `
+                <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 10px;">
+                    <h3>🌐 Testing Network Connectivity...</h3>
+                    <div style="margin: 20px 0;">Please wait while we test your connection...</div>
+                </div>
+            `;
+            
+            const results = await testNetworkConnectivity();
+            
+            const allPassed = results.every(r => r.status === 'OK');
+            
+            leaderboardList.innerHTML = `
+                <div style="text-align: center; padding: 20px; background: ${allPassed ? '#d4edda' : '#f8d7da'}; border-radius: 8px; margin: 10px;">
+                    <h3 style="color: ${allPassed ? '#155724' : '#721c24'};">
+                        ${allPassed ? '✅ Network Test Results' : '⚠️ Network Test Results'}
+                    </h3>
+                    
+                    <div style="margin: 15px 0; text-align: left; max-width: 300px; margin-left: auto; margin-right: auto;">
+                        ${results.map(r => `
+                            <div style="display: flex; justify-content: space-between; padding: 5px 0;">
+                                <span>${r.url}:</span>
+                                <span style="color: ${r.status === 'OK' ? '#28a745' : '#dc3545'}; font-weight: bold;">
+                                    ${r.status}
+                                </span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="color: #666; margin: 15px 0; font-size: 0.9em;">
+                        ${allPassed 
+                            ? 'Your network connection looks good! The issue might be with our specific API.' 
+                            : 'Some network connections failed. This might be causing the leaderboard issue.'
+                        }
+                    </div>
+                    
+                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+                        <button onclick="testAllMethods()" style="background: #1976d2; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer;">
+                            🧪 Test API Methods
+                        </button>
+                        <button onclick="loadLeaderboard(0); diagnosticMode=false;" style="background: #28a745; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer;">
+                            📊 Try Leaderboard Again
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        async function testAllMethods() {
+            const leaderboardList = document.getElementById('leaderboardList');
+            
+            const testMethods = [
+                {
+                    name: 'Full HTTPS URL',
+                    url: `https://classkudos-students.netlify.app/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(currentClass)}&t=${Date.now()}`
+                },
+                {
+                    name: 'Relative Path',
+                    url: `/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(currentClass)}&t=${Date.now()}`
+                },
+                {
+                    name: 'Alternative Domain',
+                    url: `https://classkudos.org/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(currentClass)}&t=${Date.now()}`
+                },
+                {
+                    name: 'With CORS Headers',
+                    url: `https://classkudos-students.netlify.app/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(currentClass)}&t=${Date.now()}`,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                }
+            ];
+            
+            leaderboardList.innerHTML = '<div style="text-align: center; padding: 20px;">🧪 Testing all methods...</div>';
+            
+            for (let i = 0; i < testMethods.length; i++) {
+                const method = testMethods[i];
+                
+                try {
+                    console.log(`Testing method ${i + 1}: ${method.name}`);
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 3000);
+                    
+                    const response = await fetch(method.url, {
+                        signal: controller.signal,
+                        headers: method.headers || {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        cache: 'no-cache'
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success) {
+                            console.log(`✅ SUCCESS with method: ${method.name}`);
+                            updateLeaderboard(data.leaderboard || []);
+                            return;
+                        }
+                    }
+                    
+                } catch (error) {
+                    console.log(`❌ FAILED method ${method.name}:`, error.message);
+                }
+            }
+            
+            // If all methods fail, show comprehensive error
+            leaderboardList.innerHTML = `
+                <div style="text-align: center; padding: 20px; background: #ffebee; border-radius: 8px; margin: 10px;">
+                    <h3 style="color: #c62828;">❌ All Methods Failed</h3>
+                    <p style="color: #666; margin: 15px 0;">This suggests a network or device-specific issue.</p>
+                    <button onclick="forceClearCache()" style="background: #f57c00; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; margin: 5px;">
+                        🗑️ Force Clear Cache
+                    </button>
+                    <button onclick="enableDiagnosticMode()" style="background: #1976d2; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; margin: 5px;">
+                        🔧 Run Diagnostics Again
+                    </button>
+                </div>
+            `;
+        }
+        
+        function forceClearCache() {
+            // Clear all possible caches
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Clear service worker cache if available
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    registrations.forEach(registration => registration.unregister());
+                });
+            }
+            
+            // Clear browser cache using cache API
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => caches.delete(name));
+                });
+            }
+            
+            // Add cache-busting timestamp
+            const cacheBuster = Date.now();
+            window.location.href = window.location.href.split('?')[0] + '?cb=' + cacheBuster;
+        }
+
+        async function loadLeaderboard(retryCount = 0) {
+            const leaderboardList = document.getElementById('leaderboardList');
+            leaderboardAttempts++;
+            
             try {
-                console.log('Loading leaderboard for class:', currentClass, 'Attempt:', retryCount + 1);
+                console.log(`Loading leaderboard for class: ${currentClass}, Attempt: ${retryCount + 1}, Total attempts: ${leaderboardAttempts}`);
                 
-                // Show loading state immediately
-                leaderboardList.innerHTML = '<p style="text-align: center; color: #666;">📊 Loading leaderboard...</p>';
+                // Show loading state immediately with attempt counter
+                leaderboardList.innerHTML = `
+                    <div style="text-align: center; color: #666; padding: 20px;">
+                        📊 Loading leaderboard... 
+                        <span style="font-size: 0.9em;">(Attempt ${retryCount + 1})</span>
+                        <br><br>
+                        ${leaderboardAttempts > 3 ? `
+                            <button onclick="enableDiagnosticMode()" style="background: #1976d2; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                                🔧 Run Diagnostics
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
                 
-                // Progressive timeout - shorter for retries
-                const timeoutDuration = retryCount === 0 ? 5000 : 3000;
+                // Progressive timeout - even shorter for multiple retries
+                const timeoutDuration = retryCount === 0 ? 4000 : (retryCount === 1 ? 2500 : 2000);
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
                 
-                // Try multiple URL formats for Chromebook compatibility
+                // Multiple URL strategies with cache busting
+                const cacheBuster = Date.now();
                 const apiUrls = [
-                    `https://classkudos-students.netlify.app/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(currentClass)}`,
-                    `/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(currentClass)}`
+                    `https://classkudos-students.netlify.app/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(currentClass)}&cb=${cacheBuster}`,
+                    `/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(currentClass)}&cb=${cacheBuster}`,
+                    `https://classkudos.org/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(currentClass)}&cb=${cacheBuster}`
                 ];
                 
                 const apiUrl = apiUrls[retryCount] || apiUrls[0];
-                console.log('Calling leaderboard API:', apiUrl);
+                if (diagnosticMode) console.log('🔗 Calling leaderboard API:', apiUrl);
                 
-                const response = await fetch(apiUrl, {
+                const fetchOptions = {
                     signal: controller.signal,
                     headers: {
                         'Accept': 'application/json',
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
                     },
-                    // Add cache control for Chromebooks
-                    cache: 'no-cache'
-                });
+                    cache: 'no-cache',
+                    credentials: 'omit' // Don't send cookies - can help with CORS
+                };
+                
+                const response = await fetch(apiUrl, fetchOptions);
                 
                 clearTimeout(timeoutId);
-                console.log('Leaderboard response status:', response.status);
+                if (diagnosticMode) console.log('📡 Leaderboard response status:', response.status);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
                 const data = await response.json();
-                console.log('Leaderboard data received:', data);
+                if (diagnosticMode) console.log('📊 Leaderboard data received:', data);
                 
                 if (data.success) {
-                    console.log('Leaderboard entries:', data.leaderboard.length);
+                    if (diagnosticMode) console.log('✅ Leaderboard entries:', data.leaderboard.length);
                     data.leaderboard.forEach((student, index) => {
-                        console.log(`Leaderboard entry ${index}: name="${student.name}", points=${student.total_points}`);
+                        if (diagnosticMode) console.log(`Entry ${index}: name="${student.name}", points=${student.total_points}`);
                     });
                     updateLeaderboard(data.leaderboard || []);
+                    leaderboardAttempts = 0; // Reset counter on success
                 } else {
                     throw new Error(data.message || 'Unknown error loading leaderboard');
                 }
                 
             } catch (error) {
-                console.error('Leaderboard loading error (attempt ' + (retryCount + 1) + '):', error);
+                console.error(`Leaderboard loading error (attempt ${retryCount + 1}):`, error);
                 
-                // Auto-retry once with different URL on first failure
-                if (retryCount === 0 && (error.name === 'AbortError' || error.message.includes('Failed to fetch'))) {
-                    console.log('Auto-retrying with different URL...');
-                    setTimeout(() => loadLeaderboard(1), 1000);
+                // Auto-retry with different strategies
+                if (retryCount < 2 && (error.name === 'AbortError' || error.message.includes('Failed to fetch'))) {
+                    console.log('Auto-retrying with different strategy...');
+                    setTimeout(() => loadLeaderboard(retryCount + 1), 1000);
                     return;
                 }
                 
                 const errorInfo = logError('Load Leaderboard', error, {
                     endpoint: 'getLeaderboard',
                     requestParams: { studentCode: currentStudentCode, className: currentClass },
-                    retryCount: retryCount
+                    retryCount: retryCount,
+                    totalAttempts: leaderboardAttempts
                 });
                 
-                // Enhanced Chromebook-friendly error display
+                // Enhanced error display with more options
                 let errorMessage = '❌ Unable to load leaderboard';
-                let retryButton = true;
                 
                 if (error.name === 'AbortError') {
                     errorMessage = '⏱️ Connection timeout - Try again in a moment';
@@ -2399,29 +2657,39 @@
                 } else if (error.message.includes('HTTP')) {
                     errorMessage = `🔒 Server error: ${error.message}`;
                 } else {
-                    errorMessage = '🔧 Technical issue - Please try again';
+                    errorMessage = '🔧 Technical issue - Multiple solutions below';
                 }
                 
                 leaderboardList.innerHTML = `
                     <div style="text-align: center; padding: 20px; color: #e74c3c; background: #f8f9fa; border-radius: 8px; margin: 10px;">
                         <div style="font-size: 1.2em; margin-bottom: 15px;">${errorMessage}</div>
-                        <div style="margin-bottom: 15px; color: #666; font-size: 0.9em;">
-                            ${retryCount > 0 ? 'Still having trouble? ' : ''}If this keeps happening, ask your teacher for help
+                        <div style="margin-bottom: 20px; color: #666; font-size: 0.9em;">
+                            ${retryCount > 0 ? 'Multiple attempts failed. ' : ''}Try the options below:
                         </div>
-                        ${retryButton ? `
-                        <button onclick="loadLeaderboard(0)" style="
-                            background: #667eea; 
-                            color: white; 
-                            border: none; 
-                            padding: 12px 24px; 
-                            border-radius: 6px; 
-                            cursor: pointer;
-                            font-size: 16px;
-                            font-weight: bold;
-                        ">
-                            🔄 Try Again
-                        </button>
-                        ` : ''}
+                        
+                        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+                            <button onclick="loadLeaderboard(0)" style="
+                                background: #667eea; color: white; border: none; padding: 10px 16px; 
+                                border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;
+                            ">🔄 Try Again</button>
+                            
+                            <button onclick="forceClearCache()" style="
+                                background: #f57c00; color: white; border: none; padding: 10px 16px; 
+                                border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;
+                            ">🗑️ Clear Cache</button>
+                            
+                            <button onclick="enableDiagnosticMode()" style="
+                                background: #1976d2; color: white; border: none; padding: 10px 16px; 
+                                border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;
+                            ">🔧 Diagnostics</button>
+                        </div>
+                        
+                        <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 4px; font-size: 0.85em; color: #856404;">
+                            💡 <strong>Teacher:</strong> If this keeps happening, try having the student:<br>
+                            1. Close and reopen Chrome completely<br>
+                            2. Sign out and back into their Chromebook<br>
+                            3. Check if other websites work properly
+                        </div>
                     </div>
                 `;
             }
