@@ -984,32 +984,8 @@
                 <div id="connection-status" style="color: #4CAF50; font-size: 12px; margin: 0 10px; display: flex; align-items: center;">
                     🟢 Connected
                 </div>
-                <button class="nav-item debug-btn" onclick="toggleDebugPanel()" style="background: #f39c12; font-size: 11px; padding: 5px 8px; margin: 0 5px;" title="Connection Debug Info">
-                    🔧 Debug
-                </button>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
-        </div>
-
-        <!-- Debug Panel -->
-        <div id="debugPanel" style="
-            display: none; 
-            background: #2c3e50; 
-            color: #ecf0f1; 
-            padding: 15px; 
-            border-radius: 8px; 
-            margin: 10px 0; 
-            font-family: monospace; 
-            font-size: 12px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        ">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h4 style="margin: 0; color: #f39c12;">🔧 Connection Debug Info</h4>
-                <button onclick="copyDebugInfo()" style="background: #27ae60; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;">
-                    📋 Copy Info
-                </button>
-            </div>
-            <div id="debugInfo">Loading debug information...</div>
         </div>
 
         <!-- Dashboard Content -->
@@ -2418,103 +2394,8 @@
             
             // Test network performance every 5 minutes
             setInterval(measureNetworkPerformance, 300000);
-            
-            // Update debug panel every 10 seconds
-            setInterval(updateDebugPanel, 10000);
         });
 
-        // Debug panel functions
-        function toggleDebugPanel() {
-            const panel = document.getElementById('debugPanel');
-            if (panel.style.display === 'none' || panel.style.display === '') {
-                panel.style.display = 'block';
-                updateDebugPanel();
-            } else {
-                panel.style.display = 'none';
-            }
-        }
-
-        function updateDebugPanel() {
-            const debugInfo = document.getElementById('debugInfo');
-            if (!debugInfo) return;
-            
-            const connection = navigator.connection;
-            const isChromebook = /\bCrOS\b/.test(navigator.userAgent);
-            
-            debugInfo.innerHTML = `
-                <div style="margin-bottom: 10px;">
-                    <strong>🌐 Connection Status:</strong><br>
-                    Online: ${navigator.onLine ? '✅ Yes' : '❌ No'}<br>
-                    Type: ${connection ? connection.effectiveType : 'Unknown'}<br>
-                    Downlink: ${connection ? connection.downlink + 'Mbps' : 'Unknown'}<br>
-                    RTT: ${connection ? connection.rtt + 'ms' : 'Unknown'}
-                </div>
-                <div style="margin-bottom: 10px;">
-                    <strong>💻 Device Info:</strong><br>
-                    Platform: ${navigator.platform}<br>
-                    Chromebook: ${isChromebook ? '✅ Yes' : '❌ No'}<br>
-                    User Agent: ${navigator.userAgent.substring(0, 60)}...
-                </div>
-                <div style="margin-bottom: 10px;">
-                    <strong>📊 Student Data:</strong><br>
-                    Student: ${currentStudent || 'Not loaded'}<br>
-                    Class: ${currentClass || 'Not loaded'}<br>
-                    Level: ${currentLevel || 'Not loaded'}<br>
-                    XP: ${currentXP || 'Not loaded'}
-                </div>
-                <div style="margin-bottom: 10px;">
-                    <strong>🕒 Session Info:</strong><br>
-                    Page Load: ${new Date().toLocaleString()}<br>
-                    Session Duration: ${Math.floor((Date.now() - performance.timing.navigationStart) / 1000)}s<br>
-                    URL: ${window.location.href}
-                </div>
-            `;
-        }
-
-        function copyDebugInfo() {
-            const connection = navigator.connection;
-            const isChromebook = /\bCrOS\b/.test(navigator.userAgent);
-            
-            const debugText = `
-CLASS KUDOS DEBUG INFO
-======================
-Time: ${new Date().toISOString()}
-
-CONNECTION:
-- Online: ${navigator.onLine}
-- Type: ${connection ? connection.effectiveType : 'Unknown'}
-- Downlink: ${connection ? connection.downlink + 'Mbps' : 'Unknown'}
-- RTT: ${connection ? connection.rtt + 'ms' : 'Unknown'}
-
-DEVICE:
-- Platform: ${navigator.platform}
-- Chromebook: ${isChromebook}
-- User Agent: ${navigator.userAgent}
-
-STUDENT DATA:
-- Student: ${currentStudent || 'Not loaded'}
-- Class: ${currentClass || 'Not loaded'}
-- Level: ${currentLevel || 'Not loaded'}
-- XP: ${currentXP || 'Not loaded'}
-
-SESSION:
-- URL: ${window.location.href}
-- Session Duration: ${Math.floor((Date.now() - performance.timing.navigationStart) / 1000)}s
-            `.trim();
-            
-            navigator.clipboard.writeText(debugText).then(() => {
-                alert('Debug info copied to clipboard! You can paste this to share with your teacher.');
-            }).catch(() => {
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = debugText;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                alert('Debug info copied to clipboard! You can paste this to share with your teacher.');
-            });
-        }
     </script>
 </body>
 </html>
