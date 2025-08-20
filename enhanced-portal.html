@@ -2147,16 +2147,20 @@
                     kudosList.innerHTML = '<p style="text-align: center; color: #666;">📚 Loading your achievements...</p>';
                 }
                 
-                // Add timeout for slow connections (common on Chromebooks)
+                // Shorter timeout for better Chromebook experience
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
                 
-                const response = await fetch(`/.netlify/functions/getKudos?studentId=${currentStudent.id}&classCode=${currentClass}`, {
+                // Use full URL for better Chromebook compatibility
+                const apiUrl = `https://classkudos-students.netlify.app/.netlify/functions/getKudos?studentId=${encodeURIComponent(currentStudent.id)}&classCode=${encodeURIComponent(currentClass)}`;
+                
+                const response = await fetch(apiUrl, {
                     signal: controller.signal,
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    cache: 'no-cache'
                 });
                 
                 clearTimeout(timeoutId);
@@ -2189,7 +2193,7 @@
                 
             } catch (error) {
                 const errorInfo = logError('Load Student Kudos', error, {
-                    endpoint: '../netlify/functions/getStudentKudos',
+                    endpoint: 'getKudos',
                     requestParams: { studentCode: currentStudentCode, className: currentClass },
                     silent: silent
                 });
@@ -2198,26 +2202,30 @@
                     let errorMessage = '❌ Unable to load achievements';
                     
                     if (error.name === 'AbortError') {
-                        errorMessage = '⏱️ Loading timeout - Check your internet connection';
-                    } else if (error.message.includes('Failed to fetch')) {
-                        errorMessage = '🌐 Network error - Check your internet connection';
+                        errorMessage = '⏱️ Connection timeout - Check your WiFi';
+                    } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                        errorMessage = '🌐 Network connection issue - Check your WiFi';
                     } else if (error.message.includes('HTTP')) {
                         errorMessage = `🔒 Server error: ${error.message}`;
                     }
                     
                     kudosList.innerHTML = `
-                        <div style="text-align: center; padding: 20px; color: #e74c3c;">
-                            <div style="font-size: 1.1em; margin-bottom: 10px;">${errorMessage}</div>
+                        <div style="text-align: center; padding: 20px; color: #e74c3c; background: #f8f9fa; border-radius: 8px; margin: 10px;">
+                            <div style="font-size: 1.1em; margin-bottom: 15px;">${errorMessage}</div>
+                            <div style="margin-bottom: 15px; color: #666; font-size: 0.9em;">
+                                If this keeps happening, ask your teacher for help
+                            </div>
                             <button onclick="loadStudentKudos()" style="
                                 background: #667eea; 
                                 color: white; 
                                 border: none; 
-                                padding: 8px 16px; 
-                                border-radius: 5px; 
+                                padding: 10px 20px; 
+                                border-radius: 6px; 
                                 cursor: pointer;
                                 font-size: 14px;
+                                font-weight: bold;
                             ">
-                                🔄 Retry
+                                🔄 Try Again
                             </button>
                         </div>
                     `;
@@ -2311,25 +2319,37 @@
             }).join('');
         }
 
-        async function loadLeaderboard() {
+        async function loadLeaderboard(retryCount = 0) {
             const leaderboardList = document.getElementById('leaderboardList');
             
             try {
-                console.log('Loading leaderboard for class:', currentClass);
+                console.log('Loading leaderboard for class:', currentClass, 'Attempt:', retryCount + 1);
                 
                 // Show loading state immediately
                 leaderboardList.innerHTML = '<p style="text-align: center; color: #666;">📊 Loading leaderboard...</p>';
                 
-                // Add timeout for slow connections (common on Chromebooks)
+                // Progressive timeout - shorter for retries
+                const timeoutDuration = retryCount === 0 ? 5000 : 3000;
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
                 
-                const response = await fetch(`/.netlify/functions/getLeaderboard?classCode=${currentClass}`, {
+                // Try multiple URL formats for Chromebook compatibility
+                const apiUrls = [
+                    `https://classkudos-students.netlify.app/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(currentClass)}`,
+                    `/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(currentClass)}`
+                ];
+                
+                const apiUrl = apiUrls[retryCount] || apiUrls[0];
+                console.log('Calling leaderboard API:', apiUrl);
+                
+                const response = await fetch(apiUrl, {
                     signal: controller.signal,
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    // Add cache control for Chromebooks
+                    cache: 'no-cache'
                 });
                 
                 clearTimeout(timeoutId);
@@ -2353,36 +2373,55 @@
                 }
                 
             } catch (error) {
+                console.error('Leaderboard loading error (attempt ' + (retryCount + 1) + '):', error);
+                
+                // Auto-retry once with different URL on first failure
+                if (retryCount === 0 && (error.name === 'AbortError' || error.message.includes('Failed to fetch'))) {
+                    console.log('Auto-retrying with different URL...');
+                    setTimeout(() => loadLeaderboard(1), 1000);
+                    return;
+                }
+                
                 const errorInfo = logError('Load Leaderboard', error, {
-                    endpoint: '../netlify/functions/getLeaderboard',
-                    requestParams: { studentCode: currentStudentCode, className: currentClass }
+                    endpoint: 'getLeaderboard',
+                    requestParams: { studentCode: currentStudentCode, className: currentClass },
+                    retryCount: retryCount
                 });
                 
-                // Chromebook-friendly error display
+                // Enhanced Chromebook-friendly error display
                 let errorMessage = '❌ Unable to load leaderboard';
+                let retryButton = true;
                 
                 if (error.name === 'AbortError') {
-                    errorMessage = '⏱️ Loading timeout - Check your internet connection';
-                } else if (error.message.includes('Failed to fetch')) {
-                    errorMessage = '🌐 Network error - Check your internet connection';
+                    errorMessage = '⏱️ Connection timeout - Try again in a moment';
+                } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    errorMessage = '🌐 Network connection issue - Check your WiFi';
                 } else if (error.message.includes('HTTP')) {
                     errorMessage = `🔒 Server error: ${error.message}`;
+                } else {
+                    errorMessage = '🔧 Technical issue - Please try again';
                 }
                 
                 leaderboardList.innerHTML = `
-                    <div style="text-align: center; padding: 20px; color: #e74c3c;">
-                        <div style="font-size: 1.2em; margin-bottom: 10px;">${errorMessage}</div>
-                        <button onclick="loadLeaderboard()" style="
+                    <div style="text-align: center; padding: 20px; color: #e74c3c; background: #f8f9fa; border-radius: 8px; margin: 10px;">
+                        <div style="font-size: 1.2em; margin-bottom: 15px;">${errorMessage}</div>
+                        <div style="margin-bottom: 15px; color: #666; font-size: 0.9em;">
+                            ${retryCount > 0 ? 'Still having trouble? ' : ''}If this keeps happening, ask your teacher for help
+                        </div>
+                        ${retryButton ? `
+                        <button onclick="loadLeaderboard(0)" style="
                             background: #667eea; 
                             color: white; 
                             border: none; 
-                            padding: 10px 20px; 
-                            border-radius: 5px; 
+                            padding: 12px 24px; 
+                            border-radius: 6px; 
                             cursor: pointer;
-                            font-size: 14px;
+                            font-size: 16px;
+                            font-weight: bold;
                         ">
-                            🔄 Retry
+                            🔄 Try Again
                         </button>
+                        ` : ''}
                     </div>
                 `;
             }
