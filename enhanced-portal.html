@@ -944,6 +944,64 @@
             font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
             margin-right: 15px;
         }
+        
+        /* Kudos Colosseum Styles */
+        .challenge-btn, .difficulty-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            margin: 10px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            min-width: 200px;
+        }
+        
+        .challenge-btn:hover, .difficulty-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .challenge-btn:active, .difficulty-btn:active {
+            transform: translateY(0);
+        }
+        
+        #gameArea {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        #answerInput {
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        #answerInput:focus {
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        .correct-feedback {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        .incorrect-feedback {
+            color: #f44336;
+            font-weight: bold;
+        }
+        
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -981,6 +1039,7 @@
                 <button class="nav-item active" onclick="showSection('dashboard')">Dashboard</button>
                 <button class="nav-item" onclick="showSection('myKudos')">My Kudos</button>
                 <button class="nav-item" onclick="showSection('leaderboard')">Leaderboard</button>
+                <button class="nav-item" onclick="showSection('kudosColosseum')">🏛️ Kudos Colosseum</button>
                 <div id="connection-status" style="color: #4CAF50; font-size: 12px; margin: 0 10px; display: flex; align-items: center;">
                     🟢 Connected
                 </div>
@@ -1073,6 +1132,63 @@
                 <h3>🏅 Class Leaderboard</h3>
                 <div id="leaderboardList">
                     <p style="text-align: center; color: #666;">Loading leaderboard...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kudos Colosseum Content -->
+        <div id="kudosColosseum" class="content-section">
+            <div class="dashboard">
+                <h3>🏛️ Kudos Colosseum - Math Arena</h3>
+                <div id="colosseumContent">
+                    <div style="text-align: center; padding: 40px;">
+                        <h4>⚔️ Choose Your Challenge</h4>
+                        <p>Test your math skills and earn XP!</p>
+                        
+                        <div class="challenge-selection" style="margin: 20px 0;">
+                            <button class="challenge-btn" onclick="startChallenge('multiplication')">
+                                ✖️ Multiplication Arena
+                            </button>
+                            <button class="challenge-btn" onclick="startChallenge('division')">
+                                ➗ Division Arena
+                            </button>
+                            <button class="challenge-btn" onclick="startChallenge('mixed')">
+                                🎯 Mixed Combat
+                            </button>
+                        </div>
+                        
+                        <div id="difficultySelector" class="hidden" style="margin: 20px 0;">
+                            <h4>Choose Difficulty</h4>
+                            <button class="difficulty-btn" onclick="startGame('easy')">Easy (1-5)</button>
+                            <button class="difficulty-btn" onclick="startGame('medium')">Medium (1-10)</button>
+                            <button class="difficulty-btn" onclick="startGame('hard')">Hard (1-12)</button>
+                        </div>
+                        
+                        <div id="gameArea" class="hidden">
+                            <div id="gameStats" style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                                <span>Score: <span id="currentScore">0</span></span>
+                                <span>Time: <span id="timeLeft">60</span>s</span>
+                                <span>Streak: <span id="streak">0</span></span>
+                            </div>
+                            
+                            <div id="problemArea" style="font-size: 2em; margin: 30px 0;">
+                                <span id="problem">3 × 7 = ?</span>
+                            </div>
+                            
+                            <div id="answerArea">
+                                <input type="number" id="answerInput" placeholder="Your answer..." style="font-size: 1.5em; padding: 10px; text-align: center;">
+                                <button onclick="submitAnswer()" style="font-size: 1.2em; padding: 10px 20px; margin-left: 10px;">Submit</button>
+                            </div>
+                            
+                            <div id="feedback" style="margin-top: 20px; font-size: 1.2em;"></div>
+                        </div>
+                        
+                        <div id="gameResults" class="hidden">
+                            <h4>🎉 Battle Complete!</h4>
+                            <div id="resultsDisplay"></div>
+                            <button onclick="resetGame()">Return to Arena</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2279,8 +2395,312 @@
                 loadStudentKudos();
             } else if (section === 'leaderboard') {
                 loadLeaderboard();
+            } else if (section === 'kudosColosseum') {
+                initializeColosseum();
             }
         }
+
+        // ===============================
+        // KUDOS COLOSSEUM GAME LOGIC
+        // ===============================
+        
+        let currentGame = {
+            type: null,           // 'multiplication', 'division', 'mixed'
+            difficulty: null,     // 'easy', 'medium', 'hard'
+            score: 0,
+            streak: 0,
+            timeLeft: 60,
+            currentProblem: null,
+            totalProblems: 0,
+            correctAnswers: 0,
+            gameTimer: null,
+            problems: []
+        };
+
+        function initializeColosseum() {
+            console.log('Initializing Kudos Colosseum');
+            resetGame();
+        }
+
+        function startChallenge(type) {
+            currentGame.type = type;
+            document.querySelector('.challenge-selection').classList.add('hidden');
+            document.getElementById('difficultySelector').classList.remove('hidden');
+        }
+
+        function startGame(difficulty) {
+            currentGame.difficulty = difficulty;
+            currentGame.score = 0;
+            currentGame.streak = 0;
+            currentGame.timeLeft = 60;
+            currentGame.totalProblems = 0;
+            currentGame.correctAnswers = 0;
+            
+            // Hide difficulty selector and show game area
+            document.getElementById('difficultySelector').classList.add('hidden');
+            document.getElementById('gameArea').classList.remove('hidden');
+            
+            // Set up difficulty ranges
+            let maxNumber;
+            switch(difficulty) {
+                case 'easy': maxNumber = 5; break;
+                case 'medium': maxNumber = 10; break;
+                case 'hard': maxNumber = 12; break;
+                default: maxNumber = 10;
+            }
+            
+            // Generate problems for the session
+            generateProblems(maxNumber);
+            
+            // Start the game
+            nextProblem();
+            startTimer();
+            
+            // Focus on answer input
+            document.getElementById('answerInput').focus();
+        }
+
+        function generateProblems(maxNumber) {
+            currentGame.problems = [];
+            
+            // Generate 20 problems for the session
+            for(let i = 0; i < 20; i++) {
+                let num1 = Math.floor(Math.random() * maxNumber) + 1;
+                let num2 = Math.floor(Math.random() * maxNumber) + 1;
+                let operation, answer;
+                
+                if (currentGame.type === 'multiplication') {
+                    operation = '×';
+                    answer = num1 * num2;
+                } else if (currentGame.type === 'division') {
+                    // For division, make sure we get whole number answers
+                    answer = num1;
+                    num1 = num1 * num2;
+                    operation = '÷';
+                } else { // mixed
+                    if (Math.random() < 0.5) {
+                        operation = '×';
+                        answer = num1 * num2;
+                    } else {
+                        // Division with whole number answer
+                        answer = num1;
+                        num1 = num1 * num2;
+                        operation = '÷';
+                    }
+                }
+                
+                currentGame.problems.push({
+                    num1: num1,
+                    num2: num2,
+                    operation: operation,
+                    answer: answer
+                });
+            }
+        }
+
+        function nextProblem() {
+            if (currentGame.totalProblems >= currentGame.problems.length || currentGame.timeLeft <= 0) {
+                endGame();
+                return;
+            }
+            
+            currentGame.currentProblem = currentGame.problems[currentGame.totalProblems];
+            
+            // Display the problem
+            const problemText = `${currentGame.currentProblem.num1} ${currentGame.currentProblem.operation} ${currentGame.currentProblem.num2} = ?`;
+            document.getElementById('problem').textContent = problemText;
+            
+            // Clear previous answer and feedback
+            document.getElementById('answerInput').value = '';
+            document.getElementById('feedback').innerHTML = '';
+            
+            // Focus on input
+            document.getElementById('answerInput').focus();
+        }
+
+        function submitAnswer() {
+            const userAnswer = parseInt(document.getElementById('answerInput').value);
+            const correctAnswer = currentGame.currentProblem.answer;
+            
+            currentGame.totalProblems++;
+            
+            if (userAnswer === correctAnswer) {
+                // Correct answer!
+                currentGame.correctAnswers++;
+                currentGame.streak++;
+                let points = 3; // Base points
+                
+                // Bonus points for streak
+                if (currentGame.streak >= 5) points += 2;
+                if (currentGame.streak >= 10) points += 3;
+                
+                currentGame.score += points;
+                
+                document.getElementById('feedback').innerHTML = `
+                    <span class="correct-feedback">✅ Correct! +${points} XP</span>
+                `;
+                
+                // Visual celebration for streaks
+                if (currentGame.streak >= 5) {
+                    document.getElementById('feedback').innerHTML += `<br><span style="color: gold;">🔥 ${currentGame.streak} streak bonus!</span>`;
+                }
+                
+            } else {
+                // Wrong answer
+                currentGame.streak = 0;
+                document.getElementById('feedback').innerHTML = `
+                    <span class="incorrect-feedback">❌ Incorrect. The answer was ${correctAnswer}</span>
+                `;
+            }
+            
+            // Update display
+            updateGameStats();
+            
+            // Move to next problem after a short delay
+            setTimeout(() => {
+                nextProblem();
+            }, 1500);
+        }
+
+        function updateGameStats() {
+            document.getElementById('currentScore').textContent = currentGame.score;
+            document.getElementById('timeLeft').textContent = currentGame.timeLeft;
+            document.getElementById('streak').textContent = currentGame.streak;
+        }
+
+        function startTimer() {
+            currentGame.gameTimer = setInterval(() => {
+                currentGame.timeLeft--;
+                updateGameStats();
+                
+                if (currentGame.timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            // Stop timer
+            if (currentGame.gameTimer) {
+                clearInterval(currentGame.gameTimer);
+                currentGame.gameTimer = null;
+            }
+            
+            // Calculate final stats
+            const accuracy = currentGame.totalProblems > 0 ? 
+                Math.round((currentGame.correctAnswers / currentGame.totalProblems) * 100) : 0;
+            
+            // Bonus XP for performance
+            let bonusXP = 0;
+            if (accuracy >= 90) bonusXP += 15;
+            else if (accuracy >= 80) bonusXP += 10;
+            else if (accuracy >= 70) bonusXP += 5;
+            
+            // Perfect round bonus
+            if (accuracy === 100) bonusXP += 10;
+            
+            const finalXP = currentGame.score + bonusXP;
+            
+            // Hide game area and show results
+            document.getElementById('gameArea').classList.add('hidden');
+            document.getElementById('gameResults').classList.remove('hidden');
+            
+            // Display results
+            document.getElementById('resultsDisplay').innerHTML = `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h4>🏛️ Battle Results</h4>
+                    <p><strong>Problems Solved:</strong> ${currentGame.correctAnswers}/${currentGame.totalProblems}</p>
+                    <p><strong>Accuracy:</strong> ${accuracy}%</p>
+                    <p><strong>Best Streak:</strong> ${Math.max(...(currentGame.problems.map((_, i) => i < currentGame.totalProblems ? currentGame.streak : 0)))} in a row</p>
+                    <p><strong>Base XP:</strong> ${currentGame.score}</p>
+                    <p><strong>Performance Bonus:</strong> +${bonusXP} XP</p>
+                    <h3 style="color: gold;">Total XP Earned: ${finalXP} ⭐</h3>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    ${accuracy >= 90 ? '🏆 Outstanding performance!' : 
+                      accuracy >= 80 ? '🥇 Great job!' : 
+                      accuracy >= 70 ? '🥈 Good effort!' : 
+                      '🥉 Keep practicing!'}
+                </div>
+            `;
+            
+            // Award XP to student
+            awardColosseumXP(finalXP);
+        }
+
+        async function awardColosseumXP(xpAmount) {
+            try {
+                // Update student's total points
+                const newTotalPoints = (parseInt(localStorage.getItem('studentPoints') || '0')) + xpAmount;
+                localStorage.setItem('studentPoints', newTotalPoints.toString());
+                
+                // Update the database
+                if (currentStudent && currentStudent.id) {
+                    await updateStudentPortal(currentStudent.name, currentClass, {
+                        colosseumScore: currentGame.score,
+                        totalPoints: newTotalPoints,
+                        lastColosseumDate: new Date().toISOString()
+                    });
+                    
+                    console.log(`Kudos Colosseum: Awarded ${xpAmount} XP to ${currentStudent.name}`);
+                    
+                    // Check for level up
+                    const newLevel = calculateLevel(newTotalPoints);
+                    const oldLevel = calculateLevel(newTotalPoints - xpAmount);
+                    
+                    if (newLevel > oldLevel) {
+                        showLevelUpNotification(newLevel);
+                    }
+                    
+                    // Refresh the dashboard if it's visible
+                    if (document.getElementById('dashboard').classList.contains('active')) {
+                        loadStudentData();
+                    }
+                }
+            } catch (error) {
+                console.error('Error awarding Colosseum XP:', error);
+            }
+        }
+
+        function resetGame() {
+            // Stop any running timer
+            if (currentGame.gameTimer) {
+                clearInterval(currentGame.gameTimer);
+                currentGame.gameTimer = null;
+            }
+            
+            // Reset game state
+            currentGame = {
+                type: null,
+                difficulty: null,
+                score: 0,
+                streak: 0,
+                timeLeft: 60,
+                currentProblem: null,
+                totalProblems: 0,
+                correctAnswers: 0,
+                gameTimer: null,
+                problems: []
+            };
+            
+            // Show initial selection screen
+            document.querySelector('.challenge-selection').classList.remove('hidden');
+            document.getElementById('difficultySelector').classList.add('hidden');
+            document.getElementById('gameArea').classList.add('hidden');
+            document.getElementById('gameResults').classList.add('hidden');
+        }
+
+        // Add Enter key support for answer submission
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listener for Enter key in answer input
+            document.addEventListener('keydown', function(event) {
+                if (event.target.id === 'answerInput' && event.key === 'Enter') {
+                    event.preventDefault();
+                    submitAnswer();
+                }
+            });
+        });
 
         function logout() {
             // Clear current session
