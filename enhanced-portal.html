@@ -508,6 +508,16 @@
             transform: scale(1.1);
         }
         
+        .avatar-option.locked {
+            cursor: not-allowed;
+            border-color: #666;
+        }
+        
+        .avatar-option.locked:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 10px rgba(255, 152, 0, 0.4);
+        }
+        
         .modal-buttons {
             display: flex;
             gap: 15px;
@@ -740,6 +750,23 @@
             100% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.6); }
         }
         
+        .avatar-unlock-notification {
+            background: linear-gradient(45deg, #FF6B35, #FF8E53);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+            animation: avatarUnlockPulse 2s infinite;
+        }
+        
+        @keyframes avatarUnlockPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
         .achievement-icon {
             font-size: 2em;
             margin-right: 10px;
@@ -927,13 +954,77 @@
         let lastKudosCount = 0;
 
         // Avatar options using Dicebear seeds for variety
-        const avatarOptions = [
-            'happy', 'cheerful', 'smile', 'joy', 'bright', 'sunny', 'friendly', 'cool', 'awesome', 'super',
+        // Avatar System with Level-Based Unlocks
+        const avatarsByLevel = {
+            1: {
+                category: "Starter Pack",
+                avatars: ['happy', 'cheerful', 'smile', 'joy', 'bright']
+            },
+            3: {
+                category: "Adventure Pack",
+                avatars: ['explorer-premium', 'adventurer-elite', 'treasure-hunter']
+            },
+            6: {
+                category: "Elemental Masters",
+                avatars: ['fire-master', 'water-sage', 'earth-guardian']
+            },
+            9: {
+                category: "Cosmic Warriors",
+                avatars: ['star-knight', 'galaxy-ranger', 'nebula-wizard']
+            },
+            12: {
+                category: "Legendary Beasts",
+                avatars: ['dragon-rider', 'phoenix-lord', 'unicorn-whisperer']
+            },
+            15: {
+                category: "Mystic Scholars",
+                avatars: ['crystal-mage', 'ancient-scribe', 'time-keeper']
+            },
+            18: {
+                category: "Ultimate Champions",
+                avatars: ['champion-supreme', 'legendary-hero', 'master-of-all']
+            }
+        };
+
+        // Keep original basic avatars available at all levels
+        const basicAvatars = [
+            'sunny', 'friendly', 'cool', 'awesome', 'super',
             'star', 'champion', 'hero', 'winner', 'amazing', 'fantastic', 'wonderful', 'brilliant', 'clever', 'smart',
             'creative', 'artistic', 'musical', 'sporty', 'adventurous', 'brave', 'kind', 'gentle', 'caring', 'helpful',
             'magical', 'mystic', 'cosmic', 'rainbow', 'thunder', 'lightning', 'ocean', 'forest', 'mountain', 'desert',
             'phoenix', 'dragon', 'unicorn', 'pegasus', 'griffin', 'tiger', 'lion', 'wolf', 'eagle', 'dolphin'
         ];
+
+        // Function to get available avatars for current level
+        function getAvailableAvatars(currentLevel) {
+            let availableAvatars = [...basicAvatars]; // All basic avatars are always available
+            
+            // Add level-unlocked premium avatars
+            for (const [levelReq, pack] of Object.entries(avatarsByLevel)) {
+                if (currentLevel >= parseInt(levelReq)) {
+                    availableAvatars = availableAvatars.concat(pack.avatars);
+                }
+            }
+            
+            return availableAvatars;
+        }
+
+        // Function to get locked avatars for preview
+        function getLockedAvatars(currentLevel) {
+            let lockedAvatars = [];
+            
+            for (const [levelReq, pack] of Object.entries(avatarsByLevel)) {
+                if (currentLevel < parseInt(levelReq)) {
+                    lockedAvatars.push({
+                        level: parseInt(levelReq),
+                        category: pack.category,
+                        avatars: pack.avatars
+                    });
+                }
+            }
+            
+            return lockedAvatars;
+        }
 
         // Function to generate avatar URL - using adventurer style for students, different from main app's bottts
         function getAvatarUrl(seed) {
@@ -1093,21 +1184,83 @@
             const grid = document.getElementById('avatarGrid');
             grid.innerHTML = '';
             
-            avatarOptions.forEach(avatar => {
-                const option = document.createElement('div');
-                option.className = 'avatar-option';
+            // Get current level for avatar unlocks
+            const currentLevel = Math.floor(parseInt(localStorage.getItem('studentPoints') || '0') / 100) + 1;
+            
+            // Create sections for available avatars
+            const availableAvatars = getAvailableAvatars(currentLevel);
+            const lockedPacks = getLockedAvatars(currentLevel);
+            
+            // Section for available avatars
+            if (availableAvatars.length > 0) {
+                const availableSection = document.createElement('div');
+                availableSection.innerHTML = '<h3 style="color: #4CAF50; margin: 15px 0 10px 0;">✅ Available Avatars</h3>';
+                grid.appendChild(availableSection);
                 
-                // Create img element for Dicebear avatar preview
-                const img = document.createElement('img');
-                img.src = getAvatarUrl(avatar);
-                img.alt = avatar;
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.borderRadius = '50%';
+                availableAvatars.forEach(avatar => {
+                    const option = document.createElement('div');
+                    option.className = 'avatar-option';
+                    
+                    // Create img element for Dicebear avatar preview
+                    const img = document.createElement('img');
+                    img.src = getAvatarUrl(avatar);
+                    img.alt = avatar;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.borderRadius = '50%';
+                    
+                    option.appendChild(img);
+                    option.onclick = () => selectAvatar(avatar, option);
+                    grid.appendChild(option);
+                });
+            }
+            
+            // Sections for locked avatar packs
+            lockedPacks.forEach(pack => {
+                const packSection = document.createElement('div');
+                packSection.innerHTML = `
+                    <h3 style="color: #FF9800; margin: 25px 0 10px 0;">
+                        🔒 ${pack.category} (Unlock at Level ${pack.level})
+                    </h3>
+                `;
+                grid.appendChild(packSection);
                 
-                option.appendChild(img);
-                option.onclick = () => selectAvatar(avatar, option);
-                grid.appendChild(option);
+                pack.avatars.forEach(avatar => {
+                    const option = document.createElement('div');
+                    option.className = 'avatar-option locked';
+                    option.style.opacity = '0.3';
+                    option.style.filter = 'grayscale(100%)';
+                    option.title = `Unlock at Level ${pack.level}`;
+                    
+                    // Create img element for Dicebear avatar preview
+                    const img = document.createElement('img');
+                    img.src = getAvatarUrl(avatar);
+                    img.alt = avatar;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.borderRadius = '50%';
+                    
+                    // Add lock overlay
+                    const lockOverlay = document.createElement('div');
+                    lockOverlay.innerHTML = '🔒';
+                    lockOverlay.style.position = 'absolute';
+                    lockOverlay.style.top = '50%';
+                    lockOverlay.style.left = '50%';
+                    lockOverlay.style.transform = 'translate(-50%, -50%)';
+                    lockOverlay.style.fontSize = '20px';
+                    lockOverlay.style.textShadow = '0 0 5px rgba(0,0,0,0.8)';
+                    
+                    option.style.position = 'relative';
+                    option.appendChild(img);
+                    option.appendChild(lockOverlay);
+                    
+                    // Locked avatars are not clickable
+                    option.onclick = () => {
+                        alert(`This avatar unlocks at Level ${pack.level}! Keep earning points to unlock it!`);
+                    };
+                    
+                    grid.appendChild(option);
+                });
             });
         }
 
@@ -1283,6 +1436,20 @@
                 message: "Your dedication knows no bounds!" 
             };
             
+            // Check if this level unlocks new avatars
+            const avatarUnlock = avatarsByLevel[level];
+            let avatarUnlockMessage = '';
+            
+            if (avatarUnlock) {
+                avatarUnlockMessage = `
+                    <div class="avatar-unlock-notification">
+                        🔓 <strong>New Avatars Unlocked!</strong><br>
+                        <em>${avatarUnlock.category}</em> - ${avatarUnlock.avatars.length} new avatars available!
+                        <br><small>Check your avatar selection to try them out!</small>
+                    </div>
+                `;
+            }
+            
             const notification = document.getElementById('levelUpNotification');
             notification.innerHTML = `
                 <div class="level-up-content">
@@ -1296,6 +1463,7 @@
                         <span class="achievement-icon">${achievement.icon}</span>
                         <span class="achievement-text">Level ${level} Unlocked!</span>
                     </div>
+                    ${avatarUnlockMessage}
                 </div>
             `;
             
@@ -1307,10 +1475,10 @@
                 audio.play().catch(() => {}); // Ignore if audio fails
             } catch (e) {}
             
-            // Hide after animation completes
+            // Hide after animation completes (longer if avatar unlock)
             setTimeout(() => {
                 notification.style.display = 'none';
-            }, 4000);
+            }, avatarUnlock ? 6000 : 4000);
         }
 
         async function handleLogin(event) {
