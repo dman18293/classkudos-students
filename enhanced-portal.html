@@ -1219,22 +1219,32 @@
             21: {
                 category: "Robot Academy",
                 style: "bottts",
-                avatars: ['cyber-student', 'robo-scholar', 'tech-genius', 'data-master', 'circuit-hero']
+                avatars: ['cyber-student', 'robo-scholar', 'tech-genius', 'data-master', 'circuit-hero', 'quantum-bot', 'nano-student', 'cyber-brain', 'tech-warrior', 'robo-genius']
             },
             24: {
                 category: "Pixel Heroes",
                 style: "pixel-art", 
-                avatars: ['pixel-warrior', 'retro-gamer', '8bit-champion', 'arcade-master', 'digital-legend']
+                avatars: ['pixel-warrior', 'retro-gamer', '8bit-champion', 'arcade-master', 'digital-legend', 'pixel-ninja', 'retro-hero', 'game-master', '8bit-wizard', 'digital-warrior']
             },
             27: {
                 category: "Shape Shifters",
                 style: "shapes",
-                avatars: ['geo-master', 'pattern-hero', 'abstract-genius', 'form-champion', 'design-legend']
+                avatars: ['geo-master', 'pattern-hero', 'abstract-genius', 'form-champion', 'design-legend', 'shape-wizard', 'pattern-master', 'geometric-hero', 'abstract-warrior', 'design-genius']
             },
             30: {
                 category: "Big Smile Squad",
                 style: "big-smile",
-                avatars: ['mega-smile', 'super-grin', 'joy-master', 'happiness-hero', 'cheer-champion']
+                avatars: ['mega-smile', 'super-grin', 'joy-master', 'happiness-hero', 'cheer-champion', 'smile-warrior', 'grin-genius', 'joy-legend', 'happy-master', 'cheer-wizard']
+            },
+            33: {
+                category: "Miniature Squad",
+                style: "miniavs",
+                avatars: ['mini-hero', 'tiny-champion', 'small-genius', 'micro-master', 'mini-legend', 'tiny-warrior', 'small-wizard', 'micro-champion', 'mini-star', 'tiny-genius']
+            },
+            36: {
+                category: "Open Peeps",
+                style: "open-peeps",
+                avatars: ['peep-hero', 'social-star', 'friendly-genius', 'people-master', 'social-legend', 'peep-warrior', 'friendly-wizard', 'social-champion', 'people-star', 'friendly-master']
             }
         };
 
@@ -1263,6 +1273,16 @@
             // Objects & Vehicles (as character concepts)
             'rocket', 'car', 'plane', 'boat', 'train', 'bicycle', 'skateboard'
         ];
+
+        // Special style preview avatars (always available to show students what they can unlock)
+        const specialStylePreviews = {
+            'robo-preview': { style: 'bottts', name: '🤖 Robot Preview' },
+            'pixel-preview': { style: 'pixel-art', name: '🕹️ Pixel Preview' },
+            'shape-preview': { style: 'shapes', name: '🔷 Shape Preview' },
+            'smile-preview': { style: 'big-smile', name: '😊 Smile Preview' },
+            'mini-preview': { style: 'miniavs', name: '👤 Mini Preview' },
+            'peep-preview': { style: 'open-peeps', name: '👥 Peep Preview' }
+        };
 
         // Function to get available avatars for current level
         function getAvailableAvatars(currentLevel) {
@@ -1475,6 +1495,40 @@
             const basicGrid = document.getElementById('basicGrid');
             basicAvatars.forEach(avatar => {
                 createAvatarOption(avatar, basicGrid, false, null, 'adventurer');
+            });
+            
+            // Add special style previews to give students a taste of what they can unlock
+            Object.entries(specialStylePreviews).forEach(([avatarId, config]) => {
+                const previewOption = document.createElement('div');
+                previewOption.className = 'avatar-option special-preview';
+                previewOption.style.border = '2px solid #f39c12';
+                previewOption.style.borderRadius = '8px';
+                previewOption.title = `${config.name} - See what you can unlock at higher levels!`;
+                
+                const img = document.createElement('img');
+                img.src = getAvatarUrl(avatarId, config.style);
+                img.alt = config.name;
+                previewOption.appendChild(img);
+                
+                // Add special preview label
+                const label = document.createElement('div');
+                label.style.position = 'absolute';
+                label.style.bottom = '2px';
+                label.style.left = '50%';
+                label.style.transform = 'translateX(-50%)';
+                label.style.fontSize = '8px';
+                label.style.background = '#f39c12';
+                label.style.color = 'white';
+                label.style.padding = '1px 3px';
+                label.style.borderRadius = '3px';
+                label.style.fontWeight = 'bold';
+                label.textContent = 'PREVIEW';
+                
+                previewOption.style.position = 'relative';
+                previewOption.appendChild(label);
+                
+                previewOption.onclick = () => selectAvatar(avatarId, previewOption, config.style);
+                basicGrid.appendChild(previewOption);
             });
             
             // Unlocked Premium Categories
