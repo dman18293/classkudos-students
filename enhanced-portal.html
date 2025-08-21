@@ -3038,8 +3038,10 @@
                 
                 // Shorter timeout to prevent infinite hanging - DIAGNOSTIC FIX
                 const timeoutDuration = 5000; // 5 seconds for fetch
+                logVisible(`⏰ Setting ${timeoutDuration}ms timeout...`);
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => {
+                    logVisible(`⏰ TIMEOUT! ${timeoutDuration}ms reached`);
                     console.log(`⏰ DIAGNOSTIC: Fetch timeout after ${timeoutDuration}ms for class "${currentClass}", student "${currentStudent?.name}" (ID: ${currentStudent?.id})`);
                     controller.abort();
                 }, timeoutDuration);
@@ -3069,7 +3071,9 @@
                     credentials: 'omit' // Don't send cookies - can help with CORS
                 };
                 
+                logVisible('🔌 About to start fetch...');
                 const response = await fetch(apiUrl, fetchOptions);
+                logVisible(`📥 Fetch completed! Status: ${response.status}`);
                 
                 // Clear both timeouts on success
                 clearTimeout(timeoutId);
