@@ -2822,49 +2822,49 @@
             'first_victory': {
                 title: '⚔️ First Victory',
                 description: 'Complete your first Colosseum challenge',
-                xpReward: 25,
+                xpReward: 5,
                 icon: '🏛️'
             },
             'perfect_warrior': {
                 title: '👑 Perfect Warrior',
                 description: 'Achieve 100% accuracy in a challenge',
-                xpReward: 50,
+                xpReward: 10,
                 icon: '✨'
             },
             'speed_demon': {
                 title: '⚡ Lightning Calculator',
                 description: 'Complete a challenge with 45+ seconds remaining',
-                xpReward: 30,
+                xpReward: 8,
                 icon: '🚀'
             },
             'streak_master': {
                 title: '🔥 Streak Master',
                 description: 'Get 10 answers correct in a row',
-                xpReward: 40,
+                xpReward: 12,
                 icon: '🎯'
             },
             'math_gladiator': {
                 title: '🏆 Math Gladiator',
                 description: 'Complete 10 Colosseum challenges',
-                xpReward: 75,
+                xpReward: 20,
                 icon: '👑'
             },
             'multiplication_champion': {
                 title: '✖️ Multiplication Champion',
                 description: 'Score 90%+ accuracy in 5 multiplication challenges',
-                xpReward: 60,
+                xpReward: 15,
                 icon: '🥇'
             },
             'division_master': {
                 title: '➗ Division Master',
                 description: 'Score 90%+ accuracy in 5 division challenges',
-                xpReward: 60,
+                xpReward: 15,
                 icon: '🥇'
             },
             'colosseum_legend': {
                 title: '🌟 Colosseum Legend',
                 description: 'Earn 1000 total XP from the Colosseum',
-                xpReward: 100,
+                xpReward: 25,
                 icon: '👑'
             }
         };
@@ -3107,11 +3107,19 @@
                 
                 currentGame.correctAnswers++;
                 currentGame.streak++;
-                let points = 3; // Base points
                 
-                // Bonus points for streak
-                if (currentGame.streak >= 5) points += 2;
-                if (currentGame.streak >= 10) points += 3;
+                // Difficulty-based base points
+                let points;
+                switch(currentGame.difficulty) {
+                    case 'easy': points = 2; break;
+                    case 'medium': points = 4; break;
+                    case 'hard': points = 10; break;
+                    default: points = 4;
+                }
+                
+                // Small bonus points for streak (much smaller than before)
+                if (currentGame.streak >= 5) points += 1;
+                if (currentGame.streak >= 10) points += 2;
                 
                 currentGame.score += points;
                 
@@ -3176,14 +3184,14 @@
             const accuracy = currentGame.totalProblems > 0 ? 
                 Math.round((currentGame.correctAnswers / currentGame.totalProblems) * 100) : 0;
             
-            // Bonus XP for performance
+            // Bonus XP for performance (reduced)
             let bonusXP = 0;
-            if (accuracy >= 90) bonusXP += 15;
-            else if (accuracy >= 80) bonusXP += 10;
-            else if (accuracy >= 70) bonusXP += 5;
+            if (accuracy >= 90) bonusXP += 3;
+            else if (accuracy >= 80) bonusXP += 2;
+            else if (accuracy >= 70) bonusXP += 1;
             
-            // Perfect round bonus
-            if (accuracy === 100) bonusXP += 10;
+            // Perfect round bonus (reduced)
+            if (accuracy === 100) bonusXP += 2;
             
             const finalXP = currentGame.score + bonusXP;
             
@@ -3391,7 +3399,7 @@
                 
                 // Update the database
                 if (currentStudent && currentStudent.id) {
-                    const response = await fetch('https://classkudos.org/.netlify/functions/updateStudentPortal', {
+                    const response = await fetch('./.netlify/functions/updateStudentPortal', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
