@@ -1894,12 +1894,30 @@
             currentLevel = newLevel;
             currentXP = totalPoints;
             
-            // Update displays
-            document.getElementById('studentLevel').textContent = newLevel;
-            document.getElementById('levelBadge').textContent = newLevel;
-            document.getElementById('xpBar').style.width = progress.percentage + '%';
-            document.getElementById('xpText').textContent = 
-                `XP: ${progress.current} / ${progress.required} (Level ${newLevel})`;
+            // Update displays with debugging
+            const studentLevelEl = document.getElementById('studentLevel');
+            const levelBadgeEl = document.getElementById('levelBadge');
+            const xpBarEl = document.getElementById('xpBar');
+            const xpTextEl = document.getElementById('xpText');
+            
+            console.log('DOM Elements found:', {
+                studentLevel: !!studentLevelEl,
+                levelBadge: !!levelBadgeEl, 
+                xpBar: !!xpBarEl,
+                xpText: !!xpTextEl
+            });
+            
+            if (studentLevelEl) studentLevelEl.textContent = newLevel;
+            if (levelBadgeEl) levelBadgeEl.textContent = newLevel;
+            if (xpBarEl) {
+                xpBarEl.style.width = progress.percentage + '%';
+                console.log('Updated XP bar width to:', progress.percentage + '%');
+            }
+            if (xpTextEl) {
+                const newText = `XP: ${progress.current} / ${progress.required} (Level ${newLevel})`;
+                xpTextEl.textContent = newText;
+                console.log('Updated XP text to:', newText);
+            }
             
             // Update badge collection
             updateBadgeCollection(newLevel);
@@ -2098,6 +2116,8 @@
         function refreshStudentData() {
             // Update all student data displays with current student data
             if (currentStudent) {
+                console.log('refreshStudentData called with currentStudent.points:', currentStudent.points);
+                
                 document.getElementById('totalKudos').textContent = currentStudent.points || 0;
                 updateXPDisplay(currentStudent.points || 0);
                 
@@ -3350,10 +3370,12 @@
                 const newTotalPoints = (parseInt(localStorage.getItem('studentPoints') || '0')) + xpAmount;
                 localStorage.setItem('studentPoints', newTotalPoints.toString());
                 
-                // Also update the currentStudent object
+                // Also update the currentStudent object FIRST
                 if (currentStudent) {
                     currentStudent.points = newTotalPoints;
                 }
+                
+                console.log(`Awarding ${xpAmount} XP. New total: ${newTotalPoints}. Updated currentStudent.points: ${currentStudent?.points}`);
                 
                 // Update the database
                 if (currentStudent && currentStudent.id) {
@@ -3373,9 +3395,16 @@
                     if (data.success) {
                         console.log(`Kudos Colosseum: Awarded ${xpAmount} XP to ${currentStudent.name}. Total XP: ${newTotalPoints}`);
                         
-                        // Update all displays immediately regardless of current section
+                        // Update all displays immediately with the new total
                         document.getElementById('totalKudos').textContent = newTotalPoints;
                         updateXPDisplay(newTotalPoints);
+                        
+                        // Force immediate visual update of XP elements
+                        setTimeout(() => {
+                            console.log('Force updating XP display after short delay...');
+                            updateXPDisplay(newTotalPoints);
+                        }, 100);
+                        
                     } else {
                         console.error('Failed to save XP to database:', data.error);
                     }
@@ -3388,7 +3417,8 @@
                         showLevelUpNotification(newLevel);
                     }
                     
-                    // Always refresh student data to ensure consistency
+                    // Refresh student data AFTER ensuring currentStudent.points is updated
+                    console.log('Calling refreshStudentData with currentStudent.points:', currentStudent.points);
                     refreshStudentData();
                 }
             } catch (error) {
