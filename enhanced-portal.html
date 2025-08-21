@@ -2761,7 +2761,7 @@
             leaderboardAttempts++;
             
             try {
-                console.log(`Loading leaderboard for class: ${currentClass}, Attempt: ${retryCount + 1}, Total attempts: ${leaderboardAttempts}`);
+                console.log(`🔍 DIAGNOSTIC: Loading leaderboard for class: "${currentClass}", Student: "${currentStudent?.name}" (ID: ${currentStudent?.id}), Attempt: ${retryCount + 1}, Total attempts: ${leaderboardAttempts}`);
                 
                 // Show loading state immediately with attempt counter
                 leaderboardList.innerHTML = `
@@ -2777,10 +2777,13 @@
                     </div>
                 `;
                 
-                // Progressive timeout - even shorter for multiple retries
-                const timeoutDuration = retryCount === 0 ? 4000 : (retryCount === 1 ? 2500 : 2000);
+                // Shorter timeout to prevent infinite hanging - DIAGNOSTIC FIX
+                const timeoutDuration = 8000; // Fixed 8 seconds - no more infinite loading!
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
+                const timeoutId = setTimeout(() => {
+                    console.log(`⏰ DIAGNOSTIC: Timeout after ${timeoutDuration}ms for class "${currentClass}", student "${currentStudent?.name}" (ID: ${currentStudent?.id})`);
+                    controller.abort();
+                }, timeoutDuration);
                 
                 // Multiple URL strategies with cache busting - prioritize relative path
                 const cacheBuster = Date.now();
@@ -2791,7 +2794,8 @@
                 ];
                 
                 const apiUrl = apiUrls[retryCount] || apiUrls[0];
-                if (diagnosticMode) console.log('🔗 Calling leaderboard API:', apiUrl);
+                console.log(`🔗 DIAGNOSTIC: API URL: ${apiUrl}`);
+                console.log(`� DIAGNOSTIC: Encoded class name: "${encodeURIComponent(currentClass)}"`);
                 
                 const fetchOptions = {
                     signal: controller.signal,
@@ -2809,28 +2813,32 @@
                 const response = await fetch(apiUrl, fetchOptions);
                 
                 clearTimeout(timeoutId);
-                if (diagnosticMode) console.log('📡 Leaderboard response status:', response.status);
+                console.log(`📡 DIAGNOSTIC: Response status: ${response.status}, Headers:`, response.headers);
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    const errorText = await response.text();
+                    console.error(`❌ DIAGNOSTIC: HTTP Error Response Body:`, errorText);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
                 }
                 
                 const data = await response.json();
-                if (diagnosticMode) console.log('📊 Leaderboard data received:', data);
+                console.log(`📊 DIAGNOSTIC: Response data success: ${data.success}, Leaderboard entries: ${data.leaderboard?.length || 'undefined'}`);
                 
                 if (data.success) {
-                    if (diagnosticMode) console.log('✅ Leaderboard entries:', data.leaderboard.length);
+                    console.log(`✅ DIAGNOSTIC: Successfully loaded ${data.leaderboard.length} students`);
                     data.leaderboard.forEach((student, index) => {
-                        if (diagnosticMode) console.log(`Entry ${index}: name="${student.name}", points=${student.total_points}`);
+                        console.log(`👤 DIAGNOSTIC: Student ${index + 1}: "${student.name}" (ID: ${student.id}) - Points: ${student.total_points}, Avatar: ${student.avatar_data ? 'present' : 'missing'}`);
                     });
                     updateLeaderboard(data.leaderboard || []);
                     leaderboardAttempts = 0; // Reset counter on success
                 } else {
-                    throw new Error(data.message || 'Unknown error loading leaderboard');
+                    console.error(`❌ DIAGNOSTIC: Server returned success=false, Message: "${data.message || 'No message provided'}"`);
+                    throw new Error(data.message || 'Server returned success=false');
                 }
                 
             } catch (error) {
-                console.error(`Leaderboard loading error (attempt ${retryCount + 1}):`, error);
+                console.error(`❌ DIAGNOSTIC: Leaderboard error for class "${currentClass}" (attempt ${retryCount + 1}):`, error);
+                console.error(`🔍 DIAGNOSTIC: Error details - Name: ${error.name}, Message: ${error.message}, Stack:`, error.stack);
                 
                 // Auto-retry with different strategies
                 if (retryCount < 2 && (error.name === 'AbortError' || error.message.includes('Failed to fetch'))) {
@@ -2847,7 +2855,7 @@
                 });
                 
                 // Enhanced error display with more options
-                let errorMessage = '❌ Unable to load leaderboard';
+                let errorMessage = `❌ Unable to load leaderboard for class "${currentClass}"`;
                 
                 if (error.name === 'AbortError') {
                     errorMessage = '⏱️ Connection timeout - Try again in a moment';
@@ -2864,6 +2872,17 @@
                         <div style="font-size: 1.2em; margin-bottom: 15px;">${errorMessage}</div>
                         <div style="margin-bottom: 20px; color: #666; font-size: 0.9em;">
                             ${retryCount > 0 ? 'Multiple attempts failed. ' : ''}Try the options below:
+                        </div>
+                        
+                        <!-- DIAGNOSTIC INFO FOR TEACHER -->
+                        <div style="background: #fff3cd; padding: 12px; border-radius: 6px; margin: 15px 0; text-align: left; font-size: 13px; color: #856404;">
+                            <strong>📋 Tell your teacher this info:</strong><br>
+                            <div style="font-family: monospace; background: #f8f9fa; padding: 8px; border-radius: 4px; margin-top: 8px;">
+                                Student: ${currentStudent?.name || 'Unknown'}<br>
+                                Class: ${currentClass}<br>
+                                Error: ${error.name === 'AbortError' ? 'Timeout (took too long)' : 'Connection failed'}<br>
+                                Date: ${new Date().toLocaleString()}
+                            </div>
                         </div>
                         
                         <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
@@ -2883,11 +2902,11 @@
                             ">🔧 Diagnostics</button>
                         </div>
                         
-                        <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 4px; font-size: 0.85em; color: #856404;">
-                            💡 <strong>Teacher:</strong> If this keeps happening, try having the student:<br>
-                            1. Close and reopen Chrome completely<br>
-                            2. Sign out and back into their Chromebook<br>
-                            3. Check if other websites work properly
+                        <div style="margin-top: 15px; padding: 10px; background: #e8f5e8; border-radius: 4px; font-size: 0.85em; color: #2e7d32;">
+                            💡 <strong>Quick Fixes:</strong><br>
+                            1. Wait 10 seconds and try "Try Again"<br>
+                            2. Click "Clear Cache" and refresh page<br>
+                            3. Close Chrome completely and reopen
                         </div>
                     </div>
                 `;
