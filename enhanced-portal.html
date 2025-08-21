@@ -3072,7 +3072,18 @@
                 };
                 
                 logVisible('🔌 About to start fetch...');
-                const response = await fetch(apiUrl, fetchOptions);
+                
+                // DIAGNOSIS FIX: Try adding student parameters for problematic students
+                let finalUrl = apiUrl;
+                if (retryCount > 0) {
+                    finalUrl = `${apiUrl}&studentCode=${encodeURIComponent(currentStudentCode || '')}&studentId=${encodeURIComponent(currentStudent?.id || '')}`;
+                    logVisible(`🔧 Adding student params for retry ${retryCount}`);
+                }
+                
+                logVisible(`👤 Student: ${currentStudent?.name} (${currentStudentCode})`);
+                console.log(`🔗 DIAGNOSTIC: Final URL: ${finalUrl}`);
+                
+                const response = await fetch(finalUrl, fetchOptions);
                 logVisible(`📥 Fetch completed! Status: ${response.status}`);
                 
                 // Clear both timeouts on success
