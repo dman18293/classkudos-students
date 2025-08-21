@@ -3261,7 +3261,7 @@
                     { id: 'hard', text: 'Hard (1-12)', points: '10 XP' },
                     { id: 'multiplication15', text: 'Advanced (1-15)', points: '6 XP' },
                     { id: 'multiplication20', text: 'Expert (1-20)', points: '8 XP' },
-                    { id: 'multidigit', text: 'Multi-digit Extreme', points: '15 XP' }
+                    { id: 'multidigit', text: 'Multi-digit Extreme', points: '20 XP' }
                 ];
             } else if (type === 'division') {
                 difficultyTitle.textContent = 'Choose Division Difficulty';
@@ -3269,7 +3269,7 @@
                     { id: 'easy', text: 'Easy (1-5)', points: '2 XP' },
                     { id: 'medium', text: 'Medium (1-10)', points: '4 XP' },
                     { id: 'hard', text: 'Hard (1-12)', points: '10 XP' },
-                    { id: 'longdivision', text: 'Long Division', points: '12 XP' }
+                    { id: 'longdivision', text: 'Long Division', points: '18 XP' }
                 ];
             } else { // mixed
                 difficultyTitle.textContent = 'Choose Mixed Challenge Difficulty';
@@ -3398,19 +3398,31 @@
                     break;
                     
                 case 'multidigit':
-                    // Generate 2-digit numbers for extreme multiplication
-                    num1 = Math.floor(Math.random() * 90) + 10; // 10-99
-                    num2 = Math.floor(Math.random() * 90) + 10; // 10-99
+                    // Generate truly extreme multiplication: 3-digit × 2-digit or 3-digit × 3-digit
+                    if (Math.random() < 0.5) {
+                        // 3-digit × 2-digit (e.g., 347 × 86)
+                        num1 = Math.floor(Math.random() * 900) + 100; // 100-999
+                        num2 = Math.floor(Math.random() * 90) + 10;   // 10-99
+                    } else {
+                        // 3-digit × 3-digit (e.g., 456 × 123)
+                        num1 = Math.floor(Math.random() * 900) + 100; // 100-999
+                        num2 = Math.floor(Math.random() * 900) + 100; // 100-999
+                    }
                     operation = '×';
                     answer = num1 * num2;
                     displayText = `${num1} × ${num2} = ?`;
                     break;
                     
                 case 'longdivision':
-                    // Create long division problems with 2-digit dividends and 1-digit divisors
-                    num2 = Math.floor(Math.random() * 9) + 2; // divisor 2-10
-                    let quotient = Math.floor(Math.random() * config.max) + 1; // 1-12
+                    // Create challenging long division: 4-digit ÷ 2-digit (like 8754 ÷ 19)
+                    num2 = Math.floor(Math.random() * 81) + 12; // divisor 12-92 (2-digit)
+                    let quotient = Math.floor(Math.random() * 400) + 50; // quotient 50-449 (2-3 digits)
                     num1 = num2 * quotient; // dividend (ensures whole number answer)
+                    // Ensure dividend is 4-digit
+                    if (num1 < 1000) {
+                        num1 += 1000; // Make it at least 4-digit
+                        quotient = Math.floor(num1 / num2); // Recalculate exact quotient
+                    }
                     operation = '÷';
                     answer = quotient;
                     displayText = `${num1} ÷ ${num2} = ?`;
