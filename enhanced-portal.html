@@ -1188,9 +1188,6 @@
                         <button onclick="loadLeaderboard(0)" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             🔄 Refresh
                         </button>
-                        <button onclick="enableDiagnosticMode()" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            🔧 Fix Issues
-                        </button>
                     </div>
                 </div>
                 <div id="leaderboardList">
@@ -1464,16 +1461,25 @@
 
     <script>
         // Global variables
-        // IMMEDIATE DIAGNOSTIC SETUP - This runs as soon as the page loads
+        // IMMEDIATE DIAGNOSTIC SETUP - Disabled for student use
+        /*
         window.addEventListener('load', function() {
             console.log('🔍 PAGE LOADED: Setting up visible diagnostics');
             setupVisibleDiagnostics();
         });
+        */
         
         // VISIBLE DIAGNOSTIC SYSTEM - Shows on screen without console
         let diagnosticDiv = null;
         let timeoutCounter = 0;
         
+        // VISIBLE DIAGNOSTIC FUNCTIONS - Disabled for student use
+        // Create no-op function to prevent errors
+        function logVisible(message) {
+            // Disabled for production - no visible diagnostics for students
+        }
+        
+        /*
         function setupVisibleDiagnostics() {
             // Create floating diagnostic display
             diagnosticDiv = document.createElement('div');
@@ -1503,6 +1509,7 @@
             diagnosticDiv.style.display = 'block'; // Make visible when there's content
             console.log(message);
         }
+        */
         
         function checkForStuckLeaderboard() {
             const leaderboardList = document.getElementById('leaderboardList');
@@ -1553,11 +1560,6 @@
                             background: #ffc107; color: black; border: 2px solid white; padding: 12px 20px; 
                             border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;
                         ">🗑️ CLEAR DATA</button>
-                        
-                        <button onclick="document.getElementById('visibleDiagnostic').style.display='block';" style="
-                            background: #17a2b8; color: white; border: 2px solid white; padding: 12px 20px; 
-                            border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;
-                        ">🔧 SHOW DEBUG</button>
                     </div>
                     
                     <div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 4px; font-size: 12px;">
@@ -3196,6 +3198,8 @@
             return results;
         }
         
+        // DIAGNOSTIC MODE FUNCTION - Disabled for student use
+        /*
         function enableDiagnosticMode() {
             diagnosticMode = true;
             console.log('🔧 DIAGNOSTIC MODE ENABLED - Detailed logging activated');
@@ -3236,6 +3240,7 @@
                 </div>
             `;
         }
+        */
         
         async function testNetworkAndShowResults() {
             const leaderboardList = document.getElementById('leaderboardList');
