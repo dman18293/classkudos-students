@@ -3081,22 +3081,29 @@
                 console.log(`📡 DIAGNOSTIC: Response status: ${response.status}, Headers:`, response.headers);
                 
                 if (!response.ok) {
+                    logVisible(`❌ Bad response: ${response.status}`);
                     const errorText = await response.text();
                     console.error(`❌ DIAGNOSTIC: HTTP Error Response Body:`, errorText);
                     throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
                 }
                 
+                logVisible('📄 Parsing JSON response...');
                 const data = await response.json();
+                logVisible(`📊 JSON parsed. Success: ${data.success}`);
                 console.log(`📊 DIAGNOSTIC: Response data success: ${data.success}, Leaderboard entries: ${data.leaderboard?.length || 'undefined'}`);
                 
                 if (data.success) {
+                    logVisible(`✅ Data valid. ${data.leaderboard?.length || 0} students`);
                     console.log(`✅ DIAGNOSTIC: Successfully loaded ${data.leaderboard.length} students`);
                     data.leaderboard.forEach((student, index) => {
                         console.log(`👤 DIAGNOSTIC: Student ${index + 1}: "${student.name}" (ID: ${student.id}) - Points: ${student.total_points}, Avatar: ${student.avatar_data ? 'present' : 'missing'}`);
                     });
+                    logVisible('🎯 Calling updateLeaderboard...');
                     updateLeaderboard(data.leaderboard || []);
+                    logVisible('✅ updateLeaderboard completed!');
                     leaderboardAttempts = 0; // Reset counter on success
                 } else {
+                    logVisible(`❌ Server said success=false`);
                     console.error(`❌ DIAGNOSTIC: Server returned success=false, Message: "${data.message || 'No message provided'}"`);
                     throw new Error(data.message || 'Server returned success=false');
                 }
@@ -3183,23 +3190,36 @@
         }
 
         function updateLeaderboard(leaderboard) {
+            logVisible(`🎯 updateLeaderboard called with ${leaderboard?.length || 0} students`);
+            
             const leaderboardList = document.getElementById('leaderboardList');
             
+            if (!leaderboardList) {
+                logVisible('❌ leaderboardList element missing!');
+                return;
+            }
+            
             if (leaderboard.length === 0) {
+                logVisible('⚠️ Empty leaderboard array');
                 leaderboardList.innerHTML = '<p style="text-align: center; color: #666;">Leaderboard loading...</p>';
                 return;
             }
             
-            leaderboardList.innerHTML = leaderboard.map((student, index) => {
-                const isCurrentStudent = student.id === currentStudent.id;
-                const rank = index + 1;
-                const level = calculateLevel(student.total_points);
-                const avatar = student.avatar_data || 'default';
-                
-                // Update current student's rank
-                if (isCurrentStudent) {
-                    document.getElementById('classRank').textContent = `#${rank}`;
-                }
+            logVisible('🔄 Building leaderboard HTML...');
+            try {
+                leaderboardList.innerHTML = leaderboard.map((student, index) => {
+                    const isCurrentStudent = student.id === currentStudent.id;
+                    const rank = index + 1;
+                    const level = calculateLevel(student.total_points);
+                    const avatar = student.avatar_data || 'default';
+                    
+                    // Update current student's rank
+                    if (isCurrentStudent) {
+                        const rankElement = document.getElementById('classRank');
+                        if (rankElement) {
+                            rankElement.textContent = `#${rank}`;
+                        }
+                    }
                 
                 return `
                     <div style="display: flex; align-items: center; padding: 15px; margin-bottom: 10px; 
@@ -3225,6 +3245,18 @@
                     </div>
                 `;
             }).join('');
+            
+            logVisible('✅ Leaderboard HTML updated successfully!');
+            
+        } catch (error) {
+            logVisible(`❌ Error in updateLeaderboard: ${error.message}`);
+            console.error('Error updating leaderboard:', error);
+            leaderboardList.innerHTML = `
+                <div style="text-align: center; padding: 20px; background: #ffebee; border-radius: 8px; color: #c62828;">
+                    ❌ Error displaying leaderboard: ${error.message}
+                </div>
+            `;
+        }
         }
 
         function showSection(section) {
