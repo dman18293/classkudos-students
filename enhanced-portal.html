@@ -3094,7 +3094,10 @@
                 
                 if (data.success) {
                     logVisible(`✅ Data valid. ${data.leaderboard?.length || 0} students`);
+                    logVisible(`🔍 Class name used: "${currentClass}"`);
                     console.log(`✅ DIAGNOSTIC: Successfully loaded ${data.leaderboard.length} students`);
+                    console.log(`🔍 DIAGNOSTIC: Class name sent to server: "${currentClass}"`);
+                    console.log(`🔍 DIAGNOSTIC: Encoded class name: "${encodeURIComponent(currentClass)}"`);
                     data.leaderboard.forEach((student, index) => {
                         console.log(`👤 DIAGNOSTIC: Student ${index + 1}: "${student.name}" (ID: ${student.id}) - Points: ${student.total_points}, Avatar: ${student.avatar_data ? 'present' : 'missing'}`);
                     });
@@ -3200,8 +3203,49 @@
             }
             
             if (leaderboard.length === 0) {
-                logVisible('⚠️ Empty leaderboard array');
-                leaderboardList.innerHTML = '<p style="text-align: center; color: #666;">Leaderboard loading...</p>';
+                logVisible('⚠️ Empty leaderboard - showing helpful message');
+                leaderboardList.innerHTML = `
+                    <div style="text-align: center; padding: 30px; background: linear-gradient(45deg, #667eea, #764ba2); color: white; border-radius: 12px; margin: 10px;">
+                        <div style="font-size: 1.3em; margin-bottom: 15px;">📊 Leaderboard Empty</div>
+                        <div style="margin-bottom: 20px; font-size: 1.1em;">No students found in this class</div>
+                        
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin: 15px 0; text-align: left; font-size: 13px;">
+                            <strong>📋 Tell your teacher this info:</strong><br>
+                            <div style="font-family: monospace; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; margin-top: 8px;">
+                                Student: ${currentStudent?.name || 'Unknown'}<br>
+                                Class: ${currentClass}<br>
+                                Issue: Server returned 0 students<br>
+                                Time: ${new Date().toLocaleString()}<br>
+                                Status: Connection successful, but no data
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 6px; font-size: 0.9em;">
+                            <strong>🤔 Possible reasons:</strong><br>
+                            • No students have earned points yet<br>
+                            • Class name doesn't match database<br>
+                            • Database connection issue<br>
+                            • Students haven't been added to system
+                        </div>
+                        
+                        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px;">
+                            <button onclick="loadLeaderboard(0)" style="
+                                background: #28a745; color: white; border: 2px solid white; padding: 12px 20px; 
+                                border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;
+                            ">🔄 Try Again</button>
+                            
+                            <button onclick="window.location.reload()" style="
+                                background: #ffc107; color: black; border: 2px solid white; padding: 12px 20px; 
+                                border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;
+                            ">🔄 Refresh Page</button>
+                            
+                            <button onclick="document.getElementById('visibleDiagnostic').style.display='block';" style="
+                                background: #17a2b8; color: white; border: 2px solid white; padding: 12px 20px; 
+                                border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;
+                            ">🔧 Show Debug</button>
+                        </div>
+                    </div>
+                `;
                 return;
             }
             
