@@ -1358,6 +1358,109 @@
 
     <script>
         // Global variables
+        // IMMEDIATE DIAGNOSTIC SETUP - This runs as soon as the page loads
+        window.addEventListener('load', function() {
+            console.log('🔍 PAGE LOADED: Setting up visible diagnostics');
+            setupVisibleDiagnostics();
+        });
+        
+        // VISIBLE DIAGNOSTIC SYSTEM - Shows on screen without console
+        let diagnosticDiv = null;
+        let timeoutCounter = 0;
+        
+        function setupVisibleDiagnostics() {
+            // Create floating diagnostic display
+            diagnosticDiv = document.createElement('div');
+            diagnosticDiv.id = 'visibleDiagnostic';
+            diagnosticDiv.style.cssText = `
+                position: fixed; top: 10px; right: 10px; 
+                background: #1a1a1a; color: #00ff00; 
+                padding: 8px; border-radius: 4px; 
+                font-family: monospace; font-size: 10px; 
+                max-width: 250px; max-height: 150px; 
+                overflow-y: auto; z-index: 10000;
+                border: 1px solid #00ff00; display: none;
+            `;
+            document.body.appendChild(diagnosticDiv);
+            
+            logVisible('✅ Diagnostic system ready');
+            
+            // Set up emergency timeout watcher
+            setInterval(checkForStuckLeaderboard, 2000); // Check every 2 seconds
+        }
+        
+        function logVisible(message) {
+            if (!diagnosticDiv) return;
+            const timestamp = new Date().toLocaleTimeString();
+            diagnosticDiv.innerHTML += `<div>${timestamp}: ${message}</div>`;
+            diagnosticDiv.scrollTop = diagnosticDiv.scrollHeight;
+            diagnosticDiv.style.display = 'block'; // Make visible when there's content
+            console.log(message);
+        }
+        
+        function checkForStuckLeaderboard() {
+            const leaderboardList = document.getElementById('leaderboardList');
+            if (!leaderboardList) return;
+            
+            const content = leaderboardList.innerHTML;
+            if (content.includes('Loading leaderboard') || content.includes('📊 Loading')) {
+                timeoutCounter++;
+                logVisible(`⏱️ Loading detected (${timeoutCounter * 2}s)`);
+                
+                if (timeoutCounter >= 5) { // 10 seconds
+                    logVisible('🚨 EMERGENCY: Forcing error display');
+                    showEmergencyError();
+                    timeoutCounter = 0;
+                }
+            } else {
+                timeoutCounter = 0; // Reset if not loading
+            }
+        }
+        
+        function showEmergencyError() {
+            const leaderboardList = document.getElementById('leaderboardList');
+            if (!leaderboardList) return;
+            
+            leaderboardList.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #fff; background: #dc3545; border-radius: 8px; margin: 10px; border: 3px solid #fff;">
+                    <div style="font-size: 1.3em; font-weight: bold; margin-bottom: 15px;">🚨 EMERGENCY TIMEOUT</div>
+                    <div style="margin-bottom: 15px;">The leaderboard has been loading for over 10 seconds</div>
+                    
+                    <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 6px; margin: 15px 0; text-align: left; font-size: 13px;">
+                        <strong>📋 COPY THIS TO YOUR TEACHER:</strong><br>
+                        <div style="font-family: monospace; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; margin-top: 8px; color: #fff; border: 1px solid #fff;">
+                            Student: ${currentStudent?.name || 'Unknown'}<br>
+                            Class: ${currentClass || 'Unknown'}<br>
+                            Error: Emergency timeout (10+ seconds)<br>
+                            Time: ${new Date().toLocaleString()}<br>
+                            Browser: Chrome ${navigator.userAgent.split('Chrome/')[1]?.split(' ')[0] || 'Unknown'}
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 15px;">
+                        <button onclick="window.location.reload()" style="
+                            background: #28a745; color: white; border: 2px solid white; padding: 12px 20px; 
+                            border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;
+                        ">🔄 REFRESH PAGE</button>
+                        
+                        <button onclick="localStorage.clear(); sessionStorage.clear(); window.location.reload();" style="
+                            background: #ffc107; color: black; border: 2px solid white; padding: 12px 20px; 
+                            border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;
+                        ">🗑️ CLEAR DATA</button>
+                        
+                        <button onclick="document.getElementById('visibleDiagnostic').style.display='block';" style="
+                            background: #17a2b8; color: white; border: 2px solid white; padding: 12px 20px; 
+                            border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;
+                        ">🔧 SHOW DEBUG</button>
+                    </div>
+                    
+                    <div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 4px; font-size: 12px;">
+                        💡 Try refreshing first. If that doesn't work, try "Clear Data" button.
+                    </div>
+                </div>
+            `;
+        }
+
         let currentStudent = null;
         let currentClass = null;
         let currentStudentCode = null;
@@ -2844,19 +2947,35 @@
         }
 
         async function loadLeaderboard(retryCount = 0) {
-            console.log('🔍 ENTRY POINT: loadLeaderboard function called with retryCount:', retryCount);
-            console.log('🔍 ENTRY CHECK: currentClass =', currentClass, ', currentStudent =', currentStudent);
+            logVisible(`🔍 loadLeaderboard called (retry ${retryCount})`);
             
             const leaderboardList = document.getElementById('leaderboardList');
             
             // Immediate check - is the element even there?
             if (!leaderboardList) {
-                console.error('❌ CRITICAL: leaderboardList element not found!');
+                logVisible('❌ CRITICAL: leaderboardList element missing!');
+                showEmergencyError();
                 return;
             }
             
-            console.log('✅ ENTRY CHECK: leaderboardList element found');
+            logVisible('✅ Element found, proceeding...');
             leaderboardAttempts++;
+            
+            // Show loading with visible countdown
+            leaderboardList.innerHTML = `
+                <div style="text-align: center; padding: 20px; background: linear-gradient(45deg, #667eea, #764ba2); color: white; border-radius: 8px; margin: 10px;">
+                    <div style="font-size: 1.2em; margin-bottom: 10px;">📊 Loading Leaderboard...</div>
+                    <div style="font-size: 0.9em; margin-bottom: 15px;">Attempt ${retryCount + 1} • Student: ${currentStudent?.name || 'Unknown'}</div>
+                    <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 4px; font-size: 12px;">
+                        ⏱️ Emergency timeout will trigger after 10 seconds
+                    </div>
+                    <div style="margin-top: 10px; font-size: 11px;">
+                        Debug info visible in top-right corner
+                    </div>
+                </div>
+            `;
+            
+            logVisible(`🔄 Loading for: ${currentClass} / ${currentStudent?.name}`);
             
             // FORCE TIMEOUT - Show error after 6 seconds no matter what
             const forceTimeoutId = setTimeout(() => {
