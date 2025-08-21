@@ -3053,7 +3053,11 @@
                 if (retryCount === 1) {
                     if (isCustomCode) {
                         // For custom codes, try using student's actual class name from their data
-                        classNameToUse = currentStudent?.className || currentStudent?.class || currentClass;
+                        classNameToUse = currentStudent?.className || currentStudent?.class || currentStudent?.actualClass || currentClass;
+                        // If we still have the custom code, try to derive the teacher name from student data
+                        if (classNameToUse === currentClass && currentStudent?.teacherName) {
+                            classNameToUse = currentStudent.teacherName;
+                        }
                         logVisible(`🔢 Try 2: Using student class "${classNameToUse}" (code: ${currentClass})`);
                     } else {
                         // Try proper case (first letter capital, rest lowercase)
@@ -3062,9 +3066,19 @@
                     }
                 } else if (retryCount === 2) {
                     if (isCustomCode) {
-                        // For custom codes, try different API endpoint or parameter
-                        classNameToUse = currentClass; // Keep original code
-                        logVisible(`🔢 Try 3: Custom code lookup "${classNameToUse}"`);
+                        // For custom codes, try getting class info from the student authentication data
+                        // The currentClass might actually be stored elsewhere in the student object
+                        const possibleClassNames = [
+                            currentStudent?.class_name,
+                            currentStudent?.className, 
+                            currentStudent?.teacher,
+                            currentStudent?.room,
+                            currentStudent?.period,
+                            currentStudentCode?.split('_')[0], // Sometimes codes are like "Darr_1234"
+                        ].filter(name => name && name !== currentClass && !/^\d+$/.test(name));
+                        
+                        classNameToUse = possibleClassNames[0] || currentClass;
+                        logVisible(`🔢 Try 3: Found class "${classNameToUse}" from student data`);
                     } else {
                         // Try all lowercase
                         classNameToUse = currentClass.toLowerCase();
@@ -3133,6 +3147,13 @@
                 
                 logVisible(`👤 Student: ${currentStudent?.name} (${currentStudentCode})`);
                 logVisible(`🏫 Class: ${classNameToUse} ${isCustomCode ? '(Custom Code)' : '(Standard Name)'}`);
+                
+                // DEBUG: Show all available student data for custom codes
+                if (isCustomCode && retryCount === 0) {
+                    logVisible(`🔍 Student data keys: ${Object.keys(currentStudent || {}).join(', ')}`);
+                    console.log(`🔍 DIAGNOSTIC: Full student object for custom code analysis:`, currentStudent);
+                }
+                
                 console.log(`🔗 DIAGNOSTIC: Final URL: ${finalUrl}`);
                 console.log(`🔍 DIAGNOSTIC: Custom code detected: ${isCustomCode}, Original: "${currentClass}", Using: "${classNameToUse}"`);
                 
