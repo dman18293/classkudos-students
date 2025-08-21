@@ -1480,8 +1480,11 @@
 
         // Helper function to get current XP (separate from kudos points)
         function getCurrentXP() {
-            const studentXPKey = `student_xp_${currentStudent?.id || 'unknown'}`;
-            return parseInt(localStorage.getItem(studentXPKey)) || 0;
+            const studentId = currentStudent?.id || 'unknown';
+            const studentXPKey = `student_xp_${studentId}`;
+            const xpValue = parseInt(localStorage.getItem(studentXPKey)) || 0;
+            console.log('getCurrentXP called - Student ID:', studentId, 'XP Key:', studentXPKey, 'XP Value:', xpValue);
+            return xpValue;
         }
 
         // Function to get available avatars for current level
@@ -1566,7 +1569,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Enhanced portal with avatars & XP loaded successfully!');
             setupEventListeners();
-            populateAvatarGrid();
             loadSavedAvatar();
             
             // Check for existing session
@@ -1670,6 +1672,7 @@
 
         function populateAvatarGrid() {
             const currentLevel = calculateLevel(getCurrentXP());
+            console.log('Populating avatar grid for Level', currentLevel, 'student with', getCurrentXP(), 'XP');
             
             populateAvailableTab(currentLevel);
             populateComingSoonTab(currentLevel);
@@ -2226,6 +2229,9 @@
             // Initialize badge collection with current level based on XP
             const currentLevel = calculateLevel(currentXP);
             updateBadgeCollection(currentLevel || 1);
+            
+            // Update avatar grid with current level unlocks
+            populateAvatarGrid();
             
             // Load student kudos
             await loadStudentKudos();
@@ -2891,14 +2897,40 @@
             problems: []
         };
 
-        // Audio feedback system
+        // Audio feedback system using Web Audio API beeps
         let audioEnabled = true;
-        const correctAudio = new Audio('../Audio/Positive.wav');
-        const incorrectAudio = new Audio('../Audio/Negative.wav');
+        let audioContext = null;
         
-        // Set audio volumes
-        correctAudio.volume = 0.6;
-        incorrectAudio.volume = 0.6;
+        // Initialize audio context
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioContext;
+        }
+        
+        // Create beep sounds
+        function createBeep(frequency, duration, type = 'sine') {
+            const ctx = initAudioContext();
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+            
+            oscillator.start(ctx.currentTime);
+            oscillator.stop(ctx.currentTime + duration);
+        }
+        
+        // Load original positive sound for level ups only
+        const levelUpAudio = new Audio('../Audio/Positive.wav');
+        levelUpAudio.volume = 0.8;
 
         // Colosseum Achievements System
         const colosseumAchievements = {
@@ -3061,15 +3093,39 @@
             if (!audioEnabled) return;
             
             try {
+                // Resume audio context if suspended (Chrome requirement)
+                const ctx = initAudioContext();
+                if (ctx.state === 'suspended') {
+                    ctx.resume();
+                }
+                
                 if (isCorrect) {
-                    correctAudio.currentTime = 0;
-                    correctAudio.play().catch(e => console.log('Audio play failed:', e));
+                    // Happy beep: High note
+                    createBeep(800, 0.2);
                 } else {
-                    incorrectAudio.currentTime = 0;
-                    incorrectAudio.play().catch(e => console.log('Audio play failed:', e));
+                    // Sad beep: Low note
+                    createBeep(300, 0.3);
                 }
             } catch (error) {
                 console.log('Audio error:', error);
+            }
+        }
+        
+        function playLevelUpSound() {
+            if (!audioEnabled) return;
+            
+            try {
+                // Use original positive sound for level ups
+                levelUpAudio.currentTime = 0;
+                levelUpAudio.play().catch(e => {
+                    console.log('Level up audio failed, using beep fallback');
+                    // Fallback to celebratory beep sequence
+                    createBeep(523, 0.2); // C
+                    setTimeout(() => createBeep(659, 0.2), 200); // E
+                    setTimeout(() => createBeep(784, 0.4), 400); // G
+                });
+            } catch (error) {
+                console.log('Level up audio error:', error);
             }
         }
 
@@ -4084,9 +4140,6 @@
                     <div style="font-size: 1.3em; font-weight: bold; margin-bottom: 10px;">
                         ${currentMorphemeGame.currentProblem.question}
                     </div>
-                    <div style="font-size: 0.9em; color: #666;">
-                        Example word: <strong>${currentMorphemeGame.currentProblem.example}</strong>
-                    </div>
                 </div>
             `;
             
@@ -4114,6 +4167,8 @@
             
             if (selectedAnswer === correctAnswer) {
                 // Correct answer!
+                playAudio(true); // Play success beep
+                
                 currentMorphemeGame.correctAnswers++;
                 currentMorphemeGame.streak++;
                 
@@ -4139,15 +4194,19 @@
                 
                 document.getElementById('morphemeFeedback').innerHTML = `
                     <span style="color: green; font-weight: bold;">✅ Correct! +${points} XP</span>
+                    <br><span style="color: #666; font-size: 0.9em;">Example: <strong>${currentMorphemeGame.currentProblem.example}</strong></span>
                     ${currentMorphemeGame.streak >= 5 ? `<br><span style="color: gold;">🔥 ${currentMorphemeGame.streak} streak bonus!</span>` : ''}
                 `;
                 
             } else {
                 // Wrong answer
+                playAudio(false); // Play error beep
+                
                 currentMorphemeGame.streak = 0;
                 document.getElementById('morphemeFeedback').innerHTML = `
                     <span style="color: red; font-weight: bold;">❌ Incorrect</span>
                     <br><span style="color: #666;">Correct answer: <strong>${correctAnswer}</strong></span>
+                    <br><span style="color: #666; font-size: 0.9em;">Example: <strong>${currentMorphemeGame.currentProblem.example}</strong></span>
                 `;
             }
             
