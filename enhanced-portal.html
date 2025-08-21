@@ -3046,7 +3046,7 @@
                     controller.abort();
                 }, timeoutDuration);
                 
-                // CASE SENSITIVITY FIX + CUSTOM CODE DETECTION: Try different case variations and code formats
+                // COMPREHENSIVE CASE FIX + CUSTOM CODE DETECTION: Try all case variations
                 let classNameToUse = currentClass;
                 let isCustomCode = /^\d{4}$/.test(currentClass); // Check if it's a 4-digit code
                 
@@ -3070,6 +3070,16 @@
                         classNameToUse = currentClass.toLowerCase();
                         logVisible(`🔤 Try 3: Lowercase "${classNameToUse}"`);
                     }
+                } else if (retryCount === 3) {
+                    // Try all uppercase (for cases like "darr" -> "DARR")
+                    classNameToUse = currentClass.toUpperCase();
+                    logVisible(`🔤 Try 4: Uppercase "${classNameToUse}"`);
+                } else if (retryCount === 4) {
+                    // Try title case for multi-word classes (like "parm's class" -> "Parm's Class")
+                    classNameToUse = currentClass.replace(/\w\S*/g, (txt) => 
+                        txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+                    );
+                    logVisible(`🔤 Try 5: Title case "${classNameToUse}"`);
                 } else {
                     logVisible(`${isCustomCode ? '🔢' : '🔤'} Try 1: Original "${classNameToUse}" ${isCustomCode ? '(4-digit code detected)' : ''}`);
                 }
@@ -3149,6 +3159,14 @@
                 if (data.success) {
                     logVisible(`✅ Data valid. ${data.leaderboard?.length || 0} students`);
                     logVisible(`🔍 Class worked: "${classNameToUse}" vs original "${currentClass}"`);
+                    
+                    // If we get 0 students and haven't tried all case variations, auto-retry
+                    if (data.leaderboard.length === 0 && retryCount < 4) {
+                        logVisible(`⚠️ Empty result - trying next case variation`);
+                        setTimeout(() => loadLeaderboard(retryCount + 1), 1000);
+                        return;
+                    }
+                    
                     console.log(`✅ DIAGNOSTIC: Successfully loaded ${data.leaderboard.length} students`);
                     console.log(`🔍 DIAGNOSTIC: Working class name: "${classNameToUse}" (original: "${currentClass}")`);
                     console.log(`🔍 DIAGNOSTIC: Case fix successful: ${classNameToUse !== currentClass ? 'YES' : 'NO'}`);
@@ -3172,8 +3190,10 @@
                 console.error(`❌ DIAGNOSTIC: Leaderboard error for class "${currentClass}" (attempt ${retryCount + 1}):`, error);
                 console.error(`🔍 DIAGNOSTIC: Error details - Name: ${error.name}, Message: ${error.message}, Stack:`, error.stack);
                 
-                // Auto-retry with different strategies
-                if (retryCount < 2 && (error.name === 'AbortError' || error.message.includes('Failed to fetch'))) {
+                // Auto-retry with different strategies - increased retry count for case variations
+                if (retryCount < 4 && (error.name === 'AbortError' || error.message.includes('Failed to fetch') || 
+                    (data && data.success && data.leaderboard && data.leaderboard.length === 0))) {
+                    logVisible(`🔄 Auto-retry ${retryCount + 1}/5 due to: ${error.name === 'AbortError' ? 'timeout' : 'empty result'}`);
                     console.log('Auto-retrying with different strategy...');
                     setTimeout(() => loadLeaderboard(retryCount + 1), 1000);
                     return;
