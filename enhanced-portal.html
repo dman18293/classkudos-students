@@ -1130,6 +1130,35 @@
                                 <!-- Badges will be populated by JavaScript -->
                             </div>
                         </div>
+
+                        <!-- Dashboard Customization -->
+                        <div class="customization-panel" style="
+                            background: white;
+                            border-radius: 12px;
+                            padding: 20px;
+                            margin-top: 20px;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                            border: 1px solid #e9ecef;
+                        ">
+                            <div id="themeCustomization">
+                                <!-- Theme selector populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Recent Game Achievements -->
+                        <div class="achievements-panel" style="
+                            background: white;
+                            border-radius: 12px;
+                            padding: 20px;
+                            margin-top: 20px;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                            border: 1px solid #e9ecef;
+                        ">
+                            <h4 style="margin: 0 0 15px 0; color: #333;">🎮 Recent Game Achievements</h4>
+                            <div id="recentAchievements">
+                                <!-- Game achievements populated by JavaScript -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1523,268 +1552,203 @@
         });
 
         // Avatar options using Dicebear seeds for variety
-        // Avatar System with Level-Based Unlocks
+        // Avatar System with Level-Based Unlocks - EVERY LEVEL HAS REWARDS!
         const avatarsByLevel = {
-            1: {
-                category: "Starter Pack",
-                avatars: ['happy', 'cheerful', 'smile', 'joy', 'bright']
-            },
-            3: {
-                category: "Hero Squad",
-                avatars: ['superhero', 'super-student', 'captain-awesome']
-            },
-            5: {
-                category: "Robot Kingdom",
-                avatars: [
-                    createAvatarData('bottts', 'cyber-warrior'),
-                    createAvatarData('bottts', 'mecha-guardian'),
-                    createAvatarData('bottts', 'robo-explorer'),
-                    createAvatarData('bottts', 'tech-ninja'),
-                    createAvatarData('bottts', 'droid-wizard'),
-                    createAvatarData('bottts', 'cyber-phoenix'),
-                    createAvatarData('bottts', 'mecha-dragon'),
-                    createAvatarData('bottts', 'robo-knight'),
-                    createAvatarData('bottts', 'pixel-hero'),
-                    createAvatarData('bottts', 'droid-master'),
-                    createAvatarData('bottts', 'cyber-wolf'),
-                    createAvatarData('bottts', 'tech-eagle'),
-                    createAvatarData('bottts', 'robo-samurai'),
-                    createAvatarData('bottts', 'cyber-paladin'),
-                    createAvatarData('bottts', 'mecha-archer'),
-                    createAvatarData('bottts', 'droid-champion')
-                ]
-            },
-            8: {
-                category: "Cyber Legends",
-                avatars: [
-                    createAvatarData('bottts', 'quantum-bot'),
-                    createAvatarData('bottts', 'plasma-droid'),
-                    createAvatarData('bottts', 'stellar-mech'),
-                    createAvatarData('bottts', 'nova-guardian'),
-                    createAvatarData('bottts', 'cosmic-warrior'),
-                    createAvatarData('bottts', 'galaxy-protector'),
-                    createAvatarData('bottts', 'nebula-knight'),
-                    createAvatarData('bottts', 'astro-champion'),
-                    createAvatarData('bottts', 'void-hunter'),
-                    createAvatarData('bottts', 'star-forge'),
-                    createAvatarData('bottts', 'lunar-sentinel'),
-                    createAvatarData('bottts', 'solar-guardian')
-                ]
-            },
-            10: {
-                category: "Space Explorers",
-                avatars: [
-                    createAvatarData('adventurer', 'astronaut-alpha'),
-                    createAvatarData('adventurer', 'space-ranger'),
-                    createAvatarData('adventurer', 'galaxy-pilot'),
-                    createAvatarData('adventurer', 'cosmic-explorer'),
-                    createAvatarData('adventurer', 'stellar-navigator')
-                ]
-            },
-            12: {
-                category: "Pixel Masters",
-                avatars: [
-                    createAvatarData('pixel-art', 'pixel-warrior'),
-                    createAvatarData('pixel-art', 'pixel-mage'),
-                    createAvatarData('pixel-art', 'pixel-rogue'),
-                    createAvatarData('pixel-art', 'pixel-knight'),
-                    createAvatarData('pixel-art', 'pixel-archer')
-                ]
-            },
-            15: {
-                category: "Mythical Beings",
-                avatars: [
-                    createAvatarData('avataaars', 'phoenix-rising'),
-                    createAvatarData('avataaars', 'dragon-sage'),
-                    createAvatarData('avataaars', 'unicorn-spirit'),
-                    createAvatarData('avataaars', 'griffin-lord'),
-                    createAvatarData('avataaars', 'fairy-queen')
-                ]
-            },
-            18: {
-                category: "Abstract Artists",
-                avatars: [
-                    createAvatarData('shapes', 'geometric-master'),
-                    createAvatarData('shapes', 'triangle-titan'),
-                    createAvatarData('shapes', 'circle-sage'),
-                    createAvatarData('shapes', 'polygon-prince'),
-                    createAvatarData('shapes', 'fractal-lord')
-                ]
-            },
-            20: {
-                category: "Big Eyes Club",
-                avatars: [
-                    createAvatarData('big-eyes', 'starry-eyes'),
-                    createAvatarData('big-eyes', 'rainbow-eyes'),
-                    createAvatarData('big-eyes', 'cosmic-eyes'),
-                    createAvatarData('big-eyes', 'emerald-eyes'),
-                    createAvatarData('big-eyes', 'sapphire-eyes')
-                ]
-            },
-            25: {
-                category: "Mini Heroes",
-                avatars: [
-                    createAvatarData('miniavs', 'mini-hero'),
-                    createAvatarData('miniavs', 'mini-wizard'),
-                    createAvatarData('miniavs', 'mini-knight'),
-                    createAvatarData('miniavs', 'mini-sage'),
-                    createAvatarData('miniavs', 'mini-champion')
-                ]
-            },
-            30: {
-                category: "Scholarly Personas",
-                avatars: [
-                    createAvatarData('personas', 'scholar-supreme'),
-                    createAvatarData('personas', 'wisdom-keeper'),
-                    createAvatarData('personas', 'knowledge-master'),
-                    createAvatarData('personas', 'learning-legend'),
-                    createAvatarData('personas', 'study-sovereign')
-                ]
-            },
-            35: {
-                category: "Letter Lords",
-                avatars: [
-                    createAvatarData('initials', 'letter-lord'),
-                    createAvatarData('initials', 'alphabet-ace'),
-                    createAvatarData('initials', 'word-wizard'),
-                    createAvatarData('initials', 'text-titan'),
-                    createAvatarData('initials', 'symbol-sage')
-                ]
-            },
-            40: {
-                category: "Gesture Masters",
-                avatars: [
-                    createAvatarData('thumbs', 'thumbs-champion'),
-                    createAvatarData('thumbs', 'gesture-guru'),
-                    createAvatarData('thumbs', 'hand-hero'),
-                    createAvatarData('thumbs', 'sign-master'),
-                    createAvatarData('thumbs', 'motion-monarch')
-                ]
-            },
-            45: {
-                category: "Pattern Princes",
-                avatars: [
-                    createAvatarData('identicon', 'pattern-prince'),
-                    createAvatarData('identicon', 'design-duke'),
-                    createAvatarData('identicon', 'symmetry-sage'),
-                    createAvatarData('identicon', 'geometry-genius'),
-                    createAvatarData('identicon', 'matrix-master')
-                ]
-            },
-            50: {
-                category: "Emoji Empire",
-                avatars: [
-                    createAvatarData('fun-emoji', 'emoji-emperor'),
-                    createAvatarData('fun-emoji', 'smiley-supreme'),
-                    createAvatarData('fun-emoji', 'expression-expert'),
-                    createAvatarData('fun-emoji', 'face-master'),
-                    createAvatarData('fun-emoji', 'mood-monarch')
-                ]
-            },
-            55: {
-                category: "Community Champions",
-                avatars: [
-                    createAvatarData('open-peeps', 'community-champion'),
-                    createAvatarData('open-peeps', 'social-sage'),
-                    createAvatarData('open-peeps', 'people-person'),
-                    createAvatarData('open-peeps', 'friend-finder'),
-                    createAvatarData('open-peeps', 'unity-master')
-                ]
-            },
-            60: {
-                category: "Lorelei Legends",
-                avatars: [
-                    createAvatarData('lorelei', 'pattern-overlord'),
-                    createAvatarData('lorelei', 'design-deity'),
-                    createAvatarData('lorelei', 'art-emperor'),
-                    createAvatarData('lorelei', 'creative-cosmos'),
-                    createAvatarData('lorelei', 'aesthetic-apex')
-                ]
-            },
-            65: {
-                category: "Notion Nobles",
-                avatars: [
-                    createAvatarData('notionists', 'notion-noble'),
-                    createAvatarData('notionists', 'idea-icon'),
-                    createAvatarData('notionists', 'concept-king'),
-                    createAvatarData('notionists', 'thought-titan'),
-                    createAvatarData('notionists', 'mind-master')
-                ]
-            },
-            70: {
-                category: "Ring Royalty",
-                avatars: [
-                    createAvatarData('rings', 'ring-ruler'),
-                    createAvatarData('rings', 'circle-sovereign'),
-                    createAvatarData('rings', 'halo-hero'),
-                    createAvatarData('rings', 'orbit-overlord'),
-                    createAvatarData('rings', 'cosmic-crown')
-                ]
-            },
-            75: {
-                category: "Micah Elite",
-                avatars: [
-                    createAvatarData('micah', 'micah-master'),
-                    createAvatarData('micah', 'creative-genius'),
-                    createAvatarData('micah', 'artistic-legend'),
-                    createAvatarData('micah', 'design-supreme'),
-                    createAvatarData('micah', 'visual-virtuoso')
-                ]
-            },
-            80: {
-                category: "Croodles Crew",
-                avatars: [
-                    createAvatarData('croodles-neutral', 'croodle-commander'),
-                    createAvatarData('croodles-neutral', 'sketch-sovereign'),
-                    createAvatarData('croodles-neutral', 'doodle-deity'),
-                    createAvatarData('croodles-neutral', 'line-legend'),
-                    createAvatarData('croodles-neutral', 'curve-conqueror')
-                ]
-            },
-            85: {
-                category: "Dylan Deities",
-                avatars: [
-                    createAvatarData('dylan', 'dylan-divine'),
-                    createAvatarData('dylan', 'artistic-apex'),
-                    createAvatarData('dylan', 'creative-cosmos'),
-                    createAvatarData('dylan', 'design-dimension'),
-                    createAvatarData('dylan', 'visual-vortex')
-                ]
-            },
-            90: {
-                category: "Ultimate Avataaars",
-                avatars: [
-                    createAvatarData('avataaars-neutral', 'avatar-apex'),
-                    createAvatarData('avataaars-neutral', 'portrait-pinnacle'),
-                    createAvatarData('avataaars-neutral', 'face-finale'),
-                    createAvatarData('avataaars-neutral', 'expression-extreme'),
-                    createAvatarData('avataaars-neutral', 'character-climax')
-                ]
-            },
-            95: {
-                category: "Glass Icons",
-                avatars: [
-                    createAvatarData('glass', 'glass-guardian'),
-                    createAvatarData('glass', 'crystal-champion'),
-                    createAvatarData('glass', 'transparent-titan'),
-                    createAvatarData('glass', 'reflection-ruler'),
-                    createAvatarData('glass', 'prism-prince')
-                ]
-            },
-            100: {
-                category: "🏆 LEGENDARY CENTURION 🏆",
-                avatars: [
-                    createAvatarData('bottts', 'centurion-supreme'),
-                    createAvatarData('adventurer', 'legend-eternal'),
-                    createAvatarData('avataaars', 'master-infinite'),
-                    createAvatarData('shapes', 'apex-ultimate'),
-                    createAvatarData('big-eyes', 'vision-transcendent'),
-                    'LEGENDARY-GOLDEN-CROWN',
-                    'ULTIMATE-DIAMOND-STAR',
-                    'COSMIC-INFINITY-BADGE'
-                ]
-            }
+            1: { category: "🎬 Getting Started", avatars: ['happy', 'cheerful', 'smile'] },
+            2: { category: "😊 Smile Squad", avatars: ['joy', 'bright', 'sunny'] },
+            3: { category: "🦸 Hero Squad", avatars: ['superhero', 'super-student', 'captain-awesome'] },
+            4: { category: "🐶 Cute Animals", avatars: [createAvatarData('fun-emoji', '🐶'), createAvatarData('fun-emoji', '🐱'), createAvatarData('fun-emoji', '🐭')] },
+            5: { category: "🤖 Robot Kingdom", avatars: [createAvatarData('bottts', 'cyber-warrior'), createAvatarData('bottts', 'mecha-guardian'), createAvatarData('bottts', 'robo-explorer')] },
+            6: { category: "🦊 Forest Friends", avatars: [createAvatarData('fun-emoji', '🦊'), createAvatarData('fun-emoji', '🐻'), createAvatarData('fun-emoji', '🐼')] },
+            7: { category: "🌟 Shining Stars", avatars: ['star-bright', 'cosmic-wonder', 'stellar-dream'] },
+            8: { category: "🤖 Cyber Legends", avatars: [createAvatarData('bottts', 'quantum-bot'), createAvatarData('bottts', 'plasma-droid'), createAvatarData('bottts', 'stellar-mech')] },
+            9: { category: "🐧 Arctic Animals", avatars: [createAvatarData('fun-emoji', '🐧'), createAvatarData('fun-emoji', '🦭'), createAvatarData('fun-emoji', '🐻‍❄️')] },
+            10: { category: "🚀 Space Explorers", avatars: [createAvatarData('adventurer', 'astronaut-alpha'), createAvatarData('adventurer', 'space-ranger'), createAvatarData('adventurer', 'galaxy-pilot')] },
+            11: { category: "🦁 Safari Squad", avatars: [createAvatarData('fun-emoji', '🦁'), createAvatarData('fun-emoji', '🐯'), createAvatarData('fun-emoji', '🐘')] },
+            12: { category: "🎮 Pixel Masters", avatars: [createAvatarData('pixel-art', 'pixel-warrior'), createAvatarData('pixel-art', 'pixel-mage'), createAvatarData('pixel-art', 'pixel-rogue')] },
+            13: { category: "🐦 Flying Friends", avatars: [createAvatarData('fun-emoji', '🐦'), createAvatarData('fun-emoji', '🦅'), createAvatarData('fun-emoji', '🦉')] },
+            14: { category: "💎 Gem Collectors", avatars: ['diamond-heart', 'ruby-soul', 'emerald-mind'] },
+            15: { category: "🐉 Mythical Beings", avatars: [createAvatarData('avataaars', 'dragon-sage'), createAvatarData('avataaars', 'phoenix-rising'), createAvatarData('avataaars', 'unicorn-spirit')] },
+            16: { category: "🐢 Ocean Creatures", avatars: [createAvatarData('fun-emoji', '🐢'), createAvatarData('fun-emoji', '🐙'), createAvatarData('fun-emoji', '🐠')] },
+            17: { category: "⚡ Lightning Lords", avatars: ['thunder-master', 'storm-bringer', 'lightning-sage'] },
+            18: { category: "🔷 Abstract Artists", avatars: [createAvatarData('shapes', 'geometric-master'), createAvatarData('shapes', 'triangle-titan'), createAvatarData('shapes', 'circle-sage')] },
+            19: { category: "🐨 Koala Kingdom", avatars: [createAvatarData('fun-emoji', '🐨'), createAvatarData('fun-emoji', '🦘'), createAvatarData('fun-emoji', '🦌')] },
+            20: { category: "👀 Big Eyes Club", avatars: [createAvatarData('big-eyes', 'starry-eyes'), createAvatarData('big-eyes', 'rainbow-eyes'), createAvatarData('big-eyes', 'cosmic-eyes')] },
+            21: { category: "🐝 Buzzing Buddies", avatars: [createAvatarData('fun-emoji', '🐝'), createAvatarData('fun-emoji', '🦋'), createAvatarData('fun-emoji', '🐞')] },
+            22: { category: "🏆 Trophy Hunters", avatars: ['gold-medal', 'silver-crown', 'bronze-star'] },
+            23: { category: "🦓 Striped Squad", avatars: [createAvatarData('fun-emoji', '🦓'), createAvatarData('fun-emoji', '🦒'), createAvatarData('fun-emoji', '🐆')] },
+            24: { category: "🌸 Flower Power", avatars: ['cherry-blossom', 'sunflower-soul', 'rose-heart'] },
+            25: { category: "👥 Mini Heroes", avatars: [createAvatarData('miniavs', 'mini-hero'), createAvatarData('miniavs', 'mini-wizard'), createAvatarData('miniavs', 'mini-knight')] },
+            26: { category: "🐍 Slithering Squad", avatars: [createAvatarData('fun-emoji', '🐍'), createAvatarData('fun-emoji', '🦎'), createAvatarData('fun-emoji', '🐸')] },
+            27: { category: "🌙 Moon Masters", avatars: ['lunar-guardian', 'crescent-keeper', 'eclipse-sage'] },
+            28: { category: "🦀 Crab Crew", avatars: [createAvatarData('fun-emoji', '🦀'), createAvatarData('fun-emoji', '🦞'), createAvatarData('fun-emoji', '🦐')] },
+            29: { category: "🔥 Fire Spirits", avatars: ['flame-dancer', 'inferno-master', 'ember-soul'] },
+            30: { category: "📚 Scholarly Personas", avatars: [createAvatarData('personas', 'scholar-supreme'), createAvatarData('personas', 'wisdom-keeper'), createAvatarData('personas', 'knowledge-master')] },
+            31: { category: "🐿️ Woodland Creatures", avatars: [createAvatarData('fun-emoji', '🐿️'), createAvatarData('fun-emoji', '🦔'), createAvatarData('fun-emoji', '🐇')] },
+            32: { category: "⭐ Celestial Stars", avatars: ['nova-burst', 'supernova-glory', 'galaxy-spiral'] },
+            33: { category: "🐺 Wolf Pack", avatars: [createAvatarData('fun-emoji', '🐺'), createAvatarData('fun-emoji', '🦮'), createAvatarData('fun-emoji', '🐕‍🦺')] },
+            34: { category: "🌊 Ocean Waves", avatars: ['tsunami-force', 'tidal-master', 'wave-rider'] },
+            35: { category: "📝 Letter Lords", avatars: [createAvatarData('initials', 'letter-lord'), createAvatarData('initials', 'alphabet-ace'), createAvatarData('initials', 'word-wizard')] },
+            36: { category: "🐎 Galloping Gang", avatars: [createAvatarData('fun-emoji', '🐎'), createAvatarData('fun-emoji', '🦄'), createAvatarData('fun-emoji', '🐴')] },
+            37: { category: "❄️ Ice Crystals", avatars: ['frost-guardian', 'ice-shard', 'crystal-freeze'] },
+            38: { category: "🐪 Desert Dwellers", avatars: [createAvatarData('fun-emoji', '🐪'), createAvatarData('fun-emoji', '🦏'), createAvatarData('fun-emoji', '🐫')] },
+            39: { category: "🌈 Rainbow Warriors", avatars: ['rainbow-bridge', 'prism-light', 'spectrum-master'] },
+            40: { category: "👋 Gesture Masters", avatars: [createAvatarData('thumbs', 'thumbs-champion'), createAvatarData('thumbs', 'gesture-guru'), createAvatarData('thumbs', 'hand-hero')] },
+            41: { category: "🐊 Reptile Rulers", avatars: [createAvatarData('fun-emoji', '🐊'), createAvatarData('fun-emoji', '🐲'), createAvatarData('fun-emoji', '🦕')] },
+            42: { category: "💫 Cosmic Dust", avatars: ['stardust-swirl', 'cosmic-mist', 'nebula-cloud'] },
+            43: { category: "🦌 Gentle Giants", avatars: [createAvatarData('fun-emoji', '🦌'), createAvatarData('fun-emoji', '🐃'), createAvatarData('fun-emoji', '🐄')] },
+            44: { category: "🔮 Crystal Orbs", avatars: ['crystal-ball', 'mystic-sphere', 'wisdom-orb'] },
+            45: { category: "🔳 Pattern Princes", avatars: [createAvatarData('identicon', 'pattern-prince'), createAvatarData('identicon', 'design-duke'), createAvatarData('identicon', 'symmetry-sage')] },
+            46: { category: "🐗 Wild Boars", avatars: [createAvatarData('fun-emoji', '🐗'), createAvatarData('fun-emoji', '🐖'), createAvatarData('fun-emoji', '🐷')] },
+            47: { category: "⚔️ Sword Masters", avatars: ['blade-dancer', 'sword-saint', 'steel-soul'] },
+            48: { category: "🦇 Night Flyers", avatars: [createAvatarData('fun-emoji', '🦇'), createAvatarData('fun-emoji', '🦅'), createAvatarData('fun-emoji', '🪶')] },
+            49: { category: "🌟 Shooting Stars", avatars: ['meteor-shower', 'comet-tail', 'falling-star'] },
+            50: { category: "😀 Emoji Empire", avatars: [createAvatarData('fun-emoji', 'emoji-emperor'), createAvatarData('fun-emoji', 'smiley-supreme'), createAvatarData('fun-emoji', 'expression-expert')] },
+            51: { category: "🐰 Bunny Burrow", avatars: [createAvatarData('fun-emoji', '🐰'), createAvatarData('fun-emoji', '🐹'), createAvatarData('fun-emoji', '🐭')] },
+            52: { category: "🎭 Drama Masks", avatars: ['comedy-master', 'tragedy-keeper', 'theater-soul'] },
+            53: { category: "🦆 Duck Dynasty", avatars: [createAvatarData('fun-emoji', '🦆'), createAvatarData('fun-emoji', '🦢'), createAvatarData('fun-emoji', '🦩')] },
+            54: { category: "🔰 Shield Bearers", avatars: ['guardian-shield', 'protection-ward', 'defense-master'] },
+            55: { category: "👥 Community Champions", avatars: [createAvatarData('open-peeps', 'community-champion'), createAvatarData('open-peeps', 'social-sage'), createAvatarData('open-peeps', 'people-person')] },
+            56: { category: "🐙 Tentacle Squad", avatars: [createAvatarData('fun-emoji', '🐙'), createAvatarData('fun-emoji', '🦑'), createAvatarData('fun-emoji', '🦪')] },
+            57: { category: "🎨 Paint Palette", avatars: ['color-splash', 'paint-drop', 'art-brush'] },
+            58: { category: "🦘 Hopping Heroes", avatars: [createAvatarData('fun-emoji', '🦘'), createAvatarData('fun-emoji', '🐸'), createAvatarData('fun-emoji', '🦗')] },
+            59: { category: "⚗️ Potion Masters", avatars: ['elixir-brewer', 'potion-sage', 'alchemy-lord'] },
+            60: { category: "🌸 Lorelei Legends", avatars: [createAvatarData('lorelei', 'pattern-overlord'), createAvatarData('lorelei', 'design-deity'), createAvatarData('lorelei', 'art-emperor')] },
+            61: { category: "🐠 Tropical Fish", avatars: [createAvatarData('fun-emoji', '🐠'), createAvatarData('fun-emoji', '🐟'), createAvatarData('fun-emoji', '🦈')] },
+            62: { category: "🎪 Circus Stars", avatars: ['ring-master', 'trapeze-artist', 'clown-prince'] },
+            63: { category: "🦎 Lizard Lounge", avatars: [createAvatarData('fun-emoji', '🦎'), createAvatarData('fun-emoji', '🦖'), createAvatarData('fun-emoji', '🐉')] },
+            64: { category: "🎯 Target Masters", avatars: ['bullseye-king', 'aim-true', 'precision-lord'] },
+            65: { category: "💭 Notion Nobles", avatars: [createAvatarData('notionists', 'notion-noble'), createAvatarData('notionists', 'idea-icon'), createAvatarData('notionists', 'concept-king')] },
+            66: { category: "🐳 Whale Watchers", avatars: [createAvatarData('fun-emoji', '🐳'), createAvatarData('fun-emoji', '🐋'), createAvatarData('fun-emoji', '🐬')] },
+            67: { category: "🎼 Music Makers", avatars: ['melody-master', 'rhythm-ruler', 'harmony-hero'] },
+            68: { category: "🕷️ Spider Squad", avatars: [createAvatarData('fun-emoji', '🕷️'), createAvatarData('fun-emoji', '🦂'), createAvatarData('fun-emoji', '🪲')] },
+            69: { category: "🌺 Tropical Paradise", avatars: ['hibiscus-heart', 'palm-paradise', 'beach-bliss'] },
+            70: { category: "⭕ Ring Royalty", avatars: [createAvatarData('rings', 'ring-ruler'), createAvatarData('rings', 'circle-sovereign'), createAvatarData('rings', 'halo-hero')] },
+            71: { category: "🦌 Deer Dynasty", avatars: [createAvatarData('fun-emoji', '🦌'), createAvatarData('fun-emoji', '🐕'), createAvatarData('fun-emoji', '🐺')] },
+            72: { category: "🎲 Dice Masters", avatars: ['lucky-roller', 'chance-champion', 'fortune-favor'] },
+            73: { category: "🦀 Claw Commanders", avatars: [createAvatarData('fun-emoji', '🦀'), createAvatarData('fun-emoji', '🦞'), createAvatarData('fun-emoji', '🦂')] },
+            74: { category: "🌪️ Storm Spirits", avatars: ['tornado-twist', 'hurricane-heart', 'cyclone-soul'] },
+            75: { category: "🎨 Micah Elite", avatars: [createAvatarData('micah', 'micah-master'), createAvatarData('micah', 'creative-genius'), createAvatarData('micah', 'artistic-legend')] },
+            76: { category: "🐅 Tiger Territory", avatars: [createAvatarData('fun-emoji', '🐅'), createAvatarData('fun-emoji', '🐆'), createAvatarData('fun-emoji', '🦁')] },
+            77: { category: "💎 Diamond Dynasty", avatars: ['diamond-crown', 'crystal-throne', 'gem-scepter'] },
+            78: { category: "🦅 Eagle Empire", avatars: [createAvatarData('fun-emoji', '🦅'), createAvatarData('fun-emoji', '🐦‍⬛'), createAvatarData('fun-emoji', '🦆')] },
+            79: { category: "🌋 Volcano Vigor", avatars: ['lava-lord', 'magma-master', 'eruption-emperor'] },
+            80: { category: "✏️ Croodles Crew", avatars: [createAvatarData('croodles-neutral', 'croodle-commander'), createAvatarData('croodles-neutral', 'sketch-sovereign'), createAvatarData('croodles-neutral', 'doodle-deity')] },
+            81: { category: "🐧 Penguin Palace", avatars: [createAvatarData('fun-emoji', '🐧'), createAvatarData('fun-emoji', '🦭'), createAvatarData('fun-emoji', '🐻‍❄️')] },
+            82: { category: "🏔️ Mountain Majesty", avatars: ['peak-climber', 'summit-seeker', 'alpine-ace'] },
+            83: { category: "🦋 Butterfly Ballet", avatars: [createAvatarData('fun-emoji', '🦋'), createAvatarData('fun-emoji', '🐛'), createAvatarData('fun-emoji', '🪲')] },
+            84: { category: "⚡ Lightning Legion", avatars: ['thunder-bolt', 'electric-energy', 'spark-spirit'] },
+            85: { category: "🎭 Dylan Deities", avatars: [createAvatarData('dylan', 'dylan-divine'), createAvatarData('dylan', 'artistic-apex'), createAvatarData('dylan', 'creative-cosmos')] },
+            86: { category: "🐝 Honey Makers", avatars: [createAvatarData('fun-emoji', '🐝'), createAvatarData('fun-emoji', '🪲'), createAvatarData('fun-emoji', '🦗')] },
+            87: { category: "🎪 Magic Circus", avatars: ['magic-wand', 'circus-star', 'wonder-worker'] },
+            88: { category: "🦇 Midnight Squad", avatars: [createAvatarData('fun-emoji', '🦇'), createAvatarData('fun-emoji', '🌙'), createAvatarData('fun-emoji', '⭐')] },
+            89: { category: "🌊 Tidal Wave", avatars: ['ocean-master', 'wave-warrior', 'sea-sage'] },
+            90: { category: "😎 Ultimate Avataaars", avatars: [createAvatarData('avataaars-neutral', 'avatar-apex'), createAvatarData('avataaars-neutral', 'portrait-pinnacle'), createAvatarData('avataaars-neutral', 'face-finale')] },
+            91: { category: "🦁 Lion Legacy", avatars: [createAvatarData('fun-emoji', '🦁'), createAvatarData('fun-emoji', '👑'), createAvatarData('fun-emoji', '🏆')] },
+            92: { category: "🎆 Firework Festival", avatars: ['sparkler-spin', 'rocket-burst', 'celebration-soul'] },
+            93: { category: "🐘 Elephant Empire", avatars: [createAvatarData('fun-emoji', '🐘'), createAvatarData('fun-emoji', '🦣'), createAvatarData('fun-emoji', '🦏')] },
+            94: { category: "🌟 Stellar Supreme", avatars: ['star-emperor', 'constellation-king', 'universe-ruler'] },
+            95: { category: "🪟 Glass Icons", avatars: [createAvatarData('glass', 'glass-guardian'), createAvatarData('glass', 'crystal-champion'), createAvatarData('glass', 'transparent-titan')] },
+            96: { category: "🦄 Unicorn Universe", avatars: [createAvatarData('fun-emoji', '🦄'), createAvatarData('fun-emoji', '🌈'), createAvatarData('fun-emoji', '✨')] },
+            97: { category: "🎊 Celebration Central", avatars: ['party-master', 'festive-spirit', 'joy-bringer'] },
+            98: { category: "🐲 Dragon Domain", avatars: [createAvatarData('fun-emoji', '🐲'), createAvatarData('fun-emoji', '🔥'), createAvatarData('fun-emoji', '⚡')] },
+            99: { category: "👑 Royal Regalia", avatars: ['crown-jewel', 'royal-scepter', 'kingdom-key'] },
+            100: { category: "🏆 LEGENDARY CENTURION 🏆", avatars: [createAvatarData('bottts', 'centurion-supreme'), createAvatarData('adventurer', 'legend-eternal'), createAvatarData('avataaars', 'master-infinite'), 'LEGENDARY-GOLDEN-CROWN', 'ULTIMATE-DIAMOND-STAR', 'COSMIC-INFINITY-BADGE'] }
         };
+
+        // Dashboard Customization Unlocks by Level
+        const dashboardThemes = {
+            1: { name: "Classic Blue", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", unlocked: true },
+            5: { name: "Forest Green", gradient: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" },
+            10: { name: "Sunset Orange", gradient: "linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%)" },
+            15: { name: "Purple Rain", gradient: "linear-gradient(135deg, #8360c3 0%, #2ebf91 100%)" },
+            20: { name: "Ocean Waves", gradient: "linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)" },
+            25: { name: "Cherry Blossom", gradient: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)" },
+            30: { name: "Space Galaxy", gradient: "linear-gradient(135deg, #434343 0%, #000000 100%)" },
+            35: { name: "Golden Hour", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
+            40: { name: "Arctic Ice", gradient: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)" },
+            45: { name: "Fire Ember", gradient: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)" },
+            50: { name: "Rainbow Pride", gradient: "linear-gradient(135deg, #ff0844 0%, #ffb199 50%, #00ffc6 100%)" },
+            60: { name: "Midnight Sky", gradient: "linear-gradient(135deg, #232526 0%, #414345 100%)" },
+            70: { name: "Rose Gold", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
+            80: { name: "Electric Blue", gradient: "linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)" },
+            90: { name: "Cosmic Purple", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
+            100: { name: "Legendary Gold", gradient: "linear-gradient(135deg, #ffd89b 0%, #19547b 100%)" }
+        };
+
+        // Game Achievement System
+        let gameAchievements = JSON.parse(localStorage.getItem(`game_achievements_${currentStudent?.id}`) || '[]');
+
+        function addGameAchievement(type, title, description, xpEarned) {
+            const achievement = {
+                id: Date.now(),
+                type: type,
+                title: title,
+                description: description,
+                xpEarned: xpEarned,
+                timestamp: new Date().toISOString(),
+                date: new Date().toLocaleDateString()
+            };
+            
+            gameAchievements.unshift(achievement); // Add to beginning
+            
+            // Keep only last 20 achievements
+            if (gameAchievements.length > 20) {
+                gameAchievements = gameAchievements.slice(0, 20);
+            }
+            
+            localStorage.setItem(`game_achievements_${currentStudent.id}`, JSON.stringify(gameAchievements));
+            updateAchievementsDisplay();
+        }
+
+        function updateAchievementsDisplay() {
+            const achievementsContainer = document.getElementById('recentAchievements');
+            if (!achievementsContainer) return;
+
+            if (gameAchievements.length === 0) {
+                achievementsContainer.innerHTML = '<p style="color: #666; text-align: center; font-style: italic;">Complete games to earn achievements!</p>';
+                return;
+            }
+
+            const achievementsHTML = gameAchievements.slice(0, 5).map(achievement => `
+                <div class="achievement-item" style="
+                    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                    border-left: 4px solid #28a745;
+                    padding: 12px;
+                    margin: 8px 0;
+                    border-radius: 6px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; color: #28a745; margin-bottom: 4px;">
+                                ${getAchievementIcon(achievement.type)} ${achievement.title}
+                            </div>
+                            <div style="color: #666; font-size: 0.9em; margin-bottom: 4px;">
+                                ${achievement.description}
+                            </div>
+                            <div style="color: #999; font-size: 0.8em;">
+                                ${achievement.date} • +${achievement.xpEarned} XP
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            achievementsContainer.innerHTML = achievementsHTML;
+        }
+
+        function getAchievementIcon(type) {
+            const icons = {
+                'morpheme': '📚',
+                'math': '🔢', 
+                'milestone': '🏆',
+                'streak': '🔥',
+                'perfect': '⭐',
+                'speed': '⚡'
+            };
+            return icons[type] || '🎯';
+        }
 
         // Keep original basic avatars available at all levels + add exciting new ones
         const basicAvatars = [
@@ -2460,6 +2424,82 @@
             };
         }
 
+        function getCurrentLevel() {
+            const currentXP = getCurrentXP();
+            return calculateLevel(currentXP);
+        }
+
+        function applyDashboardTheme(level) {
+            const unlockedThemes = Object.entries(dashboardThemes)
+                .filter(([themeLevel, theme]) => parseInt(themeLevel) <= level)
+                .map(([themeLevel, theme]) => ({...theme, level: parseInt(themeLevel)}));
+
+            if (unlockedThemes.length === 0) return;
+
+            // Get current theme from localStorage or use the highest unlocked
+            let currentTheme = localStorage.getItem(`dashboard_theme_${currentStudent?.id}`);
+            
+            if (!currentTheme || !unlockedThemes.find(t => t.name === currentTheme)) {
+                // Use highest unlocked theme
+                currentTheme = unlockedThemes[unlockedThemes.length - 1].name;
+                localStorage.setItem(`dashboard_theme_${currentStudent?.id}`, currentTheme);
+            }
+
+            const theme = unlockedThemes.find(t => t.name === currentTheme);
+            if (theme) {
+                document.body.style.background = theme.gradient;
+                updateThemeSelector(unlockedThemes, currentTheme);
+            }
+        }
+
+        function updateThemeSelector(unlockedThemes, currentTheme) {
+            const container = document.getElementById('themeCustomization');
+            if (!container) return;
+
+            const themesHTML = unlockedThemes.map(theme => `
+                <div class="theme-option ${theme.name === currentTheme ? 'active' : ''}" 
+                     onclick="selectTheme('${theme.name}')"
+                     style="
+                        width: 60px;
+                        height: 30px;
+                        background: ${theme.gradient};
+                        border-radius: 6px;
+                        margin: 4px;
+                        cursor: pointer;
+                        border: 3px solid ${theme.name === currentTheme ? '#ffd700' : 'transparent'};
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                        position: relative;
+                        display: inline-block;
+                     "
+                     title="${theme.name} (Level ${theme.level})">
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <h4 style="margin: 0 0 10px 0; color: #333;">🎨 Dashboard Themes</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                    ${themesHTML}
+                </div>
+                <p style="margin: 5px 0 0 0; font-size: 0.8em; color: #666;">
+                    ${unlockedThemes.length} of ${Object.keys(dashboardThemes).length} themes unlocked
+                </p>
+            `;
+        }
+
+        function selectTheme(themeName) {
+            localStorage.setItem(`dashboard_theme_${currentStudent?.id}`, themeName);
+            const theme = Object.values(dashboardThemes).find(t => t.name === themeName);
+            if (theme) {
+                document.body.style.background = theme.gradient;
+                updateThemeSelector(
+                    Object.entries(dashboardThemes)
+                        .filter(([level, _]) => parseInt(level) <= getCurrentLevel())
+                        .map(([level, theme]) => ({...theme, level: parseInt(level)})),
+                    themeName
+                );
+            }
+        }
+
         function updateXPDisplay(totalPoints) {
             console.log('updateXPDisplay called with totalPoints:', totalPoints);
             const newLevel = calculateLevel(totalPoints);
@@ -2580,6 +2620,15 @@
                 const audio = new Audio('../Audio/ding.wav');
                 audio.play().catch(() => {}); // Ignore if audio fails
             } catch (e) {}
+            
+            // Add milestone achievement for leveling up
+            if (currentStudent) {
+                addGameAchievement('milestone', 
+                    `${achievement.title}`, 
+                    `Reached Level ${level} - ${achievement.message}`,
+                    0 // No XP awarded for milestones (already got XP from games)
+                );
+            }
             
             // Hide after animation completes (longer if avatar unlock)
             setTimeout(() => {
@@ -2769,6 +2818,12 @@
             // Initialize badge collection with current level based on XP
             const currentLevel = calculateLevel(currentXP);
             updateBadgeCollection(currentLevel || 1);
+            
+            // Apply dashboard theme and update customization panel
+            applyDashboardTheme(currentLevel || 1);
+            
+            // Initialize achievements display
+            updateAchievementsDisplay();
             
             // Update avatar grid with current level unlocks
             populateAvatarGrid();
@@ -4670,6 +4725,23 @@
                 
                 console.log(`Kudos Colosseum: Awarded ${xpAmount} XP to ${currentStudent.name}. Total XP: ${newTotalXP}`);
                 
+                // Add game achievement for XP earned
+                let achievementTitle = "Math Battle Completed";
+                let achievementDescription = `Earned ${xpAmount} XP in Morphology Arena`;
+                
+                if (xpAmount >= 15) {
+                    achievementTitle = "Outstanding Performance";
+                    achievementDescription = `Dominated the arena with ${xpAmount} XP earned!`;
+                } else if (xpAmount >= 10) {
+                    achievementTitle = "Strong Victory";
+                    achievementDescription = `Solid performance earning ${xpAmount} XP`;
+                } else if (xpAmount >= 5) {
+                    achievementTitle = "Good Effort";
+                    achievementDescription = `Steady progress with ${xpAmount} XP earned`;
+                }
+                
+                addGameAchievement('morpheme', achievementTitle, achievementDescription, xpAmount);
+                
                 // Update XP display immediately with the new XP total (not kudos total)
                 updateXPDisplay(newTotalXP);
                 
@@ -4685,6 +4757,12 @@
                 
                 if (newLevel > oldLevel) {
                     showLevelUpNotification(newLevel);
+                    
+                    // Update avatar grid with new unlocks
+                    populateAvatarGrid();
+                    
+                    // Apply new theme if available and update theme selector
+                    applyDashboardTheme(newLevel);
                 }
                 
             } catch (error) {
