@@ -2268,37 +2268,49 @@
             const totalPoints = currentStudent.points || 0;
             document.getElementById('totalKudos').textContent = totalPoints;
             
-            // XP System: Only increases, never decreases
-            // Get stored XP from localStorage or initialize
-            const studentXPKey = `student_xp_${currentStudent.id}`;
-            let storedXP = parseInt(localStorage.getItem(studentXPKey)) || 0;
-            
-            console.log('Current stored XP:', storedXP);
+            // XP System: Use database total points as the authoritative source
+            // Only fall back to localStorage XP calculation if database doesn't have points
+            console.log('Total points from database:', totalPoints);
             console.log('All kudos received:', kudos);
             
-            // Calculate what XP should be based on positive kudos only
-            const positiveKudos = kudos.filter(kudo => (kudo.points || 0) > 0);
-            const expectedXP = positiveKudos.reduce((sum, kudo) => sum + (kudo.points || 0), 0);
+            // Get stored XP from localStorage (for fallback only)
+            const studentXPKey = `student_xp_${currentStudent.id}`;
+            let storedXP = parseInt(localStorage.getItem(studentXPKey)) || 0;
+            console.log('Current stored XP (fallback):', storedXP);
             
-            console.log('Positive kudos only:', positiveKudos);
-            console.log('Expected XP from positive kudos:', expectedXP);
+            let currentXP;
             
-            // XP can only increase, never decrease
-            let currentXP = Math.max(storedXP, expectedXP);
-            
-            // If expected XP is higher than stored (new positive points added), update stored XP
-            if (expectedXP > storedXP) {
-                currentXP = expectedXP;
+            // If database has points, use that as authoritative (includes Colosseum XP)
+            if (totalPoints && totalPoints > 0) {
+                currentXP = totalPoints;
+                // Update localStorage to match database
                 localStorage.setItem(studentXPKey, currentXP.toString());
-                console.log('XP increased! New XP:', currentXP);
+                console.log('Using database total points as XP:', currentXP);
             } else {
-                console.log('XP unchanged (no regression):', currentXP);
+                // Fallback: Calculate XP based on positive kudos only (legacy system)
+                const positiveKudos = kudos.filter(kudo => (kudo.points || 0) > 0);
+                const expectedXP = positiveKudos.reduce((sum, kudo) => sum + (kudo.points || 0), 0);
+                
+                console.log('Positive kudos only:', positiveKudos);
+                console.log('Expected XP from positive kudos:', expectedXP);
+                
+                // XP can only increase, never decrease
+                currentXP = Math.max(storedXP, expectedXP);
+                
+                // If expected XP is higher than stored, update stored XP
+                if (expectedXP > storedXP) {
+                    currentXP = expectedXP;
+                    localStorage.setItem(studentXPKey, currentXP.toString());
+                    console.log('XP increased! New XP:', currentXP);
+                } else {
+                    console.log('XP unchanged (no regression):', currentXP);
+                }
+                console.log('Using calculated XP (fallback mode):', currentXP);
             }
             
             console.log('Final XP for level calculation:', currentXP);
-            console.log('Total points (including negative):', totalPoints);
             
-            // Update XP and level using the protected XP value
+            // Update XP and level using the correct XP value
             updateXPDisplay(currentXP);
             
             // Calculate recent kudos (last 7 days)
