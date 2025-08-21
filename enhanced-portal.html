@@ -1478,6 +1478,12 @@
             'rocket', 'car', 'plane', 'boat', 'train', 'bicycle', 'skateboard'
         ];
 
+        // Helper function to get current XP (separate from kudos points)
+        function getCurrentXP() {
+            const studentXPKey = `student_xp_${currentStudent?.id || 'unknown'}`;
+            return parseInt(localStorage.getItem(studentXPKey)) || 0;
+        }
+
         // Function to get available avatars for current level
         function getAvailableAvatars(currentLevel) {
             let availableAvatars = [...basicAvatars]; // All basic avatars are always available
@@ -1663,7 +1669,7 @@
         }
 
         function populateAvatarGrid() {
-            const currentLevel = Math.floor(parseInt(localStorage.getItem('studentPoints') || '0') / 100) + 1;
+            const currentLevel = calculateLevel(getCurrentXP());
             
             populateAvailableTab(currentLevel);
             populateComingSoonTab(currentLevel);
@@ -1787,7 +1793,7 @@
                 option.appendChild(lockOverlay);
                 
                 option.onclick = () => {
-                    alert(`🔒 This avatar unlocks at Level ${unlockLevel}!\n\nKeep earning points to reach it! You're currently Level ${Math.floor(parseInt(localStorage.getItem('studentPoints') || '0') / 100) + 1}.`);
+                    alert(`🔒 This avatar unlocks at Level ${unlockLevel}!\n\nKeep earning points to reach it! You're currently Level ${calculateLevel(getCurrentXP())}.`);
                 };
             } else {
                 option.onclick = () => selectAvatar(avatar, option);
@@ -2179,11 +2185,15 @@
             if (currentStudent) {
                 console.log('refreshStudentData called with currentStudent.points:', currentStudent.points);
                 
+                // Update kudos display with actual kudos points from database
                 document.getElementById('totalKudos').textContent = currentStudent.points || 0;
-                updateXPDisplay(currentStudent.points || 0);
                 
-                // Sync localStorage with database points
-                localStorage.setItem('studentPoints', (currentStudent.points || 0).toString());
+                // Update XP display with separate XP system (NOT kudos points)
+                const currentXP = getCurrentXP();
+                updateXPDisplay(currentXP);
+                
+                // DO NOT sync localStorage with database points for XP
+                // XP and kudos are now separate systems
                 
                 // Update avatar if changed
                 if (currentStudent.avatar_data && currentStudent.avatar_data !== selectedAvatar) {
@@ -2209,16 +2219,12 @@
         async function loadDashboardData() {
             console.log('Loading dashboard for student:', currentStudent);
             
-            // Refresh XP display with current points
-            if (currentStudent && currentStudent.points !== undefined) {
-                updateXPDisplay(currentStudent.points);
-            } else {
-                // Fallback to localStorage if currentStudent.points is not available
-                const storedPoints = parseInt(localStorage.getItem('studentPoints') || '0');
-                updateXPDisplay(storedPoints);
-            }
+            // Update XP display with separate XP system
+            const currentXP = getCurrentXP();
+            updateXPDisplay(currentXP);
             
-            // Initialize badge collection with current level
+            // Initialize badge collection with current level based on XP
+            const currentLevel = calculateLevel(currentXP);
             updateBadgeCollection(currentLevel || 1);
             
             // Load student kudos
@@ -2325,48 +2331,40 @@
         }
 
         function updateKudosStats(kudos) {
-            // Use actual points from database rather than calculating from kudos
-            const totalPoints = currentStudent.points || 0;
-            document.getElementById('totalKudos').textContent = totalPoints;
+            // Display actual kudos points from database (NOT including game XP)
+            const totalKudosPoints = currentStudent.points || 0;
+            document.getElementById('totalKudos').textContent = totalKudosPoints;
             
-            // XP System: Use database total points as the authoritative source
-            // Only fall back to localStorage XP calculation if database doesn't have points
-            console.log('Total points from database:', totalPoints);
+            // SEPARATE XP SYSTEM: XP is separate from kudos points
+            console.log('Total kudos points from database:', totalKudosPoints);
             console.log('All kudos received:', kudos);
             
-            // Get stored XP from localStorage (for fallback only)
+            // Get stored XP from localStorage (separate from kudos)
             const studentXPKey = `student_xp_${currentStudent.id}`;
-            let storedXP = parseInt(localStorage.getItem(studentXPKey)) || 0;
-            console.log('Current stored XP (fallback):', storedXP);
+            let currentXP = parseInt(localStorage.getItem(studentXPKey)) || 0;
+            console.log('Current stored XP:', currentXP);
             
-            let currentXP;
+            // Calculate expected XP from positive kudos (kudos → XP conversion)
+            const positiveKudos = kudos.filter(kudo => (kudo.points || 0) > 0);
+            const expectedXPFromKudos = positiveKudos.reduce((sum, kudo) => sum + (kudo.points || 0), 0);
             
-            // If database has points, use that as authoritative (includes Colosseum XP)
-            if (totalPoints && totalPoints > 0) {
-                currentXP = totalPoints;
-                // Update localStorage to match database
+            console.log('Positive kudos only:', positiveKudos);
+            console.log('Expected XP from kudos:', expectedXPFromKudos);
+            
+            // XP should be at least equal to kudos points (kudos give XP)
+            // But XP can be higher due to games (games add extra XP)
+            if (expectedXPFromKudos > currentXP) {
+                // Student earned new kudos, increase XP to match
+                currentXP = expectedXPFromKudos;
                 localStorage.setItem(studentXPKey, currentXP.toString());
-                console.log('Using database total points as XP:', currentXP);
+                console.log('XP increased from new kudos! New XP:', currentXP);
+            } else if (currentXP < expectedXPFromKudos) {
+                // This shouldn't happen, but if it does, set XP to kudos minimum
+                currentXP = expectedXPFromKudos;
+                localStorage.setItem(studentXPKey, currentXP.toString());
+                console.log('XP corrected to match kudos minimum:', currentXP);
             } else {
-                // Fallback: Calculate XP based on positive kudos only (legacy system)
-                const positiveKudos = kudos.filter(kudo => (kudo.points || 0) > 0);
-                const expectedXP = positiveKudos.reduce((sum, kudo) => sum + (kudo.points || 0), 0);
-                
-                console.log('Positive kudos only:', positiveKudos);
-                console.log('Expected XP from positive kudos:', expectedXP);
-                
-                // XP can only increase, never decrease
-                currentXP = Math.max(storedXP, expectedXP);
-                
-                // If expected XP is higher than stored, update stored XP
-                if (expectedXP > storedXP) {
-                    currentXP = expectedXP;
-                    localStorage.setItem(studentXPKey, currentXP.toString());
-                    console.log('XP increased! New XP:', currentXP);
-                } else {
-                    console.log('XP unchanged (no regression):', currentXP);
-                }
-                console.log('Using calculated XP (fallback mode):', currentXP);
+                console.log('XP unchanged:', currentXP);
             }
             
             console.log('Final XP for level calculation:', currentXP);
@@ -3695,61 +3693,36 @@
 
         async function awardColosseumXP(xpAmount) {
             try {
-                // Update student's total points
-                const newTotalPoints = (parseInt(localStorage.getItem('studentPoints') || '0')) + xpAmount;
-                localStorage.setItem('studentPoints', newTotalPoints.toString());
+                // Add XP to separate XP system (NOT kudos points)
+                const studentXPKey = `student_xp_${currentStudent.id}`;
+                const currentXP = parseInt(localStorage.getItem(studentXPKey)) || 0;
+                const newTotalXP = currentXP + xpAmount;
+                localStorage.setItem(studentXPKey, newTotalXP.toString());
                 
-                // Also update the currentStudent object FIRST
-                if (currentStudent) {
-                    currentStudent.points = newTotalPoints;
+                console.log(`Awarding ${xpAmount} Colosseum XP. Previous XP: ${currentXP}, New XP total: ${newTotalXP}`);
+                
+                // DO NOT update database kudos points - games should only affect XP
+                // The database points should remain unchanged (only teacher kudos affect those)
+                
+                console.log(`Kudos Colosseum: Awarded ${xpAmount} XP to ${currentStudent.name}. Total XP: ${newTotalXP}`);
+                
+                // Update XP display immediately with the new XP total (not kudos total)
+                updateXPDisplay(newTotalXP);
+                
+                // Force immediate visual update of XP elements
+                setTimeout(() => {
+                    console.log('Force updating XP display after short delay...');
+                    updateXPDisplay(newTotalXP);
+                }, 100);
+                
+                // Check for level up
+                const newLevel = calculateLevel(newTotalXP);
+                const oldLevel = calculateLevel(newTotalXP - xpAmount);
+                
+                if (newLevel > oldLevel) {
+                    showLevelUpNotification(newLevel);
                 }
                 
-                console.log(`Awarding ${xpAmount} XP. New total: ${newTotalPoints}. Updated currentStudent.points: ${currentStudent?.points}`);
-                
-                // Update the database
-                if (currentStudent && currentStudent.id) {
-                    const response = await fetch('./.netlify/functions/updateStudentPortal', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            studentId: currentStudent.id,
-                            xp: newTotalPoints,
-                            level: calculateLevel(newTotalPoints)
-                        })
-                    });
-                    
-                    const data = await response.json();
-                    if (data.success) {
-                        console.log(`Kudos Colosseum: Awarded ${xpAmount} XP to ${currentStudent.name}. Total XP: ${newTotalPoints}`);
-                        
-                        // Update all displays immediately with the new total
-                        document.getElementById('totalKudos').textContent = newTotalPoints;
-                        updateXPDisplay(newTotalPoints);
-                        
-                        // Force immediate visual update of XP elements
-                        setTimeout(() => {
-                            console.log('Force updating XP display after short delay...');
-                            updateXPDisplay(newTotalPoints);
-                        }, 100);
-                        
-                    } else {
-                        console.error('Failed to save XP to database:', data.error);
-                    }
-                    
-                    // Check for level up
-                    const newLevel = calculateLevel(newTotalPoints);
-                    const oldLevel = calculateLevel(newTotalPoints - xpAmount);
-                    
-                    if (newLevel > oldLevel) {
-                        showLevelUpNotification(newLevel);
-                    }
-                    
-                    // Refresh student data AFTER ensuring currentStudent.points is updated
-                    console.log('Calling refreshStudentData with currentStudent.points:', currentStudent.points);
-                    refreshStudentData();
-                }
             } catch (error) {
                 console.error('Error awarding Colosseum XP:', error);
             }
@@ -4264,49 +4237,25 @@
 
         async function awardMorphemeXP(xpAmount) {
             try {
-                const newTotalPoints = (parseInt(localStorage.getItem('studentPoints') || '0')) + xpAmount;
-                localStorage.setItem('studentPoints', newTotalPoints.toString());
+                // Add XP to separate XP system (NOT kudos points)
+                const studentXPKey = `student_xp_${currentStudent.id}`;
+                const currentXP = parseInt(localStorage.getItem(studentXPKey)) || 0;
+                const newTotalXP = currentXP + xpAmount;
+                localStorage.setItem(studentXPKey, newTotalXP.toString());
                 
-                if (currentStudent) {
-                    currentStudent.points = newTotalPoints;
-                }
+                console.log(`Awarding ${xpAmount} Morpheme XP. Previous XP: ${currentXP}, New XP total: ${newTotalXP}`);
                 
-                console.log(`Awarding ${xpAmount} Morpheme XP. New total: ${newTotalPoints}. Updated currentStudent.points: ${currentStudent?.points}`);
+                // DO NOT update database kudos points - games should only affect XP
+                // The database points should remain unchanged (only teacher kudos affect those)
                 
-                // Update database
-                try {
-                    const response = await fetch('./.netlify/functions/updateStudentPortal', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            studentId: currentStudent.id,
-                            points: newTotalPoints,
-                            source: 'morpheme_mastery'
-                        })
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        console.log(`Morpheme Mastery: Awarded ${xpAmount} XP to ${currentStudent.name}. Total XP: ${newTotalPoints}`);
-                        
-                        // Update all displays immediately
-                        document.getElementById('totalKudos').textContent = newTotalPoints;
-                        updateXPDisplay(newTotalPoints);
-                        
-                    } else {
-                        console.error('Failed to save Morpheme XP to database:', data.error);
-                    }
-                    
-                } catch (dbError) {
-                    console.error('Database error for Morpheme XP:', dbError);
-                }
+                console.log(`Morpheme Mastery: Awarded ${xpAmount} XP to ${currentStudent.name}. Total XP: ${newTotalXP}`);
+                
+                // Update XP display immediately with the new XP total (not kudos total)
+                updateXPDisplay(newTotalXP);
                 
                 // Check for level up
-                const newLevel = calculateLevel(newTotalPoints);
-                const oldLevel = calculateLevel(newTotalPoints - xpAmount);
+                const newLevel = calculateLevel(newTotalXP);
+                const oldLevel = calculateLevel(newTotalXP - xpAmount);
                 
                 if (newLevel > oldLevel) {
                     showLevelUpNotification(oldLevel, newLevel);
