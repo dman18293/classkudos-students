@@ -3046,12 +3046,26 @@
                     controller.abort();
                 }, timeoutDuration);
                 
+                // CASE SENSITIVITY FIX: Try different case variations on retries
+                let classNameToUse = currentClass;
+                if (retryCount === 1) {
+                    // Try proper case (first letter capital, rest lowercase)
+                    classNameToUse = currentClass.charAt(0).toUpperCase() + currentClass.slice(1).toLowerCase();
+                    logVisible(`🔤 Try 2: Proper case "${classNameToUse}"`);
+                } else if (retryCount === 2) {
+                    // Try all lowercase
+                    classNameToUse = currentClass.toLowerCase();
+                    logVisible(`🔤 Try 3: Lowercase "${classNameToUse}"`);
+                } else {
+                    logVisible(`🔤 Try 1: Original "${classNameToUse}"`);
+                }
+                
                 // Multiple URL strategies with cache busting - prioritize relative path
                 const cacheBuster = Date.now();
                 const apiUrls = [
-                    `/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(currentClass)}&cb=${cacheBuster}`,
-                    `https://classkudos.org/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(currentClass)}&cb=${cacheBuster}`,
-                    `https://classkudos-students.netlify.app/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(currentClass)}&cb=${cacheBuster}`
+                    `/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(classNameToUse)}&cb=${cacheBuster}`,
+                    `https://classkudos.org/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(classNameToUse)}&cb=${cacheBuster}`,
+                    `https://classkudos-students.netlify.app/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(classNameToUse)}&cb=${cacheBuster}`
                 ];
                 
                 const apiUrl = apiUrls[retryCount] || apiUrls[0];
@@ -3105,10 +3119,10 @@
                 
                 if (data.success) {
                     logVisible(`✅ Data valid. ${data.leaderboard?.length || 0} students`);
-                    logVisible(`🔍 Class name used: "${currentClass}"`);
+                    logVisible(`🔍 Class worked: "${classNameToUse}" vs original "${currentClass}"`);
                     console.log(`✅ DIAGNOSTIC: Successfully loaded ${data.leaderboard.length} students`);
-                    console.log(`🔍 DIAGNOSTIC: Class name sent to server: "${currentClass}"`);
-                    console.log(`🔍 DIAGNOSTIC: Encoded class name: "${encodeURIComponent(currentClass)}"`);
+                    console.log(`🔍 DIAGNOSTIC: Working class name: "${classNameToUse}" (original: "${currentClass}")`);
+                    console.log(`🔍 DIAGNOSTIC: Case fix successful: ${classNameToUse !== currentClass ? 'YES' : 'NO'}`);
                     data.leaderboard.forEach((student, index) => {
                         console.log(`👤 DIAGNOSTIC: Student ${index + 1}: "${student.name}" (ID: ${student.id}) - Points: ${student.total_points}, Avatar: ${student.avatar_data ? 'present' : 'missing'}`);
                     });
