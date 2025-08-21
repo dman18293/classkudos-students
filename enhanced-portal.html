@@ -2332,13 +2332,25 @@
                 if (response.ok && data.success) {
                     // Store student data
                     currentStudent = data.student;
-                    currentClass = classCode;
+                    
+                    // CUSTOM CODE FIX: Use actual class name from student data instead of the input code
+                    currentClass = data.student?.className || data.student?.class || data.student?.class_name || classCode;
                     currentStudentCode = studentCode;
                     
                     console.log('Login successful:', currentStudent);
+                    console.log('🔍 CUSTOM CODE DEBUG: Input classCode:', classCode, 'Actual class:', currentClass);
+                    console.log('🔍 Student object keys:', Object.keys(currentStudent));
+                    
+                    // If we still have the custom code as class name, log what's available
+                    if (currentClass === classCode && /^\d{4}$/.test(classCode)) {
+                        console.log('⚠️ Custom code not resolved. Available student fields:');
+                        Object.keys(currentStudent).forEach(key => {
+                            console.log(`  ${key}: ${currentStudent[key]}`);
+                        });
+                    }
                     
                     // Save session for persistence
-                    saveSession(currentStudent, classCode, studentCode);
+                    saveSession(currentStudent, currentClass, studentCode);
                     
                     // Show dashboard
                     showDashboard();
@@ -2380,8 +2392,13 @@
 
         function updateStudentProfile() {
             document.getElementById('studentName').textContent = currentStudent.name;
-            document.getElementById('studentClass').textContent = currentClass;
+            
+            // CUSTOM CODE FIX: Show actual class name, not the login code
+            const displayClass = currentStudent?.className || currentStudent?.class || currentStudent?.class_name || currentClass;
+            document.getElementById('studentClass').textContent = displayClass;
             document.getElementById('displayStudentCode').textContent = currentStudentCode;
+            
+            console.log('🔍 Profile update - Display class:', displayClass, 'Current class var:', currentClass);
             
             // Load avatar from database if available
             if (currentStudent.avatar_data) {
