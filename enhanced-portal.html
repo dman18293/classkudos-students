@@ -1430,6 +1430,23 @@
                 category: "Hero Squad",
                 avatars: ['superhero', 'super-student', 'captain-awesome']
             },
+            5: {
+                category: "Robot Kingdom",
+                avatars: [
+                    createAvatarData('bottts', 'cyber-warrior'),
+                    createAvatarData('bottts', 'mecha-guardian'),
+                    createAvatarData('bottts', 'robo-explorer'),
+                    createAvatarData('bottts', 'tech-ninja'),
+                    createAvatarData('bottts', 'droid-wizard'),
+                    createAvatarData('bottts', 'cyber-phoenix'),
+                    createAvatarData('bottts', 'mecha-dragon'),
+                    createAvatarData('bottts', 'robo-knight'),
+                    createAvatarData('bottts', 'pixel-hero'),
+                    createAvatarData('bottts', 'droid-master'),
+                    createAvatarData('bottts', 'cyber-wolf'),
+                    createAvatarData('bottts', 'tech-eagle')
+                ]
+            },
             6: {
                 category: "Animal Kingdom",
                 avatars: ['panda-master', 'koala-warrior', 'fox-genius']
@@ -1454,28 +1471,38 @@
 
         // Keep original basic avatars available at all levels + add exciting new ones
         const basicAvatars = [
-            // Original positive traits
+            // Original positive traits (adventurer style)
             'sunny', 'friendly', 'cool', 'awesome', 'super', 'star', 'champion', 'hero', 'winner', 'amazing', 
             'fantastic', 'wonderful', 'brilliant', 'clever', 'smart', 'creative', 'artistic', 'musical', 'sporty', 
             'adventurous', 'brave', 'kind', 'gentle', 'caring', 'helpful',
             
-            // Animals
+            // Animals (adventurer style)
             'cat', 'dog', 'tiger', 'lion', 'wolf', 'eagle', 'dolphin', 'bear', 'elephant', 'giraffe',
             'monkey', 'rabbit', 'turtle', 'owl', 'penguin', 'kangaroo', 'zebra', 'shark', 'whale', 'butterfly',
             
-            // Professions (Heroes)
+            // Professions (adventurer style)
             'doctor', 'firefighter', 'police-officer', 'teacher', 'scientist', 'engineer', 'pilot', 'chef',
             'artist', 'musician', 'athlete', 'dancer', 'photographer', 'detective', 'nurse', 'builder',
             
-            // Fantasy & Magical
+            // Fantasy & Magical (adventurer style)
             'dragon', 'unicorn', 'phoenix', 'pegasus', 'griffin', 'fairy', 'elf', 'wizard', 'knight', 'mage',
             'angel', 'genie', 'centaur', 'mermaid', 'pixie',
             
-            // Space & Sci-Fi
+            // Space & Sci-Fi (adventurer style)
             'alien', 'robot', 'cyborg', 'android', 'martian', 'cosmic-being',
             
-            // Objects & Vehicles (as character concepts)
-            'rocket', 'car', 'plane', 'boat', 'train', 'bicycle', 'skateboard'
+            // Objects & Vehicles (adventurer style)
+            'rocket', 'car', 'plane', 'boat', 'train', 'bicycle', 'skateboard',
+            
+            // FREE Bottts Collection - Robot Animals & Creatures (always available)
+            createAvatarData('bottts', 'robo-cat'),
+            createAvatarData('bottts', 'cyber-dog'), 
+            createAvatarData('bottts', 'mecha-bear'),
+            createAvatarData('bottts', 'pixel-bird'),
+            createAvatarData('bottts', 'droid-fish'),
+            createAvatarData('bottts', 'bot-bunny'),
+            createAvatarData('bottts', 'tech-turtle'),
+            createAvatarData('bottts', 'robo-owl')
         ];
 
         // Helper function to get current XP (separate from kudos points)
@@ -1518,9 +1545,36 @@
             return lockedAvatars;
         }
 
-        // Function to generate avatar URL - using adventurer style for students, different from main app's bottts
-        function getAvatarUrl(seed) {
-            return `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(seed)}`;
+        // Function to generate avatar URL - supports both old seed format and new JSON format
+        function getAvatarUrl(avatarData) {
+            // Handle both old string format and new JSON format for backward compatibility
+            if (typeof avatarData === 'string') {
+                // Old format - just seed, use adventurer style
+                return `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(avatarData)}`;
+            } else if (typeof avatarData === 'object' && avatarData.style && avatarData.seed) {
+                // New format - {style, seed}
+                const style = avatarData.style || 'adventurer';
+                const seed = avatarData.seed || 'default';
+                return `https://api.dicebear.com/7.x/${style}/svg?seed=${encodeURIComponent(seed)}`;
+            } else {
+                // Fallback - treat as string seed
+                return `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(avatarData)}`;
+            }
+        }
+
+        // Helper function to create avatar data object
+        function createAvatarData(style, seed) {
+            return { style: style, seed: seed };
+        }
+
+        // Helper function to get avatar display name
+        function getAvatarDisplayName(avatarData) {
+            if (typeof avatarData === 'string') {
+                return avatarData;
+            } else if (typeof avatarData === 'object' && avatarData.seed) {
+                return avatarData.seed;
+            }
+            return 'avatar';
         }
 
         // XP requirements for each level
@@ -1778,7 +1832,7 @@
             
             const img = document.createElement('img');
             img.src = getAvatarUrl(avatar);
-            img.alt = avatar;
+            img.alt = getAvatarDisplayName(avatar);
             option.appendChild(img);
             
             if (isLocked) {
@@ -1876,6 +1930,18 @@
 
         async function saveAvatarToDatabase(avatar) {
             try {
+                // Convert avatar to JSON string for database storage
+                let avatarData;
+                if (typeof avatar === 'string') {
+                    // Old format - just seed
+                    avatarData = avatar;
+                } else if (typeof avatar === 'object' && avatar.style && avatar.seed) {
+                    // New format - JSON object
+                    avatarData = JSON.stringify(avatar);
+                } else {
+                    avatarData = String(avatar);
+                }
+                
                 const response = await fetch('https://classkudos.org/.netlify/functions/updateStudentAvatar', {
                     method: 'POST',
                     headers: {
@@ -1883,13 +1949,15 @@
                     },
                     body: JSON.stringify({
                         studentId: currentStudent.id,
-                        avatar: avatar
+                        avatar: avatarData
                     })
                 });
                 
                 const data = await response.json();
                 if (data.success) {
                     console.log('Avatar saved to database successfully');
+                    // Store in localStorage for quick access
+                    localStorage.setItem('studentAvatar', avatarData);
                 } else {
                     console.error('Failed to save avatar to database:', data.error);
                 }
@@ -1901,21 +1969,37 @@
         function loadSavedAvatar() {
             // First try to load from student data (database)
             if (currentStudent && currentStudent.avatar_data) {
-                // Check if it's already a URL or a seed
-                if (currentStudent.avatar_data.startsWith('http')) {
-                    selectedAvatar = currentStudent.avatar_data.split('seed=')[1] || 'default';
-                } else {
-                    selectedAvatar = currentStudent.avatar_data;
+                try {
+                    // Try to parse as JSON first (new format)
+                    const avatarData = JSON.parse(currentStudent.avatar_data);
+                    selectedAvatar = avatarData; // Object with style and seed
+                } catch {
+                    // Fallback to old format processing
+                    if (currentStudent.avatar_data.startsWith('http')) {
+                        selectedAvatar = currentStudent.avatar_data.split('seed=')[1] || 'default';
+                    } else {
+                        selectedAvatar = currentStudent.avatar_data; // String seed
+                    }
                 }
                 document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar);
-                localStorage.setItem('studentAvatar', selectedAvatar);
+                localStorage.setItem('studentAvatar', typeof selectedAvatar === 'string' ? selectedAvatar : JSON.stringify(selectedAvatar));
                 return;
             }
             
             // Fall back to localStorage
             const saved = localStorage.getItem('studentAvatar');
             if (saved) {
-                selectedAvatar = saved;
+                try {
+                    // Try to parse as JSON first
+                    selectedAvatar = JSON.parse(saved);
+                } catch {
+                    // Fallback to string format
+                    selectedAvatar = saved;
+                }
+                document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar);
+            } else {
+                // Default avatar
+                selectedAvatar = 'happy';
                 document.getElementById('avatarDisplay').src = getAvatarUrl(selectedAvatar);
             }
         }
