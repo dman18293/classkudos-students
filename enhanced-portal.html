@@ -3046,27 +3046,54 @@
                     controller.abort();
                 }, timeoutDuration);
                 
-                // CASE SENSITIVITY FIX: Try different case variations on retries
+                // CASE SENSITIVITY FIX + CUSTOM CODE DETECTION: Try different case variations and code formats
                 let classNameToUse = currentClass;
+                let isCustomCode = /^\d{4}$/.test(currentClass); // Check if it's a 4-digit code
+                
                 if (retryCount === 1) {
-                    // Try proper case (first letter capital, rest lowercase)
-                    classNameToUse = currentClass.charAt(0).toUpperCase() + currentClass.slice(1).toLowerCase();
-                    logVisible(`🔤 Try 2: Proper case "${classNameToUse}"`);
+                    if (isCustomCode) {
+                        // For custom codes, try using student's actual class name from their data
+                        classNameToUse = currentStudent?.className || currentStudent?.class || currentClass;
+                        logVisible(`🔢 Try 2: Using student class "${classNameToUse}" (code: ${currentClass})`);
+                    } else {
+                        // Try proper case (first letter capital, rest lowercase)
+                        classNameToUse = currentClass.charAt(0).toUpperCase() + currentClass.slice(1).toLowerCase();
+                        logVisible(`🔤 Try 2: Proper case "${classNameToUse}"`);
+                    }
                 } else if (retryCount === 2) {
-                    // Try all lowercase
-                    classNameToUse = currentClass.toLowerCase();
-                    logVisible(`🔤 Try 3: Lowercase "${classNameToUse}"`);
+                    if (isCustomCode) {
+                        // For custom codes, try different API endpoint or parameter
+                        classNameToUse = currentClass; // Keep original code
+                        logVisible(`🔢 Try 3: Custom code lookup "${classNameToUse}"`);
+                    } else {
+                        // Try all lowercase
+                        classNameToUse = currentClass.toLowerCase();
+                        logVisible(`🔤 Try 3: Lowercase "${classNameToUse}"`);
+                    }
                 } else {
-                    logVisible(`🔤 Try 1: Original "${classNameToUse}"`);
+                    logVisible(`${isCustomCode ? '🔢' : '🔤'} Try 1: Original "${classNameToUse}" ${isCustomCode ? '(4-digit code detected)' : ''}`);
                 }
                 
-                // Multiple URL strategies with cache busting - prioritize relative path
+                // Multiple URL strategies with cache busting - handle custom codes differently
                 const cacheBuster = Date.now();
-                const apiUrls = [
-                    `/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(classNameToUse)}&cb=${cacheBuster}`,
-                    `https://classkudos.org/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(classNameToUse)}&cb=${cacheBuster}`,
-                    `https://classkudos-students.netlify.app/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(classNameToUse)}&cb=${cacheBuster}`
-                ];
+                let apiUrls;
+                
+                if (isCustomCode && retryCount === 2) {
+                    // For custom 4-digit codes, try using studentCode parameter instead of classCode
+                    apiUrls = [
+                        `/.netlify/functions/getLeaderboard?studentCode=${encodeURIComponent(classNameToUse)}&cb=${cacheBuster}`,
+                        `https://classkudos.org/.netlify/functions/getLeaderboard?studentCode=${encodeURIComponent(classNameToUse)}&cb=${cacheBuster}`,
+                        `https://classkudos-students.netlify.app/.netlify/functions/getLeaderboard?studentCode=${encodeURIComponent(classNameToUse)}&cb=${cacheBuster}`
+                    ];
+                    logVisible(`🔧 Using studentCode param for custom code`);
+                } else {
+                    // Standard classCode parameter
+                    apiUrls = [
+                        `/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(classNameToUse)}&cb=${cacheBuster}`,
+                        `https://classkudos.org/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(classNameToUse)}&cb=${cacheBuster}`,
+                        `https://classkudos-students.netlify.app/.netlify/functions/getLeaderboard?classCode=${encodeURIComponent(classNameToUse)}&cb=${cacheBuster}`
+                    ];
+                }
                 
                 const apiUrl = apiUrls[retryCount] || apiUrls[0];
                 console.log(`🔗 DIAGNOSTIC: API URL: ${apiUrl}`);
@@ -3095,7 +3122,9 @@
                 }
                 
                 logVisible(`👤 Student: ${currentStudent?.name} (${currentStudentCode})`);
+                logVisible(`🏫 Class: ${classNameToUse} ${isCustomCode ? '(Custom Code)' : '(Standard Name)'}`);
                 console.log(`🔗 DIAGNOSTIC: Final URL: ${finalUrl}`);
+                console.log(`🔍 DIAGNOSTIC: Custom code detected: ${isCustomCode}, Original: "${currentClass}", Using: "${classNameToUse}"`);
                 
                 const response = await fetch(finalUrl, fetchOptions);
                 logVisible(`📥 Fetch completed! Status: ${response.status}`);
