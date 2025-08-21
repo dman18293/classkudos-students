@@ -1063,6 +1063,7 @@
                 <button class="nav-item" onclick="showSection('myKudos')">My Kudos</button>
                 <button class="nav-item" onclick="showSection('leaderboard')">Leaderboard</button>
                 <button class="nav-item" onclick="showSection('kudosColosseum')">🏛️ Kudos Colosseum</button>
+                <button class="nav-item" onclick="showSection('morphemeMastery')">📚 Morpheme Mastery</button>
                 <div id="connection-status" style="color: #4CAF50; font-size: 12px; margin: 0 10px; display: flex; align-items: center;">
                     🟢 Connected
                 </div>
@@ -1232,6 +1233,66 @@
                             <div id="resultsDisplay"></div>
                             <button onclick="resetGame()">Return to Arena</button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Morpheme Mastery Section -->
+        <div id="morphemeMastery" class="content-section">
+            <h2>📚 Morpheme Mastery</h2>
+            
+            <div id="morphemeContent">
+                <div style="text-align: center; padding: 40px;">
+                    <h4>🧠 Choose Your Challenge</h4>
+                    <p>Master prefixes, suffixes, and root words to build vocabulary!</p>
+                    
+                    <div class="morpheme-selection" style="margin: 20px 0;">
+                        <button class="challenge-btn" onclick="startMorphemeChallenge('prefixes')">
+                            🔤 Prefix Challenge
+                        </button>
+                        <button class="challenge-btn" onclick="startMorphemeChallenge('suffixes')">
+                            🔤 Suffix Challenge
+                        </button>
+                        <button class="challenge-btn" onclick="startMorphemeChallenge('latin')">
+                            🏛️ Latin Roots
+                        </button>
+                        <button class="challenge-btn" onclick="startMorphemeChallenge('greek')">
+                            🇬🇷 Greek Roots
+                        </button>
+                        <button class="challenge-btn" onclick="startMorphemeChallenge('mixed')">
+                            🎯 Mixed Challenge
+                        </button>
+                    </div>
+                    
+                    <div id="morphemeDifficultySelector" class="hidden" style="margin: 20px 0;">
+                        <h4 id="morphemeDifficultyTitle">Choose Difficulty</h4>
+                        <div id="morphemeDifficultyOptions" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                            <!-- Dynamic difficulty options will be inserted here -->
+                        </div>
+                    </div>
+                    
+                    <div id="morphemeGameArea" class="hidden">
+                        <div id="morphemeGameStats" style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                            <span>Score: <span id="morphemeCurrentScore">0</span></span>
+                            <span>Time: <span id="morphemeTimeLeft">60</span>s</span>
+                            <span>Streak: <span id="morphemeStreak">0</span></span>
+                        </div>
+                        
+                        <div id="morphemeQuestionArea" style="margin: 30px 0;">
+                            <div id="morphemeQuestion" style="font-size: 1.5em; margin-bottom: 20px; text-align: center;"></div>
+                            <div id="morphemeChoices" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 600px; margin: 0 auto;">
+                                <!-- Multiple choice options will be inserted here -->
+                            </div>
+                        </div>
+                        
+                        <div id="morphemeFeedback" style="text-align: center; margin: 20px 0; font-size: 1.2em;"></div>
+                    </div>
+                    
+                    <div id="morphemeGameResults" class="hidden">
+                        <h4>🎉 Challenge Complete!</h4>
+                        <div id="morphemeResultsDisplay"></div>
+                        <button onclick="resetMorphemeGame()">Return to Challenges</button>
                     </div>
                 </div>
             </div>
@@ -2788,7 +2849,31 @@
                 loadLeaderboard();
             } else if (section === 'kudosColosseum') {
                 initializeColosseum();
+            } else if (section === 'morphemeMastery') {
+                initializeMorphemeMastery();
             }
+        }
+
+        function initializeMorphemeMastery() {
+            // Reset to selection screen if coming from another section
+            document.getElementById('morphemeGameResults').classList.add('hidden');
+            document.getElementById('morphemeGameArea').classList.add('hidden');
+            document.getElementById('morphemeDifficultySelector').classList.add('hidden');
+            document.querySelector('.morpheme-selection').classList.remove('hidden');
+            
+            // Reset game state
+            currentMorphemeGame = {
+                type: null,
+                difficulty: null,
+                score: 0,
+                streak: 0,
+                timeLeft: 90,
+                totalProblems: 0,
+                correctAnswers: 0,
+                problems: [],
+                currentProblem: null,
+                gameTimer: null
+            };
         }
 
         // ===============================
@@ -2867,6 +2952,111 @@
                 xpReward: 25,
                 icon: '👑'
             }
+        };
+
+        // Morpheme Mastery Data
+        const morphemeData = {
+            prefixes: [
+                { morpheme: 'un-', meaning: 'not, opposite of', example: 'unhappy' },
+                { morpheme: 're-', meaning: 'again, back', example: 'rewrite' },
+                { morpheme: 'pre-', meaning: 'before', example: 'preview' },
+                { morpheme: 'dis-', meaning: 'not, opposite of', example: 'disagree' },
+                { morpheme: 'mis-', meaning: 'wrong, bad', example: 'mistake' },
+                { morpheme: 'over-', meaning: 'too much, above', example: 'overflow' },
+                { morpheme: 'under-', meaning: 'below, not enough', example: 'undercooked' },
+                { morpheme: 'sub-', meaning: 'under, below', example: 'submarine' },
+                { morpheme: 'super-', meaning: 'above, beyond', example: 'superhero' },
+                { morpheme: 'anti-', meaning: 'against', example: 'antibiotic' },
+                { morpheme: 'auto-', meaning: 'self', example: 'automatic' },
+                { morpheme: 'co-', meaning: 'with, together', example: 'cooperate' },
+                { morpheme: 'ex-', meaning: 'out of, former', example: 'exit' },
+                { morpheme: 'inter-', meaning: 'between', example: 'international' },
+                { morpheme: 'non-', meaning: 'not', example: 'nonfiction' },
+                { morpheme: 'semi-', meaning: 'half, partly', example: 'semicircle' },
+                { morpheme: 'bi-', meaning: 'two', example: 'bicycle' },
+                { morpheme: 'tri-', meaning: 'three', example: 'triangle' },
+                { morpheme: 'multi-', meaning: 'many', example: 'multiple' },
+                { morpheme: 'uni-', meaning: 'one', example: 'unicycle' }
+            ],
+            suffixes: [
+                { morpheme: '-ed', meaning: 'past tense', example: 'walked' },
+                { morpheme: '-ing', meaning: 'present participle', example: 'walking' },
+                { morpheme: '-er', meaning: 'one who, more', example: 'teacher' },
+                { morpheme: '-est', meaning: 'most', example: 'tallest' },
+                { morpheme: '-ly', meaning: 'in a way', example: 'quickly' },
+                { morpheme: '-tion', meaning: 'act of, state of', example: 'action' },
+                { morpheme: '-sion', meaning: 'act of, state of', example: 'decision' },
+                { morpheme: '-ness', meaning: 'state of being', example: 'kindness' },
+                { morpheme: '-ment', meaning: 'result of action', example: 'movement' },
+                { morpheme: '-ful', meaning: 'full of', example: 'helpful' },
+                { morpheme: '-less', meaning: 'without', example: 'hopeless' },
+                { morpheme: '-able', meaning: 'capable of', example: 'readable' },
+                { morpheme: '-ible', meaning: 'capable of', example: 'visible' },
+                { morpheme: '-ous', meaning: 'full of', example: 'dangerous' },
+                { morpheme: '-al', meaning: 'relating to', example: 'musical' },
+                { morpheme: '-ic', meaning: 'relating to', example: 'historic' },
+                { morpheme: '-ive', meaning: 'having the quality of', example: 'active' },
+                { morpheme: '-y', meaning: 'having the quality of', example: 'rainy' },
+                { morpheme: '-ward', meaning: 'in the direction of', example: 'forward' },
+                { morpheme: '-ship', meaning: 'state of being', example: 'friendship' }
+            ],
+            latin: [
+                { morpheme: 'port', meaning: 'carry', example: 'transport' },
+                { morpheme: 'dict', meaning: 'say, speak', example: 'dictionary' },
+                { morpheme: 'spect', meaning: 'look, see', example: 'inspect' },
+                { morpheme: 'ject', meaning: 'throw', example: 'project' },
+                { morpheme: 'tract', meaning: 'pull, drag', example: 'attract' },
+                { morpheme: 'struct', meaning: 'build', example: 'construct' },
+                { morpheme: 'rupt', meaning: 'break', example: 'erupt' },
+                { morpheme: 'scrib/script', meaning: 'write', example: 'describe' },
+                { morpheme: 'vid/vis', meaning: 'see', example: 'video' },
+                { morpheme: 'aud', meaning: 'hear', example: 'audio' },
+                { morpheme: 'cap/cept', meaning: 'take, seize', example: 'capture' },
+                { morpheme: 'mit/miss', meaning: 'send', example: 'transmit' },
+                { morpheme: 'ped/pod', meaning: 'foot', example: 'pedal' },
+                { morpheme: 'man', meaning: 'hand', example: 'manual' },
+                { morpheme: 'duc/duct', meaning: 'lead', example: 'conduct' },
+                { morpheme: 'fac/fact', meaning: 'make, do', example: 'factory' },
+                { morpheme: 'loc', meaning: 'place', example: 'location' },
+                { morpheme: 'mob/mov', meaning: 'move', example: 'mobile' },
+                { morpheme: 'terr', meaning: 'earth, land', example: 'territory' },
+                { morpheme: 'temp', meaning: 'time', example: 'temporary' }
+            ],
+            greek: [
+                { morpheme: 'bio', meaning: 'life', example: 'biology' },
+                { morpheme: 'geo', meaning: 'earth', example: 'geography' },
+                { morpheme: 'photo', meaning: 'light', example: 'photograph' },
+                { morpheme: 'graph', meaning: 'write, draw', example: 'autograph' },
+                { morpheme: 'tele', meaning: 'far, distant', example: 'telephone' },
+                { morpheme: 'auto', meaning: 'self', example: 'autobiography' },
+                { morpheme: 'micro', meaning: 'small', example: 'microscope' },
+                { morpheme: 'macro', meaning: 'large', example: 'macroscope' },
+                { morpheme: 'phil', meaning: 'love', example: 'philosophy' },
+                { morpheme: 'phon', meaning: 'sound', example: 'microphone' },
+                { morpheme: 'scope', meaning: 'see, look', example: 'telescope' },
+                { morpheme: 'meter', meaning: 'measure', example: 'thermometer' },
+                { morpheme: 'therm', meaning: 'heat', example: 'thermal' },
+                { morpheme: 'chron', meaning: 'time', example: 'chronological' },
+                { morpheme: 'demo', meaning: 'people', example: 'democracy' },
+                { morpheme: 'psych', meaning: 'mind, soul', example: 'psychology' },
+                { morpheme: 'log', meaning: 'study, word', example: 'dialogue' },
+                { morpheme: 'path', meaning: 'feeling, disease', example: 'sympathy' },
+                { morpheme: 'ology', meaning: 'study of', example: 'biology' },
+                { morpheme: 'phobia', meaning: 'fear of', example: 'claustrophobia' }
+            ]
+        };
+
+        let currentMorphemeGame = {
+            type: null,
+            difficulty: null,
+            score: 0,
+            streak: 0,
+            timeLeft: 60,
+            totalProblems: 0,
+            correctAnswers: 0,
+            problems: [],
+            currentProblem: null,
+            gameTimer: null
         };
 
         function playAudio(isCorrect) {
@@ -3718,6 +3908,434 @@
             // Test network performance every 5 minutes
             setInterval(measureNetworkPerformance, 300000);
         });
+
+        // ===============================
+        // MORPHEME MASTERY GAME FUNCTIONS
+        // ===============================
+
+        function startMorphemeChallenge(type) {
+            currentMorphemeGame.type = type;
+            document.querySelector('.morpheme-selection').classList.add('hidden');
+            
+            // Set up difficulty options based on challenge type
+            const difficultyContainer = document.getElementById('morphemeDifficultyOptions');
+            const difficultyTitle = document.getElementById('morphemeDifficultyTitle');
+            
+            let options = [];
+            let titleText = '';
+            
+            switch(type) {
+                case 'prefixes':
+                    titleText = 'Choose Prefix Difficulty';
+                    options = [
+                        { id: 'easy', text: 'Basic Prefixes (10 questions)', points: '3 XP' },
+                        { id: 'medium', text: 'Advanced Prefixes (15 questions)', points: '4 XP' },
+                        { id: 'hard', text: 'All Prefixes (20 questions)', points: '5 XP' }
+                    ];
+                    break;
+                case 'suffixes':
+                    titleText = 'Choose Suffix Difficulty';
+                    options = [
+                        { id: 'easy', text: 'Basic Suffixes (10 questions)', points: '3 XP' },
+                        { id: 'medium', text: 'Advanced Suffixes (15 questions)', points: '4 XP' },
+                        { id: 'hard', text: 'All Suffixes (20 questions)', points: '5 XP' }
+                    ];
+                    break;
+                case 'latin':
+                    titleText = 'Choose Latin Roots Difficulty';
+                    options = [
+                        { id: 'easy', text: 'Basic Latin Roots (10 questions)', points: '4 XP' },
+                        { id: 'medium', text: 'Advanced Latin Roots (15 questions)', points: '6 XP' },
+                        { id: 'hard', text: 'All Latin Roots (20 questions)', points: '8 XP' }
+                    ];
+                    break;
+                case 'greek':
+                    titleText = 'Choose Greek Roots Difficulty';
+                    options = [
+                        { id: 'easy', text: 'Basic Greek Roots (10 questions)', points: '4 XP' },
+                        { id: 'medium', text: 'Advanced Greek Roots (15 questions)', points: '6 XP' },
+                        { id: 'hard', text: 'All Greek Roots (20 questions)', points: '8 XP' }
+                    ];
+                    break;
+                case 'mixed':
+                    titleText = 'Choose Mixed Challenge Difficulty';
+                    options = [
+                        { id: 'easy', text: 'Mixed Easy (15 questions)', points: '5 XP' },
+                        { id: 'medium', text: 'Mixed Advanced (20 questions)', points: '7 XP' },
+                        { id: 'hard', text: 'Mixed Expert (25 questions)', points: '10 XP' }
+                    ];
+                    break;
+            }
+            
+            difficultyTitle.textContent = titleText;
+            
+            // Generate HTML for difficulty buttons
+            difficultyContainer.innerHTML = options.map(option => 
+                `<button class="difficulty-btn" onclick="startMorphemeGame('${option.id}')">
+                    ${option.text}<br><small style="color: #888;">${option.points}</small>
+                </button>`
+            ).join('');
+            
+            document.getElementById('morphemeDifficultySelector').classList.remove('hidden');
+        }
+
+        function startMorphemeGame(difficulty) {
+            currentMorphemeGame.difficulty = difficulty;
+            currentMorphemeGame.score = 0;
+            currentMorphemeGame.streak = 0;
+            currentMorphemeGame.timeLeft = 90; // 90 seconds for reading comprehension
+            currentMorphemeGame.totalProblems = 0;
+            currentMorphemeGame.correctAnswers = 0;
+            
+            // Hide difficulty selector and show game area
+            document.getElementById('morphemeDifficultySelector').classList.add('hidden');
+            document.getElementById('morphemeGameArea').classList.remove('hidden');
+            
+            // Generate problems based on type and difficulty
+            generateMorphemeProblems();
+            
+            // Start the game
+            nextMorphemeProblem();
+            startMorphemeTimer();
+        }
+
+        function generateMorphemeProblems() {
+            currentMorphemeGame.problems = [];
+            
+            let sourceData = [];
+            let numProblems = 15;
+            
+            // Determine source data and number of problems
+            switch(currentMorphemeGame.difficulty) {
+                case 'easy':
+                    numProblems = 10;
+                    break;
+                case 'medium':
+                    numProblems = 15;
+                    break;
+                case 'hard':
+                    numProblems = 20;
+                    break;
+            }
+            
+            // Get source data based on challenge type
+            if (currentMorphemeGame.type === 'mixed') {
+                numProblems = currentMorphemeGame.difficulty === 'easy' ? 15 : 
+                             currentMorphemeGame.difficulty === 'medium' ? 20 : 25;
+                sourceData = [
+                    ...morphemeData.prefixes.slice(0, 10),
+                    ...morphemeData.suffixes.slice(0, 10),
+                    ...morphemeData.latin.slice(0, 10),
+                    ...morphemeData.greek.slice(0, 10)
+                ];
+            } else {
+                sourceData = morphemeData[currentMorphemeGame.type];
+                if (currentMorphemeGame.difficulty === 'easy') {
+                    sourceData = sourceData.slice(0, Math.min(10, sourceData.length));
+                } else if (currentMorphemeGame.difficulty === 'medium') {
+                    sourceData = sourceData.slice(0, Math.min(15, sourceData.length));
+                }
+            }
+            
+            // Generate problems
+            for (let i = 0; i < numProblems; i++) {
+                const problem = createMorphemeProblem(sourceData);
+                currentMorphemeGame.problems.push(problem);
+            }
+        }
+
+        function createMorphemeProblem(sourceData) {
+            // Choose a random morpheme for the correct answer
+            const correctMorpheme = sourceData[Math.floor(Math.random() * sourceData.length)];
+            
+            // Randomly choose question type
+            const questionTypes = ['meaning-to-morpheme', 'morpheme-to-meaning'];
+            const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+            
+            let question, correctAnswer, options;
+            
+            if (questionType === 'meaning-to-morpheme') {
+                question = `Which morpheme means "${correctMorpheme.meaning}"?`;
+                correctAnswer = correctMorpheme.morpheme;
+                
+                // Create 3 wrong options
+                const wrongOptions = [];
+                while (wrongOptions.length < 3) {
+                    const randomMorpheme = sourceData[Math.floor(Math.random() * sourceData.length)];
+                    if (randomMorpheme.morpheme !== correctMorpheme.morpheme && 
+                        !wrongOptions.includes(randomMorpheme.morpheme)) {
+                        wrongOptions.push(randomMorpheme.morpheme);
+                    }
+                }
+                options = [correctAnswer, ...wrongOptions];
+            } else {
+                question = `What does the morpheme "${correctMorpheme.morpheme}" mean?`;
+                correctAnswer = correctMorpheme.meaning;
+                
+                // Create 3 wrong options
+                const wrongOptions = [];
+                while (wrongOptions.length < 3) {
+                    const randomMorpheme = sourceData[Math.floor(Math.random() * sourceData.length)];
+                    if (randomMorpheme.meaning !== correctMorpheme.meaning && 
+                        !wrongOptions.includes(randomMorpheme.meaning)) {
+                        wrongOptions.push(randomMorpheme.meaning);
+                    }
+                }
+                options = [correctAnswer, ...wrongOptions];
+            }
+            
+            // Shuffle options
+            options.sort(() => Math.random() - 0.5);
+            
+            return {
+                question: question,
+                correctAnswer: correctAnswer,
+                options: options,
+                example: correctMorpheme.example,
+                morpheme: correctMorpheme.morpheme
+            };
+        }
+
+        function nextMorphemeProblem() {
+            if (currentMorphemeGame.totalProblems >= currentMorphemeGame.problems.length || 
+                currentMorphemeGame.timeLeft <= 0) {
+                endMorphemeGame();
+                return;
+            }
+            
+            currentMorphemeGame.currentProblem = currentMorphemeGame.problems[currentMorphemeGame.totalProblems];
+            
+            // Display the question
+            document.getElementById('morphemeQuestion').innerHTML = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <div style="font-size: 1.3em; font-weight: bold; margin-bottom: 10px;">
+                        ${currentMorphemeGame.currentProblem.question}
+                    </div>
+                    <div style="font-size: 0.9em; color: #666;">
+                        Example word: <strong>${currentMorphemeGame.currentProblem.example}</strong>
+                    </div>
+                </div>
+            `;
+            
+            // Display multiple choice options
+            const choicesHTML = currentMorphemeGame.currentProblem.options.map((option, index) => 
+                `<button class="choice-btn" onclick="selectMorphemeAnswer('${option}')" 
+                         style="padding: 15px; border: 2px solid #ddd; border-radius: 8px; 
+                                background: white; cursor: pointer; font-size: 1.1em;">
+                    ${option}
+                </button>`
+            ).join('');
+            
+            document.getElementById('morphemeChoices').innerHTML = choicesHTML;
+            
+            // Clear previous feedback
+            document.getElementById('morphemeFeedback').innerHTML = '';
+            
+            // Update game stats
+            updateMorphemeGameStats();
+        }
+
+        function selectMorphemeAnswer(selectedAnswer) {
+            const correctAnswer = currentMorphemeGame.currentProblem.correctAnswer;
+            currentMorphemeGame.totalProblems++;
+            
+            if (selectedAnswer === correctAnswer) {
+                // Correct answer!
+                currentMorphemeGame.correctAnswers++;
+                currentMorphemeGame.streak++;
+                
+                // Difficulty-based points
+                let points;
+                switch(currentMorphemeGame.difficulty) {
+                    case 'easy': points = currentMorphemeGame.type === 'prefixes' || currentMorphemeGame.type === 'suffixes' ? 3 : 4; break;
+                    case 'medium': points = currentMorphemeGame.type === 'prefixes' || currentMorphemeGame.type === 'suffixes' ? 4 : 6; break;
+                    case 'hard': points = currentMorphemeGame.type === 'prefixes' || currentMorphemeGame.type === 'suffixes' ? 5 : 8; break;
+                    default: points = 5;
+                }
+                
+                if (currentMorphemeGame.type === 'mixed') {
+                    points = currentMorphemeGame.difficulty === 'easy' ? 5 : 
+                             currentMorphemeGame.difficulty === 'medium' ? 7 : 10;
+                }
+                
+                // Streak bonus
+                if (currentMorphemeGame.streak >= 5) points += 1;
+                if (currentMorphemeGame.streak >= 10) points += 2;
+                
+                currentMorphemeGame.score += points;
+                
+                document.getElementById('morphemeFeedback').innerHTML = `
+                    <span style="color: green; font-weight: bold;">✅ Correct! +${points} XP</span>
+                    ${currentMorphemeGame.streak >= 5 ? `<br><span style="color: gold;">🔥 ${currentMorphemeGame.streak} streak bonus!</span>` : ''}
+                `;
+                
+            } else {
+                // Wrong answer
+                currentMorphemeGame.streak = 0;
+                document.getElementById('morphemeFeedback').innerHTML = `
+                    <span style="color: red; font-weight: bold;">❌ Incorrect</span>
+                    <br><span style="color: #666;">Correct answer: <strong>${correctAnswer}</strong></span>
+                `;
+            }
+            
+            // Disable all choice buttons
+            const choiceBtns = document.querySelectorAll('.choice-btn');
+            choiceBtns.forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent.trim() === correctAnswer) {
+                    btn.style.background = '#d4edda';
+                    btn.style.borderColor = '#28a745';
+                } else if (btn.textContent.trim() === selectedAnswer && selectedAnswer !== correctAnswer) {
+                    btn.style.background = '#f8d7da';
+                    btn.style.borderColor = '#dc3545';
+                }
+            });
+            
+            // Continue to next problem after delay
+            setTimeout(() => {
+                nextMorphemeProblem();
+            }, 2500);
+        }
+
+        function updateMorphemeGameStats() {
+            document.getElementById('morphemeCurrentScore').textContent = currentMorphemeGame.score;
+            document.getElementById('morphemeTimeLeft').textContent = currentMorphemeGame.timeLeft;
+            document.getElementById('morphemeStreak').textContent = currentMorphemeGame.streak;
+        }
+
+        function startMorphemeTimer() {
+            currentMorphemeGame.gameTimer = setInterval(() => {
+                currentMorphemeGame.timeLeft--;
+                updateMorphemeGameStats();
+                
+                if (currentMorphemeGame.timeLeft <= 0) {
+                    endMorphemeGame();
+                }
+            }, 1000);
+        }
+
+        function endMorphemeGame() {
+            // Stop timer
+            if (currentMorphemeGame.gameTimer) {
+                clearInterval(currentMorphemeGame.gameTimer);
+                currentMorphemeGame.gameTimer = null;
+            }
+            
+            // Calculate final stats
+            const accuracy = currentMorphemeGame.totalProblems > 0 ? 
+                Math.round((currentMorphemeGame.correctAnswers / currentMorphemeGame.totalProblems) * 100) : 0;
+            
+            // Bonus XP for performance
+            let bonusXP = 0;
+            if (accuracy >= 90) bonusXP += 3;
+            else if (accuracy >= 80) bonusXP += 2;
+            else if (accuracy >= 70) bonusXP += 1;
+            
+            const finalXP = currentMorphemeGame.score + bonusXP;
+            
+            // Hide game area and show results
+            document.getElementById('morphemeGameArea').classList.add('hidden');
+            document.getElementById('morphemeGameResults').classList.remove('hidden');
+            
+            // Display results
+            document.getElementById('morphemeResultsDisplay').innerHTML = `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h4>📚 Challenge Results</h4>
+                    <p><strong>Questions Answered:</strong> ${currentMorphemeGame.correctAnswers}/${currentMorphemeGame.totalProblems}</p>
+                    <p><strong>Accuracy:</strong> ${accuracy}%</p>
+                    <p><strong>Time Remaining:</strong> ${currentMorphemeGame.timeLeft} seconds</p>
+                    <p><strong>Best Streak:</strong> ${currentMorphemeGame.streak}</p>
+                    <p><strong>Base XP:</strong> ${currentMorphemeGame.score}</p>
+                    <p><strong>Performance Bonus:</strong> +${bonusXP} XP</p>
+                    <h3 style="color: gold;">Total XP Earned: ${finalXP} ⭐</h3>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    ${accuracy >= 90 ? '🏆 Outstanding vocabulary mastery!' : 
+                      accuracy >= 80 ? '🥇 Great morpheme knowledge!' : 
+                      accuracy >= 70 ? '🥈 Good understanding!' : 
+                      '🥉 Keep studying those word parts!'}
+                </div>
+            `;
+            
+            // Award XP to student
+            awardMorphemeXP(finalXP);
+        }
+
+        async function awardMorphemeXP(xpAmount) {
+            try {
+                const newTotalPoints = (parseInt(localStorage.getItem('studentPoints') || '0')) + xpAmount;
+                localStorage.setItem('studentPoints', newTotalPoints.toString());
+                
+                if (currentStudent) {
+                    currentStudent.points = newTotalPoints;
+                }
+                
+                console.log(`Awarding ${xpAmount} Morpheme XP. New total: ${newTotalPoints}. Updated currentStudent.points: ${currentStudent?.points}`);
+                
+                // Update database
+                try {
+                    const response = await fetch('./.netlify/functions/updateStudentPortal', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            studentId: currentStudent.id,
+                            points: newTotalPoints,
+                            source: 'morpheme_mastery'
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        console.log(`Morpheme Mastery: Awarded ${xpAmount} XP to ${currentStudent.name}. Total XP: ${newTotalPoints}`);
+                        
+                        // Update all displays immediately
+                        document.getElementById('totalKudos').textContent = newTotalPoints;
+                        updateXPDisplay(newTotalPoints);
+                        
+                    } else {
+                        console.error('Failed to save Morpheme XP to database:', data.error);
+                    }
+                    
+                } catch (dbError) {
+                    console.error('Database error for Morpheme XP:', dbError);
+                }
+                
+                // Check for level up
+                const newLevel = calculateLevel(newTotalPoints);
+                const oldLevel = calculateLevel(newTotalPoints - xpAmount);
+                
+                if (newLevel > oldLevel) {
+                    showLevelUpNotification(oldLevel, newLevel);
+                }
+                
+            } catch (error) {
+                console.error('Error awarding Morpheme XP:', error);
+            }
+        }
+
+        function resetMorphemeGame() {
+            // Reset game state
+            currentMorphemeGame = {
+                type: null,
+                difficulty: null,
+                score: 0,
+                streak: 0,
+                timeLeft: 90,
+                totalProblems: 0,
+                correctAnswers: 0,
+                problems: [],
+                currentProblem: null,
+                gameTimer: null
+            };
+            
+            // Show selection screen
+            document.getElementById('morphemeGameResults').classList.add('hidden');
+            document.querySelector('.morpheme-selection').classList.remove('hidden');
+        }
 
     </script>
 </body>
