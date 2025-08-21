@@ -1202,15 +1202,9 @@
                         </div>
                         
                         <div id="difficultySelector" class="hidden" style="margin: 20px 0;">
-                            <h4>Choose Difficulty</h4>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-                                <button class="difficulty-btn" onclick="startGame('easy')">Easy (1-5)</button>
-                                <button class="difficulty-btn" onclick="startGame('medium')">Medium (1-10)</button>
-                                <button class="difficulty-btn" onclick="startGame('hard')">Hard (1-12)</button>
-                                <button class="difficulty-btn" onclick="startGame('multiplication15')">Multiplication (1-15)</button>
-                                <button class="difficulty-btn" onclick="startGame('multiplication20')">Multiplication (1-20)</button>
-                                <button class="difficulty-btn" onclick="startGame('multidigit')">Multi-digit Extreme</button>
-                                <button class="difficulty-btn" onclick="startGame('longdivision')">Long Division</button>
+                            <h4 id="difficultyTitle">Choose Difficulty</h4>
+                            <div id="difficultyOptions" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                                <!-- Dynamic difficulty options will be inserted here -->
                             </div>
                         </div>
                         
@@ -3008,6 +3002,47 @@
         function startChallenge(type) {
             currentGame.type = type;
             document.querySelector('.challenge-selection').classList.add('hidden');
+            
+            // Set up difficulty options based on challenge type
+            const difficultyContainer = document.getElementById('difficultyOptions');
+            const difficultyTitle = document.getElementById('difficultyTitle');
+            
+            let options = [];
+            
+            if (type === 'multiplication') {
+                difficultyTitle.textContent = 'Choose Multiplication Difficulty';
+                options = [
+                    { id: 'easy', text: 'Easy (1-5)', points: '2 XP' },
+                    { id: 'medium', text: 'Medium (1-10)', points: '4 XP' },
+                    { id: 'hard', text: 'Hard (1-12)', points: '10 XP' },
+                    { id: 'multiplication15', text: 'Advanced (1-15)', points: '6 XP' },
+                    { id: 'multiplication20', text: 'Expert (1-20)', points: '8 XP' },
+                    { id: 'multidigit', text: 'Multi-digit Extreme', points: '15 XP' }
+                ];
+            } else if (type === 'division') {
+                difficultyTitle.textContent = 'Choose Division Difficulty';
+                options = [
+                    { id: 'easy', text: 'Easy (1-5)', points: '2 XP' },
+                    { id: 'medium', text: 'Medium (1-10)', points: '4 XP' },
+                    { id: 'hard', text: 'Hard (1-12)', points: '10 XP' },
+                    { id: 'longdivision', text: 'Long Division', points: '12 XP' }
+                ];
+            } else { // mixed
+                difficultyTitle.textContent = 'Choose Mixed Challenge Difficulty';
+                options = [
+                    { id: 'easy', text: 'Easy (1-5)', points: '2 XP' },
+                    { id: 'medium', text: 'Medium (1-10)', points: '4 XP' },
+                    { id: 'hard', text: 'Hard (1-12)', points: '10 XP' }
+                ];
+            }
+            
+            // Generate HTML for difficulty buttons
+            difficultyContainer.innerHTML = options.map(option => 
+                `<button class="difficulty-btn" onclick="startGame('${option.id}')">
+                    ${option.text}<br><small style="color: #888;">${option.points}</small>
+                </button>`
+            ).join('');
+            
             document.getElementById('difficultySelector').classList.remove('hidden');
         }
 
