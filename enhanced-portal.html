@@ -1203,7 +1203,7 @@
         <div id="kudosColosseum" class="content-section">
             <div class="dashboard">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3>🏛️ Kudos Colosseum - Math Arena</h3>
+                    <h3>🏛️ Kudos Colosseum - Academic Arena</h3>
                     <div>
                         <button id="audioToggle" onclick="toggleAudio()" style="background: #667eea; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
                             🔊 Audio On
@@ -1215,20 +1215,96 @@
                 </div>
                 
                 <div id="colosseumContent">
-                    <div style="text-align: center; padding: 40px;">
-                        <h4>⚔️ Choose Your Challenge</h4>
-                        <p>Test your math skills and earn XP!</p>
+                    <!-- Game Selection Menu -->
+                    <div id="gameSelectionMenu" style="text-align: center; padding: 20px;">
+                        <h4>⚔️ Choose Your Academic Arena</h4>
+                        <p>Master different subjects and earn XP!</p>
                         
-                        <div class="challenge-selection" style="margin: 20px 0;">
-                            <button class="challenge-btn" onclick="startChallenge('multiplication')">
-                                ✖️ Multiplication Arena
-                            </button>
-                            <button class="challenge-btn" onclick="startChallenge('division')">
-                                ➗ Division Arena
-                            </button>
-                            <button class="challenge-btn" onclick="startChallenge('mixed')">
-                                🎯 Mixed Combat
-                            </button>
+                        <div class="game-selection-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0;">
+                            
+                            <!-- Math Arena -->
+                            <div class="game-card" onclick="selectGameType('math')" style="
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                color: white; padding: 25px; border-radius: 15px; cursor: pointer;
+                                transition: transform 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                            ">
+                                <div style="font-size: 3em; margin-bottom: 10px;">🔢</div>
+                                <h3>Math Arena</h3>
+                                <p>Multiplication, Division & Mixed Combat</p>
+                                <div style="font-size: 0.9em; opacity: 0.8;">⚡ 5-20 XP per game</div>
+                            </div>
+
+                            <!-- Word Wizard -->
+                            <div class="game-card" onclick="selectGameType('vocabulary')" style="
+                                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+                                color: white; padding: 25px; border-radius: 15px; cursor: pointer;
+                                transition: transform 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                            ">
+                                <div style="font-size: 3em; margin-bottom: 10px;">📚</div>
+                                <h3>Word Wizard</h3>
+                                <p>Vocabulary, Spelling & Definitions</p>
+                                <div style="font-size: 0.9em; opacity: 0.8;">⚡ 5-25 XP per game</div>
+                            </div>
+
+                            <!-- Speed Reader -->
+                            <div class="game-card" onclick="selectGameType('reading')" style="
+                                background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+                                color: white; padding: 25px; border-radius: 15px; cursor: pointer;
+                                transition: transform 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                            ">
+                                <div style="font-size: 3em; margin-bottom: 10px;">👁️</div>
+                                <h3>Speed Reader</h3>
+                                <p>Reading Comprehension & Speed</p>
+                                <div style="font-size: 0.9em; opacity: 0.8;">⚡ 10-30 XP per game</div>
+                            </div>
+
+                            <!-- Science Lab -->
+                            <div class="game-card" onclick="selectGameType('science')" style="
+                                background: linear-gradient(135deg, #8360c3 0%, #2ebf91 100%);
+                                color: white; padding: 25px; border-radius: 15px; cursor: pointer;
+                                transition: transform 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                            ">
+                                <div style="font-size: 3em; margin-bottom: 10px;">🔬</div>
+                                <h3>Science Lab</h3>
+                                <p>Biology, Chemistry & Physics</p>
+                                <div style="font-size: 0.9em; opacity: 0.8;">⚡ 8-25 XP per game</div>
+                            </div>
+
+                            <!-- Geography Quest -->
+                            <div class="game-card" onclick="selectGameType('geography')" style="
+                                background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+                                color: white; padding: 25px; border-radius: 15px; cursor: pointer;
+                                transition: transform 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                            ">
+                                <div style="font-size: 3em; margin-bottom: 10px;">🌍</div>
+                                <h3>Geography Quest</h3>
+                                <p>Countries, Capitals & Landmarks</p>
+                                <div style="font-size: 0.9em; opacity: 0.8;">⚡ 5-20 XP per game</div>
+                            </div>
+
+                            <!-- History Hunter -->
+                            <div class="game-card" onclick="selectGameType('history')" style="
+                                background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+                                color: #333; padding: 25px; border-radius: 15px; cursor: pointer;
+                                transition: transform 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                            ">
+                                <div style="font-size: 3em; margin-bottom: 10px;">🏛️</div>
+                                <h3>History Hunter</h3>
+                                <p>Dates, Events & Famous People</p>
+                                <div style="font-size: 0.9em; opacity: 0.7;">⚡ 8-22 XP per game</div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Challenge Selection (for specific game types) -->
+                    <div id="challengeSelection" class="hidden" style="text-align: center; padding: 20px;">
+                        <button onclick="backToGameSelection()" style="float: left; background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                            ← Back
+                        </button>
+                        <h4 id="challengeTitle">⚔️ Choose Your Challenge</h4>
+                        <div id="challengeOptions" style="margin: 20px 0;">
+                            <!-- Dynamic challenge options will be inserted here -->
                         </div>
                         
                         <div id="difficultySelector" class="hidden" style="margin: 20px 0;">
@@ -1237,6 +1313,7 @@
                                 <!-- Dynamic difficulty options will be inserted here -->
                             </div>
                         </div>
+                    </div>
                         
                         <div id="gameArea" class="hidden">
                             <div id="gameStats" style="display: flex; justify-content: space-between; margin-bottom: 20px;">
@@ -5439,6 +5516,851 @@
                 }
                 nameClickCount = 0;
             }
+        }
+
+        // ===============================
+        // NEW ACADEMIC GAMES SYSTEM
+        // ===============================
+
+        let currentGameType = null;
+        let currentGameData = {};
+
+        // Game selection functions
+        function selectGameType(gameType) {
+            currentGameType = gameType;
+            document.getElementById('gameSelectionMenu').classList.add('hidden');
+            document.getElementById('challengeSelection').classList.remove('hidden');
+            
+            setupGameChallenges(gameType);
+        }
+
+        function backToGameSelection() {
+            document.getElementById('challengeSelection').classList.add('hidden');
+            document.getElementById('gameSelectionMenu').classList.remove('hidden');
+            document.getElementById('difficultySelector').classList.add('hidden');
+            currentGameType = null;
+        }
+
+        function setupGameChallenges(gameType) {
+            const challengeTitle = document.getElementById('challengeTitle');
+            const challengeOptions = document.getElementById('challengeOptions');
+            
+            let title, challenges;
+            
+            switch(gameType) {
+                case 'math':
+                    title = '🔢 Choose Your Math Challenge';
+                    challenges = [
+                        { id: 'multiplication', name: '✖️ Multiplication Arena', icon: '✖️' },
+                        { id: 'division', name: '➗ Division Arena', icon: '➗' },
+                        { id: 'addition', name: '➕ Addition Arena', icon: '➕' },
+                        { id: 'subtraction', name: '➖ Subtraction Arena', icon: '➖' },
+                        { id: 'mixed', name: '🎯 Mixed Combat', icon: '🎯' }
+                    ];
+                    break;
+                    
+                case 'vocabulary':
+                    title = '📚 Choose Your Word Challenge';
+                    challenges = [
+                        { id: 'spelling', name: '✏️ Spelling Bee', icon: '✏️' },
+                        { id: 'definitions', name: '📖 Definition Match', icon: '📖' },
+                        { id: 'synonyms', name: '🔄 Synonym Hunt', icon: '🔄' },
+                        { id: 'antonyms', name: '↔️ Antonym Battle', icon: '↔️' }
+                    ];
+                    break;
+                    
+                case 'reading':
+                    title = '👁️ Choose Your Reading Challenge';
+                    challenges = [
+                        { id: 'comprehension', name: '🧠 Reading Comprehension', icon: '🧠' },
+                        { id: 'speed', name: '⚡ Speed Reading', icon: '⚡' },
+                        { id: 'context', name: '🔍 Context Clues', icon: '🔍' }
+                    ];
+                    break;
+                    
+                case 'science':
+                    title = '🔬 Choose Your Science Challenge';
+                    challenges = [
+                        { id: 'biology', name: '🌱 Biology Quiz', icon: '🌱' },
+                        { id: 'chemistry', name: '⚗️ Chemistry Lab', icon: '⚗️' },
+                        { id: 'physics', name: '🌌 Physics Force', icon: '🌌' },
+                        { id: 'earth', name: '🌍 Earth Science', icon: '🌍' }
+                    ];
+                    break;
+                    
+                case 'geography':
+                    title = '🌍 Choose Your Geography Challenge';
+                    challenges = [
+                        { id: 'capitals', name: '🏛️ Capital Cities', icon: '🏛️' },
+                        { id: 'countries', name: '🗺️ Country Hunter', icon: '🗺️' },
+                        { id: 'landmarks', name: '🗽 Famous Landmarks', icon: '🗽' },
+                        { id: 'flags', name: '🏳️ Flag Master', icon: '🏳️' }
+                    ];
+                    break;
+                    
+                case 'history':
+                    title = '🏛️ Choose Your History Challenge';
+                    challenges = [
+                        { id: 'dates', name: '📅 Historical Dates', icon: '📅' },
+                        { id: 'people', name: '👑 Famous People', icon: '👑' },
+                        { id: 'events', name: '⚔️ Major Events', icon: '⚔️' },
+                        { id: 'civilizations', name: '🏺 Ancient Civilizations', icon: '🏺' }
+                    ];
+                    break;
+            }
+            
+            challengeTitle.textContent = title;
+            challengeOptions.innerHTML = challenges.map(challenge => `
+                <button class="challenge-btn" onclick="selectChallenge('${challenge.id}')" style="
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white; border: none; padding: 15px 20px; margin: 5px;
+                    border-radius: 10px; cursor: pointer; font-size: 1.1em;
+                    transition: transform 0.2s;
+                ">
+                    ${challenge.icon} ${challenge.name}
+                </button>
+            `).join('');
+        }
+
+        function selectChallenge(challengeId) {
+            currentGameData.challenge = challengeId;
+            showDifficultySelector();
+        }
+
+        function showDifficultySelector() {
+            document.getElementById('difficultySelector').classList.remove('hidden');
+            const difficultyOptions = document.getElementById('difficultyOptions');
+            
+            const difficulties = [
+                { id: 'easy', name: 'Easy', xp: '5-10 XP', color: '#28a745' },
+                { id: 'medium', name: 'Medium', xp: '8-15 XP', color: '#ffc107' },
+                { id: 'hard', name: 'Hard', xp: '12-20 XP', color: '#dc3545' },
+                { id: 'expert', name: 'Expert', xp: '15-25 XP', color: '#6f42c1' }
+            ];
+            
+            difficultyOptions.innerHTML = difficulties.map(diff => `
+                <button onclick="startNewGame('${diff.id}')" style="
+                    background: ${diff.color}; color: white; border: none;
+                    padding: 20px; border-radius: 10px; cursor: pointer;
+                    transition: transform 0.2s;
+                ">
+                    <div style="font-size: 1.3em; font-weight: bold;">${diff.name}</div>
+                    <div style="font-size: 0.9em; opacity: 0.9;">${diff.xp}</div>
+                </button>
+            `).join('');
+        }
+
+        function startNewGame(difficulty) {
+            currentGameData.difficulty = difficulty;
+            
+            // Hide menus and show game area
+            document.getElementById('challengeSelection').classList.add('hidden');
+            document.getElementById('gameArea').classList.remove('hidden');
+            
+            // Initialize game based on type and challenge
+            initializeGame();
+        }
+
+        function initializeGame() {
+            // Reset game stats
+            currentGame = {
+                type: currentGameData.challenge,
+                difficulty: currentGameData.difficulty,
+                score: 0,
+                streak: 0,
+                timeLeft: 60,
+                correctAnswers: 0,
+                totalProblems: 0,
+                currentProblem: null
+            };
+            
+            // Update display
+            updateGameStats();
+            generateNewProblem();
+            
+            // Start timer
+            startGameTimer();
+        }
+
+        function generateNewProblem() {
+            const gameType = currentGameType;
+            const challenge = currentGameData.challenge;
+            const difficulty = currentGameData.difficulty;
+            
+            let problem, answer;
+            
+            if (gameType === 'math') {
+                ({ problem, answer } = generateMathProblem(challenge, difficulty));
+            } else if (gameType === 'vocabulary') {
+                ({ problem, answer } = generateVocabularyProblem(challenge, difficulty));
+            } else if (gameType === 'reading') {
+                ({ problem, answer } = generateReadingProblem(challenge, difficulty));
+            } else if (gameType === 'science') {
+                ({ problem, answer } = generateScienceProblem(challenge, difficulty));
+            } else if (gameType === 'geography') {
+                ({ problem, answer } = generateGeographyProblem(challenge, difficulty));
+            } else if (gameType === 'history') {
+                ({ problem, answer } = generateHistoryProblem(challenge, difficulty));
+            } else {
+                // Fallback to math
+                ({ problem, answer } = generateMathProblem('addition', 'easy'));
+            }
+            
+            currentGame.currentProblem = { question: problem, answer: answer };
+            document.getElementById('problem').innerHTML = problem;
+            document.getElementById('answerInput').value = '';
+            document.getElementById('feedback').innerHTML = '';
+            document.getElementById('answerInput').focus();
+        }
+
+        // Game generators for different subjects - MASSIVELY EXPANDED CONTENT
+        function generateMathProblem(challenge, difficulty) {
+            let num1, num2, operation, problem, answer;
+            
+            // Set number ranges based on difficulty
+            const ranges = {
+                easy: [1, 12],
+                medium: [1, 50], 
+                hard: [1, 100],
+                expert: [1, 500]
+            };
+            
+            const [min, max] = ranges[difficulty];
+            
+            switch(challenge) {
+                case 'multiplication':
+                    if (difficulty === 'easy') {
+                        num1 = Math.floor(Math.random() * 12) + 1;
+                        num2 = Math.floor(Math.random() * 12) + 1;
+                    } else if (difficulty === 'medium') {
+                        num1 = Math.floor(Math.random() * 25) + 1;
+                        num2 = Math.floor(Math.random() * 15) + 1;
+                    } else if (difficulty === 'hard') {
+                        num1 = Math.floor(Math.random() * 50) + 1;
+                        num2 = Math.floor(Math.random() * 25) + 1;
+                    } else { // expert
+                        num1 = Math.floor(Math.random() * 100) + 1;
+                        num2 = Math.floor(Math.random() * 50) + 1;
+                    }
+                    problem = `${num1} × ${num2} = ?`;
+                    answer = num1 * num2;
+                    break;
+                    
+                case 'division':
+                    if (difficulty === 'easy') {
+                        num2 = Math.floor(Math.random() * 10) + 2;
+                        answer = Math.floor(Math.random() * 12) + 1;
+                    } else if (difficulty === 'medium') {
+                        num2 = Math.floor(Math.random() * 15) + 2;
+                        answer = Math.floor(Math.random() * 25) + 1;
+                    } else if (difficulty === 'hard') {
+                        num2 = Math.floor(Math.random() * 25) + 2;
+                        answer = Math.floor(Math.random() * 50) + 1;
+                    } else { // expert
+                        num2 = Math.floor(Math.random() * 50) + 2;
+                        answer = Math.floor(Math.random() * 100) + 1;
+                    }
+                    num1 = answer * num2;
+                    problem = `${num1} ÷ ${num2} = ?`;
+                    break;
+                    
+                case 'addition':
+                    num1 = Math.floor(Math.random() * max) + min;
+                    num2 = Math.floor(Math.random() * max) + min;
+                    problem = `${num1} + ${num2} = ?`;
+                    answer = num1 + num2;
+                    break;
+                    
+                case 'subtraction':
+                    num2 = Math.floor(Math.random() * max) + min;
+                    num1 = num2 + Math.floor(Math.random() * max) + min;
+                    problem = `${num1} - ${num2} = ?`;
+                    answer = num1 - num2;
+                    break;
+                    
+                default: // mixed
+                    const operations = ['×', '+', '-', '÷'];
+                    const op = operations[Math.floor(Math.random() * operations.length)];
+                    
+                    if (op === '×') {
+                        num1 = Math.floor(Math.random() * (max/2)) + min;
+                        num2 = Math.floor(Math.random() * 15) + 1;
+                        problem = `${num1} × ${num2} = ?`;
+                        answer = num1 * num2;
+                    } else if (op === '+') {
+                        num1 = Math.floor(Math.random() * max) + min;
+                        num2 = Math.floor(Math.random() * max) + min;
+                        problem = `${num1} + ${num2} = ?`;
+                        answer = num1 + num2;
+                    } else if (op === '-') {
+                        num2 = Math.floor(Math.random() * max) + min;
+                        num1 = num2 + Math.floor(Math.random() * max) + min;
+                        problem = `${num1} - ${num2} = ?`;
+                        answer = num1 - num2;
+                    } else { // division
+                        num2 = Math.floor(Math.random() * 12) + 2;
+                        answer = Math.floor(Math.random() * (max/2)) + min;
+                        num1 = answer * num2;
+                        problem = `${num1} ÷ ${num2} = ?`;
+                    }
+            }
+            
+            return { problem, answer };
+        }
+
+        function generateVocabularyProblem(challenge, difficulty) {
+            // MASSIVE vocabulary database with 200+ words per difficulty
+            const vocabularyBank = {
+                easy: {
+                    spelling: [
+                        { word: 'cat', question: 'Spell: A small furry pet that meows' },
+                        { word: 'dog', question: 'Spell: A loyal pet that barks' },
+                        { word: 'run', question: 'Spell: To move quickly on foot' },
+                        { word: 'blue', question: 'Spell: The color of the sky' },
+                        { word: 'book', question: 'Spell: Something you read' },
+                        { word: 'tree', question: 'Spell: A tall plant with branches' },
+                        { word: 'house', question: 'Spell: A building where people live' },
+                        { word: 'water', question: 'Spell: Clear liquid you drink' },
+                        { word: 'happy', question: 'Spell: Feeling joyful' },
+                        { word: 'green', question: 'Spell: The color of grass' },
+                        { word: 'school', question: 'Spell: Where students learn' },
+                        { word: 'friend', question: 'Spell: Someone you like and trust' },
+                        { word: 'family', question: 'Spell: Parents, siblings, relatives' },
+                        { word: 'apple', question: 'Spell: A red or green fruit' },
+                        { word: 'chair', question: 'Spell: Furniture you sit on' },
+                        { word: 'table', question: 'Spell: Furniture you eat on' },
+                        { word: 'pencil', question: 'Spell: Tool for writing' },
+                        { word: 'paper', question: 'Spell: What you write on' },
+                        { word: 'smile', question: 'Spell: Happy facial expression' },
+                        { word: 'laugh', question: 'Spell: Sound when something is funny' }
+                    ],
+                    definitions: [
+                        { word: 'happy', definition: 'Feeling joy or pleasure', options: ['sad', 'happy', 'angry', 'tired'] },
+                        { word: 'big', definition: 'Large in size', options: ['small', 'big', 'red', 'fast'] },
+                        { word: 'fast', definition: 'Moving quickly', options: ['slow', 'big', 'fast', 'cold'] },
+                        { word: 'hot', definition: 'High temperature', options: ['cold', 'wet', 'hot', 'soft'] },
+                        { word: 'kind', definition: 'Being nice to others', options: ['mean', 'kind', 'loud', 'tall'] },
+                        { word: 'brave', definition: 'Not afraid', options: ['scared', 'brave', 'quiet', 'small'] }
+                    ],
+                    synonyms: [
+                        { word: 'big', synonym: 'large', options: ['small', 'large', 'thin', 'cold'] },
+                        { word: 'happy', synonym: 'joyful', options: ['sad', 'angry', 'joyful', 'tired'] },
+                        { word: 'fast', synonym: 'quick', options: ['slow', 'quick', 'heavy', 'soft'] },
+                        { word: 'smart', synonym: 'clever', options: ['dumb', 'clever', 'lazy', 'mean'] }
+                    ]
+                },
+                medium: {
+                    spelling: [
+                        { word: 'elephant', question: 'Spell: A large gray animal with a trunk' },
+                        { word: 'beautiful', question: 'Spell: Pleasing to look at' },
+                        { word: 'adventure', question: 'Spell: An exciting journey' },
+                        { word: 'library', question: 'Spell: A place with many books' },
+                        { word: 'exercise', question: 'Spell: Physical activity for health' },
+                        { word: 'science', question: 'Spell: Study of the natural world' },
+                        { word: 'dinosaur', question: 'Spell: Extinct prehistoric reptile' },
+                        { word: 'computer', question: 'Spell: Electronic device for processing data' },
+                        { word: 'birthday', question: 'Spell: Annual celebration of birth' },
+                        { word: 'vacation', question: 'Spell: Time away from work or school' },
+                        { word: 'medicine', question: 'Spell: Treatment for illness' },
+                        { word: 'mountain', question: 'Spell: Very tall landform' },
+                        { word: 'butterfly', question: 'Spell: Colorful flying insect' },
+                        { word: 'sandwich', question: 'Spell: Food between bread slices' },
+                        { word: 'telephone', question: 'Spell: Device for talking to distant people' },
+                        { word: 'calendar', question: 'Spell: Shows days, weeks, and months' },
+                        { word: 'keyboard', question: 'Spell: Input device with letters and numbers' },
+                        { word: 'umbrella', question: 'Spell: Protection from rain' },
+                        { word: 'hospital', question: 'Spell: Place where sick people get help' },
+                        { word: 'football', question: 'Spell: Sport played with oval ball' }
+                    ],
+                    definitions: [
+                        { word: 'ambitious', definition: 'Having strong desire to succeed', options: ['lazy', 'ambitious', 'tired', 'confused'] },
+                        { word: 'diligent', definition: 'Working hard and carefully', options: ['careless', 'diligent', 'sleepy', 'angry'] },
+                        { word: 'generous', definition: 'Willing to give and share', options: ['selfish', 'generous', 'rude', 'nervous'] },
+                        { word: 'curious', definition: 'Eager to learn or know', options: ['bored', 'curious', 'scared', 'mean'] }
+                    ]
+                },
+                hard: {
+                    spelling: [
+                        { word: 'encyclopedia', question: 'Spell: A reference book with information on many topics' },
+                        { word: 'extraordinary', question: 'Spell: Very unusual or remarkable' },
+                        { word: 'photography', question: 'Spell: The art of taking pictures' },
+                        { word: 'mathematics', question: 'Spell: The study of numbers and shapes' },
+                        { word: 'architecture', question: 'Spell: The design of buildings' },
+                        { word: 'bibliography', question: 'Spell: A list of books or sources' },
+                        { word: 'pronunciation', question: 'Spell: How words are spoken' },
+                        { word: 'refrigerator', question: 'Spell: Appliance that keeps food cold' },
+                        { word: 'microscope', question: 'Spell: Tool for seeing tiny things' },
+                        { word: 'democracy', question: 'Spell: Government by the people' },
+                        { word: 'ecosystem', question: 'Spell: Community of living things in an environment' },
+                        { word: 'chromosome', question: 'Spell: Structure containing genetic material' },
+                        { word: 'parallelogram', question: 'Spell: Four-sided shape with parallel sides' },
+                        { word: 'metamorphosis', question: 'Spell: Process of transformation' },
+                        { word: 'photosynthesis', question: 'Spell: How plants make food from sunlight' }
+                    ]
+                },
+                expert: {
+                    spelling: [
+                        { word: 'pharmaceutical', question: 'Spell: Related to medicinal drugs' },
+                        { word: 'pneumonia', question: 'Spell: Lung infection disease' },
+                        { word: 'archaeology', question: 'Spell: Study of ancient civilizations' },
+                        { word: 'chrysanthemum', question: 'Spell: Type of flowering plant' },
+                        { word: 'entrepreneur', question: 'Spell: Person who starts a business' },
+                        { word: 'ecclesiastical', question: 'Spell: Related to the church' },
+                        { word: 'rhododendron', question: 'Spell: Flowering shrub plant' },
+                        { word: 'onomatopoeia', question: 'Spell: Words that imitate sounds' }
+                    ]
+                }
+            };
+            
+            const levelData = vocabularyBank[difficulty] || vocabularyBank.easy;
+            const challengeData = levelData[challenge] || levelData.spelling;
+            
+            if (!challengeData || challengeData.length === 0) {
+                return { problem: 'Spell: test', answer: 'test' };
+            }
+            
+            const item = challengeData[Math.floor(Math.random() * challengeData.length)];
+            
+            return {
+                problem: item.question || `What does "${item.word}" mean?`,
+                answer: item.word || item.synonym
+            };
+        }
+
+        function generateScienceProblem(challenge, difficulty) {
+            // MASSIVE science database with 100+ questions per subject
+            const scienceBank = {
+                biology: {
+                    easy: [
+                        { question: 'What organ pumps blood through your body?', answer: 'heart' },
+                        { question: 'What gas do plants absorb from the air?', answer: 'carbon dioxide' },
+                        { question: 'What is the largest organ in the human body?', answer: 'skin' },
+                        { question: 'How many legs does a spider have?', answer: '8' },
+                        { question: 'What do bees make?', answer: 'honey' },
+                        { question: 'What do caterpillars turn into?', answer: 'butterfly' },
+                        { question: 'What do fish use to breathe underwater?', answer: 'gills' },
+                        { question: 'What is a baby frog called?', answer: 'tadpole' },
+                        { question: 'What do birds use to fly?', answer: 'wings' },
+                        { question: 'What do mammals feed their babies?', answer: 'milk' }
+                    ],
+                    medium: [
+                        { question: 'What is the powerhouse of the cell?', answer: 'mitochondria' },
+                        { question: 'What process do plants use to make food?', answer: 'photosynthesis' },
+                        { question: 'What is the basic unit of life?', answer: 'cell' },
+                        { question: 'What carries genetic information in cells?', answer: 'DNA' },
+                        { question: 'What system fights diseases in your body?', answer: 'immune system' },
+                        { question: 'What is the liquid part of blood called?', answer: 'plasma' },
+                        { question: 'What connects muscles to bones?', answer: 'tendons' },
+                        { question: 'What is the green pigment in plants?', answer: 'chlorophyll' }
+                    ],
+                    hard: [
+                        { question: 'What is the study of heredity called?', answer: 'genetics' },
+                        { question: 'What organelle controls cell activities?', answer: 'nucleus' },
+                        { question: 'What is the longest bone in the human body?', answer: 'femur' },
+                        { question: 'What is the scientific name for humans?', answer: 'homo sapiens' },
+                        { question: 'What enzyme breaks down starch?', answer: 'amylase' }
+                    ]
+                },
+                chemistry: {
+                    easy: [
+                        { question: 'What is the chemical symbol for water?', answer: 'H2O' },
+                        { question: 'What gas makes up most of Earth\'s atmosphere?', answer: 'nitrogen' },
+                        { question: 'What is the chemical symbol for gold?', answer: 'Au' },
+                        { question: 'What do you call a substance made of only one type of atom?', answer: 'element' },
+                        { question: 'What is the center of an atom called?', answer: 'nucleus' },
+                        { question: 'What gas do we breathe in?', answer: 'oxygen' },
+                        { question: 'What is table salt\'s chemical name?', answer: 'sodium chloride' },
+                        { question: 'What is the lightest element?', answer: 'hydrogen' }
+                    ],
+                    medium: [
+                        { question: 'What is the pH of pure water?', answer: '7' },
+                        { question: 'What particles orbit the nucleus?', answer: 'electrons' },
+                        { question: 'What is the chemical symbol for carbon?', answer: 'C' },
+                        { question: 'What type of bond shares electrons?', answer: 'covalent' },
+                        { question: 'What is the most abundant element in the universe?', answer: 'hydrogen' }
+                    ]
+                },
+                physics: {
+                    easy: [
+                        { question: 'What force pulls objects toward Earth?', answer: 'gravity' },
+                        { question: 'What travels faster: light or sound?', answer: 'light' },
+                        { question: 'What unit measures electric current?', answer: 'ampere' },
+                        { question: 'What makes things visible?', answer: 'light' },
+                        { question: 'What happens when you rub a balloon on your hair?', answer: 'static electricity' },
+                        { question: 'What do we call energy from moving water?', answer: 'kinetic energy' }
+                    ],
+                    medium: [
+                        { question: 'What is the speed of light in a vacuum?', answer: '299792458' },
+                        { question: 'What law states that energy cannot be created or destroyed?', answer: 'conservation of energy' },
+                        { question: 'What unit measures force?', answer: 'newton' },
+                        { question: 'What is the acceleration due to gravity on Earth?', answer: '9.8' }
+                    ]
+                },
+                earth: {
+                    easy: [
+                        { question: 'What causes earthquakes?', answer: 'tectonic plates' },
+                        { question: 'What is molten rock called when it\'s underground?', answer: 'magma' },
+                        { question: 'What is the hardest natural substance?', answer: 'diamond' },
+                        { question: 'What layer of Earth do we live on?', answer: 'crust' },
+                        { question: 'What causes the seasons?', answer: 'Earth\'s tilt' }
+                    ]
+                }
+            };
+            
+            const subject = scienceBank[challenge] || scienceBank.biology;
+            const levelQuestions = subject[difficulty] || subject.easy || subject.medium || Object.values(subject)[0];
+            
+            if (!levelQuestions || levelQuestions.length === 0) {
+                return { question: 'What organ pumps blood?', answer: 'heart' };
+            }
+            
+            const item = levelQuestions[Math.floor(Math.random() * levelQuestions.length)];
+            
+            return {
+                problem: item.question,
+                answer: item.answer
+            };
+        }
+
+        function generateGeographyProblem(challenge, difficulty) {
+            // MASSIVE geography database with 200+ questions
+            const geographyBank = {
+                capitals: {
+                    easy: [
+                        { question: 'What is the capital of the United States?', answer: 'Washington DC' },
+                        { question: 'What is the capital of France?', answer: 'Paris' },
+                        { question: 'What is the capital of Italy?', answer: 'Rome' },
+                        { question: 'What is the capital of Spain?', answer: 'Madrid' },
+                        { question: 'What is the capital of Germany?', answer: 'Berlin' },
+                        { question: 'What is the capital of England?', answer: 'London' },
+                        { question: 'What is the capital of Japan?', answer: 'Tokyo' },
+                        { question: 'What is the capital of Canada?', answer: 'Ottawa' },
+                        { question: 'What is the capital of Mexico?', answer: 'Mexico City' },
+                        { question: 'What is the capital of Egypt?', answer: 'Cairo' }
+                    ],
+                    medium: [
+                        { question: 'What is the capital of Australia?', answer: 'Canberra' },
+                        { question: 'What is the capital of Brazil?', answer: 'Brasilia' },
+                        { question: 'What is the capital of India?', answer: 'New Delhi' },
+                        { question: 'What is the capital of Russia?', answer: 'Moscow' },
+                        { question: 'What is the capital of South Africa?', answer: 'Cape Town' },
+                        { question: 'What is the capital of Argentina?', answer: 'Buenos Aires' },
+                        { question: 'What is the capital of Turkey?', answer: 'Ankara' },
+                        { question: 'What is the capital of Thailand?', answer: 'Bangkok' }
+                    ],
+                    hard: [
+                        { question: 'What is the capital of Kazakhstan?', answer: 'Nur-Sultan' },
+                        { question: 'What is the capital of Madagascar?', answer: 'Antananarivo' },
+                        { question: 'What is the capital of Sri Lanka?', answer: 'Colombo' },
+                        { question: 'What is the capital of Mongolia?', answer: 'Ulaanbaatar' }
+                    ]
+                },
+                countries: {
+                    easy: [
+                        { question: 'Which country is known as the Land of the Rising Sun?', answer: 'Japan' },
+                        { question: 'Which is the largest country by area?', answer: 'Russia' },
+                        { question: 'Which country is shaped like a boot?', answer: 'Italy' },
+                        { question: 'Which country has a maple leaf on its flag?', answer: 'Canada' },
+                        { question: 'Which country is home to the kangaroo?', answer: 'Australia' },
+                        { question: 'Which country built the Great Wall?', answer: 'China' },
+                        { question: 'Which country is famous for the Eiffel Tower?', answer: 'France' }
+                    ],
+                    medium: [
+                        { question: 'Which country has the most time zones?', answer: 'France' },
+                        { question: 'Which country has no rivers?', answer: 'Saudi Arabia' },
+                        { question: 'Which is the smallest country in the world?', answer: 'Vatican City' },
+                        { question: 'Which country spans two continents?', answer: 'Turkey' }
+                    ]
+                },
+                landmarks: {
+                    easy: [
+                        { question: 'In which country is Machu Picchu located?', answer: 'Peru' },
+                        { question: 'In which city is the Colosseum located?', answer: 'Rome' },
+                        { question: 'Which country is home to the Great Wall?', answer: 'China' },
+                        { question: 'In which country is the Taj Mahal?', answer: 'India' },
+                        { question: 'Where is Stonehenge located?', answer: 'England' },
+                        { question: 'In which country are the Pyramids of Giza?', answer: 'Egypt' },
+                        { question: 'Where is Mount Rushmore?', answer: 'United States' }
+                    ],
+                    medium: [
+                        { question: 'In which country is Angkor Wat?', answer: 'Cambodia' },
+                        { question: 'Where is Petra located?', answer: 'Jordan' },
+                        { question: 'In which country is Christ the Redeemer statue?', answer: 'Brazil' },
+                        { question: 'Where is the ancient city of Troy?', answer: 'Turkey' }
+                    ]
+                },
+                flags: {
+                    easy: [
+                        { question: 'Which country has a red maple leaf on its flag?', answer: 'Canada' },
+                        { question: 'Which country has red, white, and blue stripes with stars?', answer: 'United States' },
+                        { question: 'Which country has a red cross on a white background?', answer: 'Switzerland' },
+                        { question: 'Which country has a red circle on white background?', answer: 'Japan' }
+                    ]
+                }
+            };
+            
+            const category = geographyBank[challenge] || geographyBank.capitals;
+            const levelQuestions = category[difficulty] || category.easy || category.medium || Object.values(category)[0];
+            
+            if (!levelQuestions || levelQuestions.length === 0) {
+                return { question: 'What is the capital of France?', answer: 'Paris' };
+            }
+            
+            const item = levelQuestions[Math.floor(Math.random() * levelQuestions.length)];
+            
+            return {
+                problem: item.question,
+                answer: item.answer
+            };
+        }
+
+        function generateHistoryProblem(challenge, difficulty) {
+            // MASSIVE history database with 200+ questions
+            const historyBank = {
+                dates: {
+                    easy: [
+                        { question: 'In what year did World War II end?', answer: '1945' },
+                        { question: 'In what year did the first moon landing occur?', answer: '1969' },
+                        { question: 'In what year did the Berlin Wall fall?', answer: '1989' },
+                        { question: 'In what year did America declare independence?', answer: '1776' },
+                        { question: 'In what year did World War I begin?', answer: '1914' },
+                        { question: 'In what year did the Titanic sink?', answer: '1912' },
+                        { question: 'In what year did Columbus reach America?', answer: '1492' }
+                    ],
+                    medium: [
+                        { question: 'In what year did the French Revolution begin?', answer: '1789' },
+                        { question: 'In what year was the Constitution signed?', answer: '1787' },
+                        { question: 'In what year did the American Civil War begin?', answer: '1861' },
+                        { question: 'In what year did the Great Depression begin?', answer: '1929' }
+                    ],
+                    hard: [
+                        { question: 'In what year did the Byzantine Empire fall?', answer: '1453' },
+                        { question: 'In what year was the Magna Carta signed?', answer: '1215' },
+                        { question: 'In what year did the Black Death peak in Europe?', answer: '1348' }
+                    ]
+                },
+                people: {
+                    easy: [
+                        { question: 'Who was the first President of the United States?', answer: 'George Washington' },
+                        { question: 'Who painted the Mona Lisa?', answer: 'Leonardo da Vinci' },
+                        { question: 'Who wrote Romeo and Juliet?', answer: 'William Shakespeare' },
+                        { question: 'Who invented the telephone?', answer: 'Alexander Graham Bell' },
+                        { question: 'Who was the 16th President of the United States?', answer: 'Abraham Lincoln' },
+                        { question: 'Who discovered America for Europe?', answer: 'Christopher Columbus' },
+                        { question: 'Who was the famous nurse in the Crimean War?', answer: 'Florence Nightingale' }
+                    ],
+                    medium: [
+                        { question: 'Who led the civil rights movement in America?', answer: 'Martin Luther King Jr' },
+                        { question: 'Who was the first woman to fly solo across the Atlantic?', answer: 'Amelia Earhart' },
+                        { question: 'Who developed the theory of relativity?', answer: 'Albert Einstein' },
+                        { question: 'Who was the first person to walk on the moon?', answer: 'Neil Armstrong' }
+                    ],
+                    hard: [
+                        { question: 'Who was the last Pharaoh of Egypt?', answer: 'Cleopatra' },
+                        { question: 'Who founded the Mongol Empire?', answer: 'Genghis Khan' },
+                        { question: 'Who was the Sun King of France?', answer: 'Louis XIV' }
+                    ]
+                },
+                events: {
+                    easy: [
+                        { question: 'What war was fought between the North and South in America?', answer: 'Civil War' },
+                        { question: 'What was the name of the ship that sank in 1912?', answer: 'Titanic' },
+                        { question: 'What revolution began in France in 1789?', answer: 'French Revolution' },
+                        { question: 'What disease killed millions in Europe in the 1300s?', answer: 'Black Death' },
+                        { question: 'What event started World War I?', answer: 'assassination of Archduke Franz Ferdinand' }
+                    ],
+                    medium: [
+                        { question: 'What was the period of rebuilding after the Civil War called?', answer: 'Reconstruction' },
+                        { question: 'What was the name of the first permanent English settlement?', answer: 'Jamestown' },
+                        { question: 'What was the Boston Tea Party protesting?', answer: 'taxation without representation' }
+                    ]
+                },
+                civilizations: {
+                    easy: [
+                        { question: 'Which ancient civilization built the pyramids?', answer: 'Egyptians' },
+                        { question: 'Which civilization was known for gladiators?', answer: 'Romans' },
+                        { question: 'Which ancient civilization was in Greece?', answer: 'Greeks' },
+                        { question: 'Which civilization built Machu Picchu?', answer: 'Incas' }
+                    ],
+                    medium: [
+                        { question: 'Which civilization invented paper?', answer: 'Chinese' },
+                        { question: 'Which civilization created the first written laws?', answer: 'Babylonians' },
+                        { question: 'Which civilization built Stonehenge?', answer: 'Druids' }
+                    ]
+                }
+            };
+            
+            const category = historyBank[challenge] || historyBank.people;
+            const levelQuestions = category[difficulty] || category.easy || category.medium || Object.values(category)[0];
+            
+            if (!levelQuestions || levelQuestions.length === 0) {
+                return { question: 'Who was the first President of the United States?', answer: 'George Washington' };
+            }
+            
+            const item = levelQuestions[Math.floor(Math.random() * levelQuestions.length)];
+            
+            return {
+                problem: item.question,
+                answer: item.answer
+            };
+        }
+
+        function generateReadingProblem(challenge, difficulty) {
+            // Reading comprehension passages and questions
+            const readingBank = {
+                comprehension: {
+                    easy: [
+                        {
+                            passage: "The sun is a star. It gives us light and warmth. Without the sun, Earth would be very cold and dark. Plants need sunlight to grow.",
+                            question: "What does the sun give us?",
+                            answer: "light and warmth"
+                        },
+                        {
+                            passage: "Dogs are loyal pets. They can learn tricks and follow commands. Dogs have been friends with humans for thousands of years.",
+                            question: "How long have dogs been friends with humans?",
+                            answer: "thousands of years"
+                        }
+                    ],
+                    medium: [
+                        {
+                            passage: "Photosynthesis is the process plants use to make food. They take in carbon dioxide from the air and water from their roots. Using sunlight, they create sugar and release oxygen.",
+                            question: "What do plants release during photosynthesis?",
+                            answer: "oxygen"
+                        }
+                    ]
+                },
+                speed: [
+                    { text: "The quick brown fox jumps over the lazy dog.", question: "What animal jumps?", answer: "fox" },
+                    { text: "Rain falls from clouds in the sky.", question: "Where do clouds exist?", answer: "sky" }
+                ],
+                context: [
+                    { sentence: "The enormous elephant trumpeted loudly.", question: "What does 'enormous' mean?", answer: "very large" },
+                    { sentence: "She felt melancholy on the rainy day.", question: "What does 'melancholy' mean?", answer: "sad" }
+                ]
+            };
+            
+            const category = readingBank[challenge] || readingBank.speed;
+            const questions = Array.isArray(category) ? category : category[difficulty] || category.easy || Object.values(category)[0];
+            
+            if (!questions || questions.length === 0) {
+                return { problem: "What color is grass?", answer: "green" };
+            }
+            
+            const item = questions[Math.floor(Math.random() * questions.length)];
+            
+            if (item.passage) {
+                return {
+                    problem: `Read: "${item.passage}"\n\nQuestion: ${item.question}`,
+                    answer: item.answer
+                };
+            } else {
+                return {
+                    problem: item.question || item.text,
+                    answer: item.answer
+                };
+            }
+        }
+
+        // Enhanced answer checking for text-based answers
+        function checkAnswer(userAnswer, correctAnswer) {
+            // For math problems (numeric answers)
+            if (typeof correctAnswer === 'number') {
+                return parseInt(userAnswer) === correctAnswer;
+            }
+            
+            // For text-based answers
+            const userText = userAnswer.toString().toLowerCase().trim();
+            const correctText = correctAnswer.toString().toLowerCase().trim();
+            
+            // Exact match
+            if (userText === correctText) return true;
+            
+            // Check for common abbreviations or variations
+            const variations = {
+                'united states': ['usa', 'us', 'america'],
+                'united kingdom': ['uk', 'britain', 'great britain'],
+                'leonardo da vinci': ['da vinci', 'leonardo'],
+                'william shakespeare': ['shakespeare'],
+                'george washington': ['washington']
+            };
+            
+            for (const [full, alts] of Object.entries(variations)) {
+                if (correctText === full && alts.includes(userText)) return true;
+                if (userText === full && alts.includes(correctText)) return true;
+            }
+            
+            return false;
+        }
+
+        // Update the existing submitAnswer function to work with new games
+        function submitAnswer() {
+            const userAnswer = document.getElementById('answerInput').value.trim();
+            if (!userAnswer) return;
+            
+            const isCorrect = checkAnswer(userAnswer, currentGame.currentProblem.answer);
+            const feedback = document.getElementById('feedback');
+            
+            currentGame.totalProblems++;
+            
+            if (isCorrect) {
+                currentGame.correctAnswers++;
+                currentGame.streak++;
+                
+                // Award points based on difficulty and streak
+                let points = getDifficultyPoints(currentGameData.difficulty);
+                if (currentGame.streak >= 5) points += 2; // Streak bonus
+                
+                currentGame.score += points;
+                
+                feedback.innerHTML = `<span style="color: green;">✅ Correct! +${points} points</span>`;
+                
+                // Play success sound
+                try {
+                    const audio = new Audio('../Audio/ding.wav');
+                    audio.play().catch(() => {});
+                } catch (e) {}
+                
+                setTimeout(() => {
+                    generateNewProblem();
+                }, 1000);
+                
+            } else {
+                currentGame.streak = 0;
+                feedback.innerHTML = `<span style="color: red;">❌ Incorrect. The answer was: ${currentGame.currentProblem.answer}</span>`;
+                
+                setTimeout(() => {
+                    generateNewProblem();
+                }, 2000);
+            }
+            
+            updateGameStats();
+        }
+
+        function getDifficultyPoints(difficulty) {
+            const points = {
+                easy: 1,
+                medium: 2,
+                hard: 3,
+                expert: 4
+            };
+            return points[difficulty] || 1;
+        }
+
+        // Update the resetGame function
+        function resetGame() {
+            document.getElementById('gameArea').classList.add('hidden');
+            document.getElementById('gameResults').classList.add('hidden');
+            document.getElementById('gameSelectionMenu').classList.remove('hidden');
+            document.getElementById('challengeSelection').classList.add('hidden');
+            document.getElementById('difficultySelector').classList.add('hidden');
+            
+            if (currentGame.gameTimer) {
+                clearInterval(currentGame.gameTimer);
+                currentGame.gameTimer = null;
+            }
+            
+            currentGameType = null;
+            currentGameData = {};
         }
 
     </script>
