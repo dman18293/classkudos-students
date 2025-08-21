@@ -2334,20 +2334,25 @@
                     currentStudent = data.student;
                     
                     // CUSTOM CODE FIX: Use actual class name from student data instead of the input code
-                    currentClass = data.student?.className || data.student?.class || data.student?.class_name || classCode;
+                    // Priority: class field (actual name) > classCode input (custom code)
+                    currentClass = data.student?.class || classCode;
                     currentStudentCode = studentCode;
                     
                     console.log('Login successful:', currentStudent);
                     console.log('🔍 CUSTOM CODE DEBUG: Input classCode:', classCode, 'Actual class:', currentClass);
                     console.log('🔍 Student object keys:', Object.keys(currentStudent));
                     
-                    // If we still have the custom code as class name, log what's available
-                    if (currentClass === classCode && /^\d{4}$/.test(classCode)) {
-                        console.log('⚠️ Custom code not resolved. Available student fields:');
-                        Object.keys(currentStudent).forEach(key => {
-                            console.log(`  ${key}: ${currentStudent[key]}`);
-                        });
+                    // Debug the class resolution
+                    if (data.student?.class) {
+                        console.log('✅ Found actual class name:', data.student.class);
+                    } else if (data.student?.class_code) {
+                        console.log('⚠️ Using class_code as fallback:', data.student.class_code);
+                        currentClass = data.student.class_code;
+                    } else {
+                        console.log('⚠️ No class field found, using input code:', classCode);
                     }
+                    
+                    console.log('🎯 Final class name for leaderboard:', currentClass);
                     
                     // Save session for persistence
                     saveSession(currentStudent, currentClass, studentCode);
