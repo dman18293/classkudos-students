@@ -1203,9 +1203,15 @@
                         
                         <div id="difficultySelector" class="hidden" style="margin: 20px 0;">
                             <h4>Choose Difficulty</h4>
-                            <button class="difficulty-btn" onclick="startGame('easy')">Easy (1-5)</button>
-                            <button class="difficulty-btn" onclick="startGame('medium')">Medium (1-10)</button>
-                            <button class="difficulty-btn" onclick="startGame('hard')">Hard (1-12)</button>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                                <button class="difficulty-btn" onclick="startGame('easy')">Easy (1-5)</button>
+                                <button class="difficulty-btn" onclick="startGame('medium')">Medium (1-10)</button>
+                                <button class="difficulty-btn" onclick="startGame('hard')">Hard (1-12)</button>
+                                <button class="difficulty-btn" onclick="startGame('multiplication15')">Multiplication (1-15)</button>
+                                <button class="difficulty-btn" onclick="startGame('multiplication20')">Multiplication (1-20)</button>
+                                <button class="difficulty-btn" onclick="startGame('multidigit')">Multi-digit Extreme</button>
+                                <button class="difficulty-btn" onclick="startGame('longdivision')">Long Division</button>
+                            </div>
                         </div>
                         
                         <div id="gameArea" class="hidden">
@@ -3017,17 +3023,44 @@
             document.getElementById('difficultySelector').classList.add('hidden');
             document.getElementById('gameArea').classList.remove('hidden');
             
-            // Set up difficulty ranges
-            let maxNumber;
+            // Set up difficulty ranges and problem types
+            let maxNumber, problemConfig;
             switch(difficulty) {
-                case 'easy': maxNumber = 5; break;
-                case 'medium': maxNumber = 10; break;
-                case 'hard': maxNumber = 12; break;
-                default: maxNumber = 10;
+                case 'easy': 
+                    maxNumber = 5; 
+                    problemConfig = { type: 'basic', max: 5 };
+                    break;
+                case 'medium': 
+                    maxNumber = 10; 
+                    problemConfig = { type: 'basic', max: 10 };
+                    break;
+                case 'hard': 
+                    maxNumber = 12; 
+                    problemConfig = { type: 'basic', max: 12 };
+                    break;
+                case 'multiplication15':
+                    maxNumber = 15;
+                    problemConfig = { type: 'multiplication', max: 15 };
+                    break;
+                case 'multiplication20':
+                    maxNumber = 20;
+                    problemConfig = { type: 'multiplication', max: 20 };
+                    break;
+                case 'multidigit':
+                    maxNumber = 99;
+                    problemConfig = { type: 'multidigit', max: 99 };
+                    break;
+                case 'longdivision':
+                    maxNumber = 12;
+                    problemConfig = { type: 'longdivision', max: 12 };
+                    break;
+                default: 
+                    maxNumber = 10;
+                    problemConfig = { type: 'basic', max: 10 };
             }
             
             // Generate problems for the session
-            generateProblems(maxNumber);
+            generateProblems(problemConfig);
             
             // Start the game
             nextProblem();
@@ -3037,42 +3070,88 @@
             document.getElementById('answerInput').focus();
         }
 
-        function generateProblems(maxNumber) {
+        function generateProblems(problemConfig) {
             currentGame.problems = [];
             
             // Generate 20 problems for the session
             for(let i = 0; i < 20; i++) {
-                let num1 = Math.floor(Math.random() * maxNumber) + 1;
-                let num2 = Math.floor(Math.random() * maxNumber) + 1;
-                let operation, answer;
-                
-                if (currentGame.type === 'multiplication') {
-                    operation = '×';
-                    answer = num1 * num2;
-                } else if (currentGame.type === 'division') {
-                    // For division, make sure we get whole number answers
-                    answer = num1;
-                    num1 = num1 * num2;
-                    operation = '÷';
-                } else { // mixed
-                    if (Math.random() < 0.5) {
+                let problem = createProblem(problemConfig);
+                currentGame.problems.push(problem);
+            }
+        }
+
+        function createProblem(config) {
+            let num1, num2, operation, answer, displayText;
+            
+            switch(config.type) {
+                case 'basic':
+                    num1 = Math.floor(Math.random() * config.max) + 1;
+                    num2 = Math.floor(Math.random() * config.max) + 1;
+                    
+                    if (currentGame.type === 'multiplication') {
                         operation = '×';
                         answer = num1 * num2;
-                    } else {
-                        // Division with whole number answer
+                    } else if (currentGame.type === 'division') {
+                        // For division, make sure we get whole number answers
                         answer = num1;
                         num1 = num1 * num2;
                         operation = '÷';
+                    } else { // mixed
+                        if (Math.random() < 0.5) {
+                            operation = '×';
+                            answer = num1 * num2;
+                        } else {
+                            // Division with whole number answer
+                            answer = num1;
+                            num1 = num1 * num2;
+                            operation = '÷';
+                        }
                     }
-                }
-                
-                currentGame.problems.push({
-                    num1: num1,
-                    num2: num2,
-                    operation: operation,
-                    answer: answer
-                });
+                    displayText = `${num1} ${operation} ${num2} = ?`;
+                    break;
+                    
+                case 'multiplication':
+                    num1 = Math.floor(Math.random() * config.max) + 1;
+                    num2 = Math.floor(Math.random() * config.max) + 1;
+                    operation = '×';
+                    answer = num1 * num2;
+                    displayText = `${num1} × ${num2} = ?`;
+                    break;
+                    
+                case 'multidigit':
+                    // Generate 2-digit numbers for extreme multiplication
+                    num1 = Math.floor(Math.random() * 90) + 10; // 10-99
+                    num2 = Math.floor(Math.random() * 90) + 10; // 10-99
+                    operation = '×';
+                    answer = num1 * num2;
+                    displayText = `${num1} × ${num2} = ?`;
+                    break;
+                    
+                case 'longdivision':
+                    // Create long division problems with 2-digit dividends and 1-digit divisors
+                    num2 = Math.floor(Math.random() * 9) + 2; // divisor 2-10
+                    let quotient = Math.floor(Math.random() * config.max) + 1; // 1-12
+                    num1 = num2 * quotient; // dividend (ensures whole number answer)
+                    operation = '÷';
+                    answer = quotient;
+                    displayText = `${num1} ÷ ${num2} = ?`;
+                    break;
+                    
+                default:
+                    num1 = Math.floor(Math.random() * config.max) + 1;
+                    num2 = Math.floor(Math.random() * config.max) + 1;
+                    operation = '×';
+                    answer = num1 * num2;
+                    displayText = `${num1} × ${num2} = ?`;
             }
+            
+            return {
+                num1: num1,
+                num2: num2,
+                operation: operation,
+                answer: answer,
+                displayText: displayText
+            };
         }
 
         function nextProblem() {
@@ -3083,8 +3162,9 @@
             
             currentGame.currentProblem = currentGame.problems[currentGame.totalProblems];
             
-            // Display the problem
-            const problemText = `${currentGame.currentProblem.num1} ${currentGame.currentProblem.operation} ${currentGame.currentProblem.num2} = ?`;
+            // Display the problem using the preformatted displayText or fallback
+            const problemText = currentGame.currentProblem.displayText || 
+                `${currentGame.currentProblem.num1} ${currentGame.currentProblem.operation} ${currentGame.currentProblem.num2} = ?`;
             document.getElementById('problem').textContent = problemText;
             
             // Clear previous answer and feedback
@@ -3114,6 +3194,10 @@
                     case 'easy': points = 2; break;
                     case 'medium': points = 4; break;
                     case 'hard': points = 10; break;
+                    case 'multiplication15': points = 6; break;
+                    case 'multiplication20': points = 8; break;
+                    case 'multidigit': points = 15; break;
+                    case 'longdivision': points = 12; break;
                     default: points = 4;
                 }
                 
