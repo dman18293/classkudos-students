@@ -999,6 +999,23 @@
             font-weight: bold;
         }
         
+        .academic-choice {
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .academic-choice:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            background: #f0f8ff !important;
+            border-color: #667eea !important;
+        }
+        
+        .academic-choice:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        
         .hidden {
             display: none;
         }
@@ -1324,8 +1341,16 @@
                             </div>
                             
                             <div id="answerArea">
-                                <input type="number" id="answerInput" placeholder="Your answer..." style="font-size: 1.5em; padding: 10px; text-align: center;">
-                                <button onclick="submitAnswer()" style="font-size: 1.2em; padding: 10px 20px; margin-left: 10px;">Submit</button>
+                                <!-- Multiple choice buttons will be inserted here -->
+                                <div id="choicesContainer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 600px; margin: 0 auto;">
+                                    <!-- Dynamic multiple choice options will be inserted here -->
+                                </div>
+                                
+                                <!-- Fallback input for math problems that need exact answers -->
+                                <div id="inputFallback" class="hidden" style="margin-top: 20px;">
+                                    <input type="number" id="answerInput" placeholder="Your answer..." style="font-size: 1.5em; padding: 10px; text-align: center;">
+                                    <button onclick="submitAnswer()" style="font-size: 1.2em; padding: 10px 20px; margin-left: 10px;">Submit</button>
+                                </div>
                             </div>
                             
                             <div id="feedback" style="margin-top: 20px; font-size: 1.2em;"></div>
@@ -5684,7 +5709,7 @@
             generateNewProblem();
             
             // Start timer
-            startGameTimer();
+            startTimer();
         }
 
         function generateNewProblem() {
@@ -5692,30 +5717,217 @@
             const challenge = currentGameData.challenge;
             const difficulty = currentGameData.difficulty;
             
-            let problem, answer;
+            let problemData;
             
             if (gameType === 'math') {
-                ({ problem, answer } = generateMathProblem(challenge, difficulty));
+                problemData = generateMathProblem(challenge, difficulty);
             } else if (gameType === 'vocabulary') {
-                ({ problem, answer } = generateVocabularyProblem(challenge, difficulty));
+                problemData = generateVocabularyProblem(challenge, difficulty);
             } else if (gameType === 'reading') {
-                ({ problem, answer } = generateReadingProblem(challenge, difficulty));
+                problemData = generateReadingProblem(challenge, difficulty);
             } else if (gameType === 'science') {
-                ({ problem, answer } = generateScienceProblem(challenge, difficulty));
+                problemData = generateScienceProblem(challenge, difficulty);
             } else if (gameType === 'geography') {
-                ({ problem, answer } = generateGeographyProblem(challenge, difficulty));
+                problemData = generateGeographyProblem(challenge, difficulty);
             } else if (gameType === 'history') {
-                ({ problem, answer } = generateHistoryProblem(challenge, difficulty));
+                problemData = generateHistoryProblem(challenge, difficulty);
             } else {
                 // Fallback to math
-                ({ problem, answer } = generateMathProblem('addition', 'easy'));
+                problemData = generateMathProblem('addition', 'easy');
             }
             
-            currentGame.currentProblem = { question: problem, answer: answer };
-            document.getElementById('problem').innerHTML = problem;
-            document.getElementById('answerInput').value = '';
+            currentGame.currentProblem = { 
+                question: problemData.problem, 
+                answer: problemData.answer,
+                options: problemData.options || null
+            };
+            
+            // Display the question
+            document.getElementById('problem').innerHTML = problemData.problem;
+            
+            // Clear feedback
             document.getElementById('feedback').innerHTML = '';
+            
+            // Use pre-built options if available, otherwise generate them
+            let choices = problemData.options;
+            if (!choices) {
+                choices = generateMultipleChoiceOptions(problemData.answer, gameType, challenge);
+            }
+            
+            // Show multiple choice options or input field based on question type
+            if (choices && choices.length > 0) {
+                displayMultipleChoice(choices, problemData.answer);
+            } else {
+                displayTextInput();
+            }
+        }
+        
+        function generateMultipleChoiceOptions(correctAnswer, gameType, challenge) {
+            // Don't use multiple choice for certain math types that need exact calculation
+            if (gameType === 'math' && (challenge === 'multidigit' || challenge === 'longdivision')) {
+                return null; // Use text input for complex math
+            }
+            
+            const options = [correctAnswer];
+            const answerType = typeof correctAnswer;
+            
+            if (answerType === 'number') {
+                // Generate wrong numerical options
+                const baseNum = correctAnswer;
+                const variations = [
+                    baseNum + 1,
+                    baseNum - 1, 
+                    baseNum + Math.floor(baseNum * 0.1) + 1,
+                    baseNum - Math.floor(baseNum * 0.1) - 1,
+                    Math.floor(baseNum * 1.5),
+                    Math.floor(baseNum * 0.5),
+                    baseNum + 10,
+                    baseNum - 5
+                ];
+                
+                // Add valid variations (positive numbers only)
+                variations.forEach(num => {
+                    if (num > 0 && num !== correctAnswer && options.length < 4) {
+                        options.push(num);
+                    }
+                });
+                
+                // Fill remaining slots with random numbers if needed
+                while (options.length < 4) {
+                    const randomNum = Math.max(1, correctAnswer + Math.floor(Math.random() * 20) - 10);
+                    if (!options.includes(randomNum)) {
+                        options.push(randomNum);
+                    }
+                }
+                
+            } else {
+                // Generate wrong text options based on subject
+                const wrongAnswers = generateWrongTextAnswers(correctAnswer, gameType, challenge);
+                wrongAnswers.forEach(wrong => {
+                    if (options.length < 4) {
+                        options.push(wrong);
+                    }
+                });
+            }
+            
+            // Shuffle options
+            for (let i = options.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [options[i], options[j]] = [options[j], options[i]];
+            }
+            
+            return options;
+        }
+        
+        function generateWrongTextAnswers(correctAnswer, gameType, challenge) {
+            const wrong = [];
+            
+            if (gameType === 'geography') {
+                if (challenge === 'capitals') {
+                    wrong.push('New York', 'Los Angeles', 'Chicago', 'Boston', 'Miami');
+                } else if (challenge === 'countries') {
+                    wrong.push('Canada', 'Mexico', 'Brazil', 'Spain', 'Italy');
+                } else {
+                    wrong.push('London', 'Paris', 'Tokyo', 'Sydney', 'Rome');
+                }
+            } else if (gameType === 'science') {
+                if (challenge === 'biology') {
+                    wrong.push('brain', 'liver', 'kidney', 'stomach', 'lungs');
+                } else if (challenge === 'chemistry') {
+                    wrong.push('hydrogen', 'carbon', 'nitrogen', 'helium', 'sodium');
+                } else {
+                    wrong.push('gravity', 'magnetism', 'energy', 'force', 'motion');
+                }
+            } else if (gameType === 'history') {
+                wrong.push('Napoleon', 'Caesar', 'Lincoln', 'Washington', 'Churchill');
+            } else if (gameType === 'vocabulary') {
+                wrong.push('excellent', 'wonderful', 'terrible', 'amazing', 'awful');
+            } else {
+                // General wrong answers
+                wrong.push('answer1', 'answer2', 'answer3', 'answer4', 'answer5');
+            }
+            
+            return wrong.filter(w => w.toLowerCase() !== correctAnswer.toLowerCase()).slice(0, 3);
+        }
+        
+        function displayMultipleChoice(choices, correctAnswer) {
+            document.getElementById('choicesContainer').classList.remove('hidden');
+            document.getElementById('inputFallback').classList.add('hidden');
+            
+            const choicesHTML = choices.map((choice, index) => 
+                `<button class="choice-btn academic-choice" onclick="selectAcademicAnswer('${choice}')" 
+                         style="padding: 15px; border: 2px solid #ddd; border-radius: 8px; 
+                                background: white; cursor: pointer; font-size: 1.1em; 
+                                transition: all 0.3s;">
+                    ${choice}
+                </button>`
+            ).join('');
+            
+            document.getElementById('choicesContainer').innerHTML = choicesHTML;
+            currentGame.currentProblem.correctAnswer = correctAnswer;
+        }
+        
+        function displayTextInput() {
+            document.getElementById('choicesContainer').classList.add('hidden');
+            document.getElementById('inputFallback').classList.remove('hidden');
+            document.getElementById('answerInput').value = '';
             document.getElementById('answerInput').focus();
+        }
+        
+        function selectAcademicAnswer(selectedAnswer) {
+            const correctAnswer = currentGame.currentProblem.answer;
+            currentGame.totalProblems++;
+            
+            // Disable all choice buttons
+            const choiceBtns = document.querySelectorAll('.academic-choice');
+            choiceBtns.forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent.trim() == correctAnswer) {
+                    btn.style.background = '#d4edda';
+                    btn.style.borderColor = '#28a745';
+                } else if (btn.textContent.trim() == selectedAnswer && selectedAnswer != correctAnswer) {
+                    btn.style.background = '#f8d7da';
+                    btn.style.borderColor = '#dc3545';
+                }
+            });
+            
+            const feedback = document.getElementById('feedback');
+            
+            if (selectedAnswer == correctAnswer) {
+                currentGame.correctAnswers++;
+                currentGame.streak++;
+                
+                // Award points based on difficulty and streak
+                let points = getDifficultyPoints(currentGameData.difficulty);
+                if (currentGame.streak >= 5) points += 2; // Streak bonus
+                
+                currentGame.score += points;
+                
+                feedback.innerHTML = `<span style="color: green;">✅ Correct! +${points} points</span>`;
+                
+                // Play success sound
+                try {
+                    const audio = new Audio('../Audio/ding.wav');
+                    audio.play().catch(() => {});
+                } catch (e) {}
+                
+            } else {
+                currentGame.streak = 0;
+                feedback.innerHTML = `<span style="color: red;">❌ Incorrect. The answer was: ${correctAnswer}</span>`;
+                
+                // Play error sound
+                try {
+                    const audio = new Audio('../Audio/Negative.wav');
+                    audio.play().catch(() => {});
+                } catch (e) {}
+            }
+            
+            updateGameStats();
+            
+            // Continue to next problem after delay
+            setTimeout(() => {
+                generateNewProblem();
+            }, 2500);
         }
 
         // Game generators for different subjects - MASSIVELY EXPANDED CONTENT
@@ -5926,10 +6138,32 @@
             
             const item = challengeData[Math.floor(Math.random() * challengeData.length)];
             
-            return {
-                problem: item.question || `What does "${item.word}" mean?`,
-                answer: item.word || item.synonym
-            };
+            if (item.options) {
+                // For definitions, synonyms, antonyms with multiple choice
+                let question, answer;
+                if (challenge === 'definitions') {
+                    question = `What does "${item.word}" mean?<br><em>${item.definition}</em>`;
+                    answer = item.word;
+                } else if (challenge === 'synonyms') {
+                    question = `What word is a synonym for "${item.word}"?`;
+                    answer = item.synonym;
+                } else if (challenge === 'antonyms') {
+                    question = `What word is an antonym for "${item.word}"?`;
+                    answer = item.antonym;
+                }
+                
+                return {
+                    problem: question,
+                    answer: answer,
+                    options: item.options
+                };
+            } else {
+                // For spelling questions (no multiple choice)
+                return {
+                    problem: item.question || `What does "${item.word}" mean?`,
+                    answer: item.word || item.synonym
+                };
+            }
         }
 
         function generateScienceProblem(challenge, difficulty) {
