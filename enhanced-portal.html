@@ -2349,8 +2349,73 @@
             // Load student kudos
             await loadStudentKudos();
             
-            // Load leaderboard
-            await loadLeaderboard();
+            // Load leaderboard with failsafe backup
+            try {
+                await loadLeaderboard();
+            } catch (error) {
+                console.error('❌ CRITICAL: loadLeaderboard failed in initialization:', error);
+                // Force show error immediately if loadLeaderboard fails to start
+                const leaderboardList = document.getElementById('leaderboardList');
+                if (leaderboardList) {
+                    leaderboardList.innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: #e74c3c; background: #f8f9fa; border-radius: 8px; margin: 10px;">
+                            <div style="font-size: 1.2em; margin-bottom: 15px;">❌ Critical Leaderboard Error</div>
+                            
+                            <div style="background: #fff3cd; padding: 12px; border-radius: 6px; margin: 15px 0; text-align: left; font-size: 13px; color: #856404;">
+                                <strong>📋 Tell your teacher this info:</strong><br>
+                                <div style="font-family: monospace; background: #f8f9fa; padding: 8px; border-radius: 4px; margin-top: 8px;">
+                                    Student: ${currentStudent?.name || 'Unknown'}<br>
+                                    Class: ${currentClass}<br>
+                                    Error: Critical failure during initialization<br>
+                                    Date: ${new Date().toLocaleString()}<br>
+                                    Details: ${error.message || 'Unknown error'}
+                                </div>
+                            </div>
+                            
+                            <button onclick="forceRetryLeaderboard()" style="
+                                background: #dc3545; color: white; border: none; padding: 12px 20px; 
+                                border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;
+                            ">🚨 Emergency Retry</button>
+                        </div>
+                    `;
+                }
+            }
+            
+            // FAILSAFE: Set up emergency backup timer in case everything fails
+            setTimeout(() => {
+                const leaderboardList = document.getElementById('leaderboardList');
+                if (leaderboardList && (leaderboardList.innerHTML.includes('Loading leaderboard') || leaderboardList.innerHTML.trim() === '')) {
+                    console.log('🚨 EMERGENCY FAILSAFE: Leaderboard still loading after 10 seconds, forcing error display');
+                    leaderboardList.innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: #e74c3c; background: #f8f9fa; border-radius: 8px; margin: 10px;">
+                            <div style="font-size: 1.2em; margin-bottom: 15px;">🚨 Emergency Timeout</div>
+                            <div style="margin-bottom: 15px; color: #666;">The leaderboard has been loading for over 10 seconds</div>
+                            
+                            <div style="background: #fff3cd; padding: 12px; border-radius: 6px; margin: 15px 0; text-align: left; font-size: 13px; color: #856404;">
+                                <strong>📋 Tell your teacher this info:</strong><br>
+                                <div style="font-family: monospace; background: #f8f9fa; padding: 8px; border-radius: 4px; margin-top: 8px;">
+                                    Student: ${currentStudent?.name || 'Unknown'}<br>
+                                    Class: ${currentClass}<br>
+                                    Error: Emergency timeout (10+ seconds)<br>
+                                    Date: ${new Date().toLocaleString()}<br>
+                                    Browser: ${navigator.userAgent.split(' ')[0]}
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+                                <button onclick="forceRetryLeaderboard()" style="
+                                    background: #dc3545; color: white; border: none; padding: 12px 20px; 
+                                    border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;
+                                ">🚨 Emergency Retry</button>
+                                <button onclick="location.reload()" style="
+                                    background: #6c757d; color: white; border: none; padding: 12px 20px; 
+                                    border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;
+                                ">🔄 Refresh Page</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }, 10000); // Emergency backup after 10 seconds
         }
 
         async function loadStudentKudos(silent = false) {
@@ -2756,8 +2821,41 @@
             window.location.href = window.location.href.split('?')[0] + '?cb=' + cacheBuster;
         }
 
-        async function loadLeaderboard(retryCount = 0) {
+        function forceRetryLeaderboard() {
+            console.log('🚨 FORCE RETRY: User clicked emergency retry button');
             const leaderboardList = document.getElementById('leaderboardList');
+            
+            // Show immediate feedback
+            leaderboardList.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #dc3545; background: #f8f9fa; border-radius: 8px; margin: 10px;">
+                    <div style="font-size: 1.2em; margin-bottom: 15px;">🚨 Emergency Retry in Progress</div>
+                    <div style="color: #666; margin-bottom: 15px;">Attempting to force-load the leaderboard...</div>
+                    <div style="font-size: 12px; color: #999;">This will timeout in 8 seconds if it fails</div>
+                </div>
+            `;
+            
+            // Force retry with diagnostic mode enabled
+            setTimeout(() => {
+                enableDiagnosticMode();
+                setTimeout(() => {
+                    loadLeaderboard(0);
+                }, 500);
+            }, 1000);
+        }
+
+        async function loadLeaderboard(retryCount = 0) {
+            console.log('🔍 ENTRY POINT: loadLeaderboard function called with retryCount:', retryCount);
+            console.log('🔍 ENTRY CHECK: currentClass =', currentClass, ', currentStudent =', currentStudent);
+            
+            const leaderboardList = document.getElementById('leaderboardList');
+            
+            // Immediate check - is the element even there?
+            if (!leaderboardList) {
+                console.error('❌ CRITICAL: leaderboardList element not found!');
+                return;
+            }
+            
+            console.log('✅ ENTRY CHECK: leaderboardList element found');
             leaderboardAttempts++;
             
             // FORCE TIMEOUT - Show error after 6 seconds no matter what
