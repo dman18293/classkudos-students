@@ -2145,6 +2145,42 @@
                     await loadStudentKudos(true); // Silent refresh
                 }
             }, 30000);
+
+            // Real-time sync for instant updates
+            if (typeof BroadcastChannel !== 'undefined') {
+                const channel = new BroadcastChannel('kudos-updates');
+                channel.addEventListener('message', (event) => {
+                    const { studentName, changeType } = event.data;
+                    
+                    // If this update is for the current student, refresh immediately
+                    if (currentStudent && currentStudent.name === studentName) {
+                        console.log('Received real-time update for current student:', changeType);
+                        loadStudentKudos(true); // Silent refresh
+                    }
+                });
+            }
+
+            // Listen for localStorage changes (cross-tab communication)
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'instant-update' && currentStudent) {
+                    try {
+                        const update = JSON.parse(e.newValue);
+                        if (update && update.studentName === currentStudent.name) {
+                            console.log('Cross-tab update received for current student');
+                            loadStudentKudos(true);
+                        }
+                    } catch (err) {
+                        console.log('Failed to parse cross-tab update');
+                    }
+                }
+            });
+
+            // Server polling for cross-device updates every 10 seconds
+            setInterval(async () => {
+                if (currentStudent) {
+                    await checkForServerUpdates();
+                }
+            }, 10000);
         }
 
         // XP Management Functions
@@ -2436,7 +2472,7 @@
                     avatarData = String(avatar);
                 }
                 
-                const response = await fetch('https://classkudos.org/.netlify/functions/updateStudentAvatar', {
+                const response = await fetch('/.netlify/functions/updateStudentAvatar', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2450,13 +2486,16 @@
                 const data = await response.json();
                 if (data.success) {
                     console.log('Avatar saved to database successfully');
+                    showSuccessNotification('Avatar saved successfully!');
                     // Store in localStorage for quick access
                     localStorage.setItem('studentAvatar', avatarData);
                 } else {
                     console.error('Failed to save avatar to database:', data.error);
+                    showErrorNotification('Failed to save avatar. Please try again.');
                 }
             } catch (error) {
                 console.error('Error saving avatar to database:', error);
+                showErrorNotification('Connection error. Please check your internet and try again.');
             }
         }
 
@@ -2769,7 +2808,7 @@
             try {
                 console.log('Attempting login with:', { classCode, studentCode });
                 
-                const response = await fetch(`https://classkudos.org/.netlify/functions/consistentStudentAuth`, {
+                const response = await fetch(`/.netlify/functions/consistentStudentAuth`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3098,6 +3137,106 @@
                     `;
                 }
             }
+        }
+
+        // Check for server updates to sync across devices
+        async function checkForServerUpdates() {
+            if (!currentStudent) return;
+            
+            try {
+                const response = await fetch(`/.netlify/functions/getKudos?studentId=${currentStudent.id}&classCode=${currentClass}`);
+                const data = await response.json();
+                
+                if (response.ok && data.success && data.student) {
+                    // Check if points have changed
+                    if (data.student.points !== currentStudent.points) {
+                        console.log('Points updated from server:', data.student.points);
+                        
+                        // Show notification for new points
+                        if (data.student.points > currentStudent.points) {
+                            const newPoints = data.student.points - currentStudent.points;
+                            showSuccessNotification(`+${newPoints} points received!`);
+                        }
+                        
+                        currentStudent.points = data.student.points;
+                        currentStudent.avatar_data = data.student.avatar_data;
+                        
+                        // Update display
+                        refreshStudentData();
+                        updateKudosStats(data.kudos || []);
+                        updateKudosFeed(data.kudos || [], true);
+                    }
+                }
+            } catch (error) {
+                console.log('Server sync check failed (this is normal):', error.message);
+            }
+        }
+
+        // Show success notification for points received
+        function showSuccessNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #28a745;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                font-weight: 500;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+                animation: slideInRight 0.3s ease-out;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // Add CSS animation if not already added
+            if (!document.querySelector('#notificationStyles')) {
+                const style = document.createElement('style');
+                style.id = 'notificationStyles';
+                style.textContent = `
+                    @keyframes slideInRight {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOutRight {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Show error notification
+        function showErrorNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #dc3545;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                font-weight: 500;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+                animation: slideInRight 0.3s ease-out;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
         }
 
         function updateKudosStats(kudos) {
